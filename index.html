@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TKD PRO 5.0 - ĐIỀU HÀNH GIẢI ĐẤU CHUYÊN NGHIỆP</title>
+    <title>HỆ THỐNG GIẢI THI ĐẤU TAEKWONDO</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --red: #e11d48; --blue: #2563eb; --gold: #fbbf24; --bg: #050a15; --card: #111827; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; color: white; }
         
-        /* Header & Tournament Title */
         header { 
             background: #000; padding: 10px 20px; display: flex; justify-content: space-between; 
             align-items: center; border-bottom: 3px solid var(--red); position: sticky; top: 0; z-index: 1000;
@@ -21,25 +20,23 @@
         .container { padding: 20px; max-width: 1600px; margin: 0 auto; }
         .courts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 25px; }
         
-        /* Court & Match Styling */
         .court-card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid #1f2937; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .court-card h3 { text-align: center; color: var(--gold); margin-top: 0; border-bottom: 2px solid #374151; padding-bottom: 10px; }
         
         .match-item { background: #1f2937; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 5px solid #4b5563; position: relative; transition: 0.3s; }
-        .match-waiting { opacity: 0.8; border-left-color: #6b7280; }
+        .match-waiting { opacity: 0.9; border-left-color: #6b7280; }
         .match-live { border-left-color: #10b981; background: #064e3b; transform: scale(1.02); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
-        .match-finished { opacity: 0.5; border-left-color: #111827; filter: grayscale(0.8); }
+        .match-finished { opacity: 0.4; border-left-color: #111827; background: #0b0f19; filter: grayscale(0.8); }
         
-        .status-tag { font-size: 0.7em; padding: 2px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .status-tag { font-size: 0.7em; padding: 3px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .tag-waiting { background: #4b5563; }
-        .tag-live { background: #10b981; animation: blink 1s infinite; }
-        .tag-finished { background: #000; }
+        .tag-live { background: #10b981; color: #000; animation: blink 1.5s infinite; }
+        .tag-finished { background: #000; color: #6b7280; border: 1px solid #374151; }
 
-        /* Admin UI */
         .admin-box { background: #000; border-radius: 12px; padding: 20px; margin-bottom: 30px; border: 1px solid var(--red); display: none; }
         .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
-        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #374151; color: white; border-radius: 8px; white-space: nowrap; }
-        .tab-btn.active { background: var(--red); font-weight: bold; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #374151; color: white; border-radius: 8px; white-space: nowrap; font-weight: bold; }
+        .tab-btn.active { background: var(--red); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -49,7 +46,7 @@
         .team-badge { background: #374151; padding: 5px 10px; border-radius: 5px; margin: 3px; display: inline-flex; align-items: center; font-size: 0.85em; }
         .btn-del { color: #f87171; margin-left: 8px; cursor: pointer; font-weight: bold; }
 
-        @keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes blink { 50% { opacity: 0.6; } }
         .btn-sm { padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; color: white; }
     </style>
 </head>
@@ -57,8 +54,8 @@
 
 <header>
     <div style="flex:1">
-        <h2 style="margin:0; font-size: 1.1em; color: var(--gold);">TEAMY TKD PRO</h2>
-        <small style="color: #10b981;">● Online System 2026</small>
+        <h2 style="margin:0; font-size: 1.1em; color: var(--gold);">HỆ THỐNG GIẢI THI ĐẤU TAEKWONDO</h2>
+        <small style="color: #10b981;">● Online System</small>
     </div>
     <div class="t-name">
         <h1 id="display-tournament-name">HỆ THỐNG ĐIỀU HÀNH GIẢI ĐẤU</h1>
@@ -78,7 +75,7 @@
         <div class="tab-menu">
             <button class="tab-btn active" onclick="openTab(event, 'tab-setup')">1. THIẾT LẬP GIẢI</button>
             <button class="tab-btn" onclick="openTab(event, 'tab-refs')">2. TRỌNG TÀI</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-matches')">3. LỊCH THI ĐẤU</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-matches')">3. TRẬN ĐẤU</button>
             <button class="tab-btn" style="background:#059669" onclick="openTab(event, 'tab-assign')">4. PHÂN CÔNG TT</button>
         </div>
 
@@ -115,7 +112,11 @@
         <div id="tab-matches" class="tab-content">
             <div class="form-group">
                 <select id="m-court"><option value="1">Sân 1</option><option value="2">Sân 2</option><option value="3">Sân 3</option></select>
-                <input type="text" id="m-code" placeholder="Trận số" style="width:60px;">
+                <input type="text" id="m-code" placeholder="Trận số" style="width:70px;">
+                <select id="m-type" style="background: #1e1b4b; font-weight:bold;">
+                    <option value="Đối kháng">ĐỐI KHÁNG</option>
+                    <option value="Quyền">QUYỀN</option>
+                </select>
                 <input type="text" id="m-title" placeholder="Hạng cân / Nội dung">
                 <select id="m-teamA"></select> <b>VS</b> <select id="m-teamB"></select>
                 <button class="btn-sm" style="background:var(--red)" onclick="addMatch()">TẠO TRẬN ĐẤU</button>
@@ -125,13 +126,9 @@
         <div id="tab-assign" class="tab-content">
             <div class="form-group">
                 <select id="assign-match-select" style="min-width: 300px;"></select>
-                <select id="assign-mode">
-                    <option value="auto">Tự động (Ưu tiên TT ít trận)</option>
-                    <option value="manual">Thủ công (Chọn lọc năng lực)</option>
-                </select>
-                <button class="btn-sm" style="background:#10b981" onclick="handleAssign()">PHÂN CÔNG NGAY</button>
+                <button class="btn-sm" style="background:#10b981" onclick="handleAssign()">PHÂN CÔNG TỰ ĐỘNG</button>
             </div>
-            <p style="font-size:0.8em; color:var(--gold)">* Lưu ý: Đối kháng chọn 3 TT, Quyền chọn 5 TT trung lập.</p>
+            <p style="font-size:0.85em; color:var(--gold)">* Hệ thống tự động chọn 3 TT (Đối kháng) hoặc 5 TT (Quyền) dựa trên thiết lập lúc tạo Trận đấu.</p>
         </div>
     </div>
 
@@ -190,6 +187,7 @@
         const m = {
             court: document.getElementById('m-court').value,
             code: document.getElementById('m-code').value || "00",
+            type: document.getElementById('m-type').value, // Quyền hoặc Đối kháng
             title: document.getElementById('m-title').value,
             teamA: document.getElementById('m-teamA').value,
             teamB: document.getElementById('m-teamB').value,
@@ -199,6 +197,16 @@
     }
 
     function updateMatchStatus(key, status) {
+        // KIỂM TRA CHỐNG TRÙNG SÂN KHI BẤM BẮT ĐẦU
+        if(status === 'LIVE') {
+            const court = localMatches[key].court;
+            const hasLiveMatch = Object.values(localMatches).some(m => String(m.court) === String(court) && m.status === 'LIVE');
+            
+            if(hasLiveMatch) {
+                alert(`⛔ LỖI HỆ THỐNG:\nSân ${court} đang có trận thi đấu chưa kết thúc.\nVui lòng kết thúc trận hiện tại trước khi gọi VĐV trận mới vào thảm!`);
+                return;
+            }
+        }
         db.ref(`tkd_online_data/matches/${key}/status`).set(status);
     }
 
@@ -207,7 +215,9 @@
         if(!key) return alert("Hãy chọn trận đấu!");
         
         const m = localMatches[key];
-        const isQuyen = m.title.toUpperCase().includes("QUYỀN");
+        
+        // Nhận diện số lượng TT dựa vào loại hình đã chọn lúc tạo trận
+        const isQuyen = (m.type === "Quyền") || (m.title && m.title.toUpperCase().includes("QUYỀN"));
         const required = isQuyen ? 5 : 3;
 
         let eligible = Object.entries(localRefs)
@@ -215,10 +225,10 @@
             .map(([id, r]) => ({id, ...r}))
             .sort((a,b) => (a.total || 0) - (b.total || 0));
 
-        if(eligible.length < required) return alert(`Không đủ TT trung lập (Cần ${required} người)!`);
+        if(eligible.length < required) return alert(`Không đủ TT trung lập (Cần ${required} người cho nội dung ${isQuyen ? 'Quyền' : 'Đối kháng'})!`);
 
         const selected = eligible.slice(0, required);
-        const refString = isQuyen ? `TT: ${selected.map(s => s.name).join(', ')}` : `TTC: ${selected[0].name} - GS: ${selected[1].name}, ${selected[2].name}`;
+        const refString = isQuyen ? `TT Quyền: ${selected.map(s => s.name).join(', ')}` : `TTC: ${selected[0].name} | Giám định: ${selected[1].name}, ${selected[2].name}`;
 
         let updates = {};
         updates[`tkd_online_data/matches/${key}/assigned`] = refString;
@@ -229,7 +239,6 @@
     }
 
     function renderAll() {
-        // Render Teams
         document.getElementById('list-teams').innerHTML = Object.entries(localTeams).map(([k, v]) => 
             `<span class="team-badge">${v} <b class="btn-del" onclick="deleteTeam('${k}')">×</b></span>`
         ).join('');
@@ -239,49 +248,68 @@
         document.getElementById('m-teamA').innerHTML = teamOpts;
         document.getElementById('m-teamB').innerHTML = teamOpts;
 
-        // Render Refs
         document.getElementById('ref-table-body').innerHTML = Object.entries(localRefs).map(([k, r]) => 
             `<tr><td>${r.name}</td><td>${r.team}</td><td>${r.type}</td><td>${r.total || 0}</td><td><button onclick="deleteRef('${k}')">X</button></td></tr>`
         ).join('');
 
-        // Render Assign List
         document.getElementById('assign-match-select').innerHTML = `<option value="">-- Chọn trận chưa đấu --</option>` + 
             Object.entries(localMatches).filter(([k,m]) => m.status !== 'FINISHED').map(([k,m]) => `<option value="${k}">[Sân ${m.court}] #${m.code} - ${m.teamA} vs ${m.teamB}</option>`).join('');
 
-        // Render Main Display
         const grid = document.getElementById('courts-display');
         grid.innerHTML = '';
+        
+        // SẮP XẾP TRẬN ĐẤU: LIVE lên đầu (1) -> WAITING (2) -> FINISHED xuống cuối (3)
+        const statusWeight = { 'LIVE': 1, 'WAITING': 2, 'FINISHED': 3 };
+
         ["1", "2", "3"].forEach(cNum => {
             const matches = Object.entries(localMatches)
                 .filter(([k,m]) => m.court == cNum)
-                .sort((a,b) => a[1].code.localeCompare(b[1].code));
+                .sort((a,b) => {
+                    const weightA = statusWeight[a[1].status] || 2;
+                    const weightB = statusWeight[b[1].status] || 2;
+                    
+                    if(weightA !== weightB) return weightA - weightB;
+                    
+                    // Cùng trạng thái thì xếp theo số thứ tự trận
+                    return String(a[1].code).localeCompare(String(b[1].code), undefined, {numeric: true});
+                });
             
             let courtHtml = `<div class="court-card"><h3>SÂN ${cNum}</h3>`;
             courtHtml += matches.map(([key, m]) => {
                 const sClass = m.status === 'LIVE' ? 'match-live' : (m.status === 'FINISHED' ? 'match-finished' : 'match-waiting');
                 const sTag = m.status === 'LIVE' ? 'tag-live' : (m.status === 'FINISHED' ? 'tag-finished' : 'tag-waiting');
-                const sText = m.status === 'LIVE' ? 'Đang thi đấu' : (m.status === 'FINISHED' ? 'Kết thúc' : 'Đang chờ');
+                const sText = m.status === 'LIVE' ? 'Đang thi đấu' : (m.status === 'FINISHED' ? 'Đã kết thúc' : 'Sắp diễn ra');
+                const mType = m.type || (m.title && m.title.toUpperCase().includes("QUYỀN") ? "Quyền" : "Đối kháng");
 
                 return `
                 <div class="match-item ${sClass}">
-                    <span class="match-code">#${m.code}</span>
-                    <span class="status-tag ${sTag}">${sText}</span>
-                    <div style="font-size:0.8em; color:var(--gold); margin: 5px 0;">${m.title}</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:1.1em;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="status-tag ${sTag}">${sText}</span>
+                        <span style="background:#000; color:var(--gold); padding:2px 8px; border-radius:4px; font-weight:bold;">Trận #${m.code}</span>
+                    </div>
+                    
+                    <div style="font-size:0.85em; color:var(--gold); margin: 8px 0;">
+                        <span style="background:#374151; padding:2px 6px; border-radius:4px; margin-right:5px;">${mType}</span>
+                        ${m.title}
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:1.15em;">
                         <span style="color:var(--red); width:40%;">${m.teamA}</span>
                         <span style="background:#000; padding:2px 10px; border-radius:4px;">${m.score1} - ${m.score2}</span>
                         <span style="color:var(--blue); width:40%; text-align:right;">${m.teamB}</span>
                     </div>
-                    <div style="font-size:0.7em; color:#9ca3af; margin-top:8px; border-top:1px solid #374151; padding-top:5px;">
-                        ${m.assigned || '<b style="color:var(--gold)">Chưa phân công trọng tài</b>'}
+                    
+                    <div style="font-size:0.75em; color:#9ca3af; margin-top:10px; border-top:1px solid #374151; padding-top:6px;">
+                        ${m.assigned ? '👤 ' + m.assigned : '<b style="color:var(--gold)">⚠️ Chưa phân công TT</b>'}
                     </div>
-                    ${localStorage.getItem('tkd_admin_login') ? `
-                    <div style="margin-top:10px; display:flex; gap:5px;">
-                        <button class="btn-sm" style="background:#10b981; font-size:0.7em" onclick="updateMatchStatus('${key}','LIVE')">BẮT ĐẦU</button>
-                        <button class="btn-sm" style="background:#4b5563; font-size:0.7em" onclick="updateMatchStatus('${key}','FINISHED')">XONG</button>
+                    
+                    ${localStorage.getItem('tkd_admin_login') && m.status !== 'FINISHED' ? `
+                    <div style="margin-top:12px; display:flex; gap:8px;">
+                        ${m.status === 'WAITING' ? `<button class="btn-sm" style="background:#10b981; font-size:0.75em; flex:1;" onclick="updateMatchStatus('${key}','LIVE')">▶ BẮT ĐẦU</button>` : ''}
+                        ${m.status === 'LIVE' ? `<button class="btn-sm" style="background:#4b5563; font-size:0.75em; flex:1;" onclick="updateMatchStatus('${key}','FINISHED')">⏹ KẾT THÚC</button>` : ''}
                     </div>` : ''}
                 </div>`;
-            }).join('') || '<p style="color:#4b5563; text-align:center;">Chưa có lịch</p>';
+            }).join('') || '<p style="color:#4b5563; text-align:center; font-style:italic;">Sân đang trống</p>';
             grid.innerHTML += courtHtml + '</div>';
         });
     }
@@ -294,7 +322,7 @@
             if(acc && String(acc.password) === p) {
                 localStorage.setItem('tkd_admin_login', 'true');
                 showAdmin();
-            } else alert("Sai thông tin!");
+            } else alert("Sai thông tin quản trị!");
         });
     }
     function showAdmin() {
