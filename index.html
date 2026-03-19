@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEAMY TKD 5.2 - HỆ THỐNG ĐIỀU HÀNH</title>
+    <title>TEAMY TKD 5.3 - HỆ THỐNG ĐIỀU HÀNH</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -47,7 +47,7 @@
 <body>
 
     <aside class="sidebar">
-        <h2 style="color:var(--gold); margin-bottom:25px; text-align:center;">TEAMY TKD 5.2</h2>
+        <h2 style="color:var(--gold); margin-bottom:25px; text-align:center;">TEAMY TKD 5.3</h2>
         
         <div id="auth-section">
             <div style="background:#1e293b; padding:15px; border-radius:10px;">
@@ -92,6 +92,9 @@
 
             <div class="tab-content hidden" id="tab-assign" style="margin-top:15px">
                 <select id="assign-match-select" onchange="setupAssignUI()"></select>
+                
+                <button id="btn-auto-assign" class="btn-sm hidden" style="background:var(--blue); width:100%; margin-top:10px" onclick="autoAssign()">⚡ TỰ ĐỘNG PHÂN CÔNG</button>
+                
                 <div id="manual-selectors" style="margin-top:10px"></div>
                 <button id="btn-confirm-assign" class="btn-sm hidden" style="background:#10b981; width:100%; margin-top:10px" onclick="executeAssign()">CHỐT TRỌNG TÀI</button>
             </div>
@@ -144,7 +147,7 @@
             const matches = Object.entries(localMatches)
                 .filter(([k,m]) => m.court == cNum)
                 .sort((a,b) => order[a[1].status] - order[b[1].status] || a[1].code - b[1].code)
-                .slice(0, 3); // Hiện tối đa 3 trận/sân
+                .slice(0, 3);
 
             let html = `<div class="court-card"><h3>SÂN ${cNum}</h3>`;
             html += matches.map(([key, m]) => `
@@ -182,7 +185,6 @@
         });
     }
 
-    // --- ADMIN ACTIONS ---
     function checkAdmin() {
         const u = document.getElementById('admin-user').value;
         const p = document.getElementById('admin-pass').value;
@@ -209,7 +211,15 @@
 
     function setupAssignUI() {
         const mId = document.getElementById('assign-match-select').value;
-        if(!mId) return;
+        
+        // [PHẦN MỚI THÊM] Ẩn nút nếu không chọn trận
+        if(!mId) {
+            document.getElementById('manual-selectors').innerHTML = '';
+            document.getElementById('btn-confirm-assign').classList.add('hidden');
+            document.getElementById('btn-auto-assign').classList.add('hidden');
+            return;
+        }
+
         const m = localMatches[mId];
         const count = m.type === "Đối kháng" ? 3 : 5;
         const neutral = Object.entries(localRefs).filter(([id, r]) => r.team !== m.teamA && r.team !== m.teamB);
@@ -221,6 +231,33 @@
         }
         document.getElementById('manual-selectors').innerHTML = html;
         document.getElementById('btn-confirm-assign').classList.remove('hidden');
+        
+        // [PHẦN MỚI THÊM] Hiện nút Tự động
+        document.getElementById('btn-auto-assign').classList.remove('hidden');
+    }
+
+    // [PHẦN MỚI THÊM] Logic hàm tự động phân công
+    function autoAssign() {
+        const mId = document.getElementById('assign-match-select').value;
+        if(!mId) return;
+        const m = localMatches[mId];
+        const count = m.type === "Đối kháng" ? 3 : 5;
+
+        // Lọc trọng tài trung lập
+        const neutralIds = Object.keys(localRefs).filter(id => localRefs[id].team !== m.teamA && localRefs[id].team !== m.teamB);
+
+        if(neutralIds.length < count) {
+            return alert(`Không đủ trọng tài trung lập! Cần ${count} người, nhưng hiện chỉ có ${neutralIds.length} người hợp lệ.`);
+        }
+
+        // Xáo trộn ngẫu nhiên
+        const shuffled = neutralIds.sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, count);
+
+        // Gán vào các ô chọn
+        for(let i=0; i<count; i++) {
+            document.getElementById(`pos-${i}`).value = selected[i];
+        }
     }
 
     function executeAssign() {
