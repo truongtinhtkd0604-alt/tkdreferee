@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEAMY TKD 5.3 - HỆ THỐNG ĐIỀU HÀNH</title>
+    <title>TEAMY TKD 5.4 - HỆ THỐNG ĐIỀU HÀNH</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -47,7 +47,7 @@
 <body>
 
     <aside class="sidebar">
-        <h2 style="color:var(--gold); margin-bottom:25px; text-align:center;">TEAMY TKD 5.3</h2>
+        <h2 style="color:var(--gold); margin-bottom:25px; text-align:center;">TEAMY TKD 5.4</h2>
         
         <div id="auth-section">
             <div style="background:#1e293b; padding:15px; border-radius:10px;">
@@ -92,9 +92,7 @@
 
             <div class="tab-content hidden" id="tab-assign" style="margin-top:15px">
                 <select id="assign-match-select" onchange="setupAssignUI()"></select>
-                
                 <button id="btn-auto-assign" class="btn-sm hidden" style="background:var(--blue); width:100%; margin-top:10px" onclick="autoAssign()">⚡ TỰ ĐỘNG PHÂN CÔNG</button>
-                
                 <div id="manual-selectors" style="margin-top:10px"></div>
                 <button id="btn-confirm-assign" class="btn-sm hidden" style="background:#10b981; width:100%; margin-top:10px" onclick="executeAssign()">CHỐT TRỌNG TÀI</button>
             </div>
@@ -137,6 +135,15 @@
         renderDisplay();
         if(isAdmin) updateAdminUI();
     });
+
+    // Hàm đếm số trận làm nhiệm vụ của một trọng tài
+    function getRefMatchCount(refName) {
+        let count = 0;
+        Object.values(localMatches).forEach(m => {
+            if (m.assigned && m.assigned.includes(refName)) count++;
+        });
+        return count;
+    }
 
     function renderDisplay() {
         const grid = document.getElementById('courts-display');
@@ -211,8 +218,6 @@
 
     function setupAssignUI() {
         const mId = document.getElementById('assign-match-select').value;
-        
-        // [PHẦN MỚI THÊM] Ẩn nút nếu không chọn trận
         if(!mId) {
             document.getElementById('manual-selectors').innerHTML = '';
             document.getElementById('btn-confirm-assign').classList.add('hidden');
@@ -221,40 +226,40 @@
         }
 
         const m = localMatches[mId];
-        const count = m.type === "Đối kháng" ? 3 : 5;
+        const count = m.type === "Đối kháng" ? 4 : 5; // Cập nhật thành 4 cho Đối kháng
         const neutral = Object.entries(localRefs).filter(([id, r]) => r.team !== m.teamA && r.team !== m.teamB);
-        let opts = `<option value="">-- Chọn Trọng tài --</option>` + neutral.map(([id, r]) => `<option value="${id}">${r.name}</option>`).join('');
+        
+        // Hiển thị số trận trực tiếp trong thẻ option
+        let opts = `<option value="">-- Chọn Trọng tài --</option>` + neutral.map(([id, r]) => {
+            const matchesDone = getRefMatchCount(r.name);
+            return `<option value="${id}">${r.name} (${matchesDone} trận)</option>`;
+        }).join('');
         
         let html = '';
         for(let i=0; i<count; i++) {
-            html += `<small style="display:block; margin-top:5px;">${i==0?'Trọng tài Chính:':'Giám định '+(m.type==='Đối kháng'?i:i+1)}:</small><select id="pos-${i}">${opts}</select>`;
+            let label = i === 0 ? 'Trọng tài Chính' : 'Giám định ' + i;
+            html += `<small style="display:block; margin-top:5px;">${label}:</small><select id="pos-${i}">${opts}</select>`;
         }
         document.getElementById('manual-selectors').innerHTML = html;
         document.getElementById('btn-confirm-assign').classList.remove('hidden');
-        
-        // [PHẦN MỚI THÊM] Hiện nút Tự động
         document.getElementById('btn-auto-assign').classList.remove('hidden');
     }
 
-    // [PHẦN MỚI THÊM] Logic hàm tự động phân công
     function autoAssign() {
         const mId = document.getElementById('assign-match-select').value;
         if(!mId) return;
         const m = localMatches[mId];
-        const count = m.type === "Đối kháng" ? 3 : 5;
+        const count = m.type === "Đối kháng" ? 4 : 5; // Cập nhật thành 4
 
-        // Lọc trọng tài trung lập
         const neutralIds = Object.keys(localRefs).filter(id => localRefs[id].team !== m.teamA && localRefs[id].team !== m.teamB);
 
         if(neutralIds.length < count) {
             return alert(`Không đủ trọng tài trung lập! Cần ${count} người, nhưng hiện chỉ có ${neutralIds.length} người hợp lệ.`);
         }
 
-        // Xáo trộn ngẫu nhiên
         const shuffled = neutralIds.sort(() => 0.5 - Math.random());
         const selected = shuffled.slice(0, count);
 
-        // Gán vào các ô chọn
         for(let i=0; i<count; i++) {
             document.getElementById(`pos-${i}`).value = selected[i];
         }
@@ -263,14 +268,16 @@
     function executeAssign() {
         const mId = document.getElementById('assign-match-select').value;
         const m = localMatches[mId];
-        const count = m.type === "Đối kháng" ? 3 : 5;
+        const count = m.type === "Đối kháng" ? 4 : 5; // Cập nhật thành 4
         let names = [];
         for(let i=0; i<count; i++) {
             const val = document.getElementById(`pos-${i}`).value;
             if(!val) return alert("Vui lòng chọn đủ danh sách trọng tài trung lập!");
             names.push(localRefs[val].name);
         }
-        const text = m.type === "Đối kháng" ? `TTC: ${names[0]} | GĐ: ${names[1]}, ${names[2]}` : `BGĐ: ${names.join(', ')}`;
+        
+        // Nối chuỗi thêm Giám định 3
+        const text = m.type === "Đối kháng" ? `TTC: ${names[0]} | GĐ: ${names[1]}, ${names[2]}, ${names[3]}` : `BGĐ: ${names.join(', ')}`;
         db.ref(`tkd_online_data/matches/${mId}/assigned`).set(text).then(()=>alert("Phân công thành công!"));
     }
 
@@ -292,12 +299,16 @@
         document.getElementById('assign-match-select').innerHTML = '<option value="">-- Chọn trận cần phân công --</option>' + 
             Object.entries(localMatches).filter(([k,m]) => !m.assigned && m.status!=='FINISHED').map(([k,m]) => `<option value="${k}">Trận ${m.code} (Sân ${m.court})</option>`).join('');
         
-        document.getElementById('ref-list-manage').innerHTML = Object.entries(localRefs).map(([k,r]) => `
+        // Cập nhật thẻ hiển thị trọng tài có kèm bộ đếm số trận
+        document.getElementById('ref-list-manage').innerHTML = Object.entries(localRefs).map(([k,r]) => {
+            const matchesCount = getRefMatchCount(r.name);
+            return `
             <div style="display:flex; justify-content:space-between; background:#0f172a; margin-bottom:4px; padding:5px 10px; border-radius:4px;">
-                <span>${r.name} (${r.team})</span>
+                <span>${r.name} <span style="color:#94a3b8">(${r.team})</span> - <span style="color:var(--gold); font-weight:bold;">${matchesCount} trận</span></span>
                 <span style="color:red; cursor:pointer; font-weight:bold;" onclick="if(confirm('Xóa TT?')) db.ref('tkd_online_data/referees/${k}').remove()">X</span>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function updateTournamentName() { db.ref('tkd_online_data/tournamentName').set(document.getElementById('input-tournament-name').value); }
