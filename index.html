@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TEAMY TKD 5.8 - TOURNAMENT HUB</title>
+    <title>HỆ THỐNG THI ĐẤU TAEKWONDO</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -62,7 +62,17 @@
         .match-finished { opacity: 0.6; border-left-color: var(--text-muted); background: rgba(0,0,0,0.2); transform: scale(0.95); }
         
         .team-row { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.1em; margin: 8px 0; }
-        .score-display { background: #000; padding: 4px 12px; border-radius: 6px; color: var(--gold); font-family: monospace; }
+        .score-display { background: #000; padding: 4px 12px; border-radius: 6px; color: var(--gold); font-family: monospace; font-size: 1.2em; }
+
+        /* NỔI BẬT MÃ TRẬN ĐẤU */
+        .match-badge {
+            background: var(--gold); color: #000; font-weight: 900; padding: 4px 10px; 
+            border-radius: 6px; font-size: 1.1em; letter-spacing: 1px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .match-title {
+            font-weight: bold; color: var(--text-main); font-size: 0.9em; text-transform: uppercase;
+        }
 
         .admin-tools { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .score-btn-group { display: flex; align-items: center; justify-content: space-between; background: #000; border-radius: 5px; padding: 3px; border: 1px solid var(--border); }
@@ -189,7 +199,6 @@
         return Object.values(localMatches).filter(m => m.assigned && m.assigned.includes(name)).length;
     }
 
-    // --- HÀM HIỂN THỊ CHÍNH (VERSION 5.8) ---
     function renderDisplay() {
         const grid = document.getElementById('courts-display');
         grid.innerHTML = '';
@@ -197,26 +206,20 @@
         ["1", "2", "3"].forEach(cNum => {
             const courtMatches = Object.entries(localMatches).filter(([k,m]) => m.court == cNum);
             
-            // Phân loại trận đấu
             const live = courtMatches.filter(([k,m]) => m.status === 'LIVE');
             const waiting = courtMatches.filter(([k,m]) => m.status === 'WAITING').sort((a,b) => a[1].code - b[1].code);
             const finished = courtMatches.filter(([k,m]) => m.status === 'FINISHED').sort((a,b) => b[1].code - a[1].code).slice(0, 3);
 
             let html = `<div class="court-card"><h3>SÂN ${cNum}</h3>`;
 
-            // 1. Phần Đang đấu
             if(live.length > 0) {
                 html += `<div class="section-label">Đang thi đấu</div>`;
                 html += live.map(([k, m]) => renderMatchHTML(k, m, 'match-live')).join('');
             }
-
-            // 2. Phần Chờ đấu
             if(waiting.length > 0) {
                 html += `<div class="section-label">Trận tiếp theo</div>`;
                 html += waiting.map(([k, m]) => renderMatchHTML(k, m, '')).join('');
             }
-
-            // 3. Phần Kết quả (Cũ)
             if(finished.length > 0) {
                 html += `<div class="section-label">Kết quả vừa xong</div>`;
                 html += finished.map(([k, m]) => renderMatchHTML(k, m, 'match-finished')).join('');
@@ -231,15 +234,16 @@
     function renderMatchHTML(key, m, extraClass) {
         return `
             <div class="match-item ${extraClass}">
-                <div style="font-size:0.7em; display:flex; justify-content:space-between; margin-bottom:5px; color:var(--text-muted)">
-                    <span>Trận #${m.code}</span><span>${m.title}</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span class="match-badge">TRẬN ${m.code}</span>
+                    <span class="match-title">${m.title}</span>
                 </div>
                 <div class="team-row">
                     <span style="color:var(--red); flex:1">${m.teamA}</span>
                     <div class="score-display">${m.score1} - ${m.score2}</div>
                     <span style="color:var(--blue); flex:1; text-align:right">${m.teamB}</span>
                 </div>
-                <div style="font-size:0.7em; color:var(--text-muted); font-style:italic">
+                <div style="font-size:0.75em; color:var(--text-muted); font-style:italic; margin-top:8px; background:rgba(0,0,0,0.2); padding:5px; border-radius:4px;">
                     ${m.assigned ? '⚖️ ' + m.assigned : 'Chờ gán trọng tài...'}
                 </div>
                 ${isAdmin ? `
