@@ -3,39 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TEAMY TKD 9.5 - FINAL STABLE</title>
+    <title>TEAMY TKD 10 - HYBRID SYSTEM</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        :root { --red: #f43f5e; --blue: #3b82f6; --gold: #f59e0b; --bg: #020617; --card: #1e293b; --text: #f8fafc; --border: #334155; --success: #10b981; }
+        :root { --red: #e11d48; --blue: #2563eb; --gold: #f59e0b; --bg: #020617; --card: #1e293b; --text: #f8fafc; --border: #334155; --success: #10b981; }
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: var(--bg); margin: 0; color: var(--text); display: flex; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 350px; background: #0f172a; border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; }
-        .main { flex: 1; padding: 20px; overflow-y: auto; background: radial-gradient(circle at top right, #111827, #020617); }
+        .sidebar { width: 360px; background: #0f172a; border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; z-index: 10; }
+        .main { flex: 1; padding: 20px; overflow-y: auto; background: radial-gradient(circle at top right, #0f172a, #020617); }
         
-        .panel { display: none; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-top: 10px; }
+        .panel { display: none; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
         .panel.active { display: block; }
-        
-        .tab-btn { padding: 8px 4px; font-size: 10px; cursor: pointer; background: var(--card); color: white; border: 1px solid var(--border); border-radius: 4px; font-weight: bold; flex: 1; }
+        .tab-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .tab-btn { padding: 10px 0; font-size: 10px; cursor: pointer; background: var(--card); color: white; border: 1px solid var(--border); border-radius: 4px; font-weight: bold; text-align: center; }
         .tab-btn.active { background: var(--blue); border-color: var(--blue); }
         
-        input, select { width: 100%; padding: 10px; margin-bottom: 8px; background: #000; color: white; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; background: #000; color: white; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+        textarea { resize: vertical; min-height: 80px; font-family: monospace; font-size: 11px; }
         .btn { padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; width: 100%; color: white; transition: 0.2s; margin-bottom: 5px; }
+        .btn:active { transform: scale(0.98); }
         
-        .court-card { background: var(--card); border-radius: 15px; padding: 15px; border-top: 5px solid var(--gold); margin-bottom: 20px; }
-        .match-item { background: #0a0f1e; padding: 12px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--border); }
+        .section-title { font-size: 12px; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; }
         
-        .log-area { font-size: 11px; margin-top: 5px; padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.5); min-height: 20px; color: #94a3b8; border-left: 3px solid var(--blue); }
-        #preview-list { color: #cbd5e1; line-height: 1.6; }
+        .court-card { background: var(--card); border-radius: 12px; padding: 15px; border-top: 4px solid var(--gold); margin-bottom: 15px; }
+        .match-item { background: #020617; padding: 12px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
 <aside class="sidebar">
-    <h2 style="color:var(--gold); text-align:center; margin-bottom:20px;">HỆ THỐNG TEAMY</h2>
+    <h2 style="color:var(--gold); text-align:center; margin:0 0 20px 0;">ĐIỀU HÀNH GIẢI ĐẤU</h2>
     
     <div id="auth-box">
         <input type="password" id="pass" placeholder="Nhập mã PIN">
@@ -43,62 +43,84 @@
     </div>
 
     <div id="admin-ui" style="display:none">
-        <div style="display:flex; gap:4px; margin-bottom:15px">
-            <button class="tab-btn active" onclick="showTab(0)">FILE</button>
-            <button class="tab-btn" onclick="showTab(1)">D.SÁCH</button>
+        <div class="tab-grid">
+            <button class="tab-btn active" onclick="showTab(0)">NHẬP TAY</button>
+            <button class="tab-btn" onclick="showTab(1)">DÁN NHANH</button>
             <button class="tab-btn" onclick="showTab(2)">TRẬN ĐẤU</button>
-            <button class="tab-btn" onclick="showTab(3)">THOÁT</button>
+            <button class="tab-btn" onclick="showTab(3)">CÀI ĐẶT</button>
         </div>
 
         <div class="panel active">
-            <div style="margin-bottom:20px">
-                <label><small><b>TẢI VẬN ĐỘNG VIÊN (.xlsx, .csv)</b></small></label>
-                <input type="file" id="file-vdv">
-                <button class="btn" style="background:var(--success)" onclick="processUpload('vdv')">CẬP NHẬT VĐV</button>
-                <div id="log-vdv" class="log-area">Chưa có dữ liệu...</div>
+            <div class="section-title">1. THÊM ĐƠN VỊ MỚI</div>
+            <div style="display:flex; gap:5px">
+                <input type="text" id="man-team" placeholder="Tên Đơn vị (VD: Gia Lai)">
+                <button class="btn" style="background:var(--success); width:80px" onclick="addManTeam()">THÊM</button>
             </div>
 
-            <div style="margin-bottom:20px">
-                <label><small><b>TẢI TRỌNG TÀI (.xlsx, .csv)</b></small></label>
-                <input type="file" id="file-ref">
-                <button class="btn" style="background:var(--blue)" onclick="processUpload('ref')">CẬP NHẬT TRỌNG TÀI</button>
-                <div id="log-ref" class="log-area">Chưa có dữ liệu...</div>
+            <div class="section-title" style="margin-top:10px">2. THÊM VẬN ĐỘNG VIÊN</div>
+            <select id="man-v-team" class="team-selects"><option value="">-- Chọn Đơn vị --</option></select>
+            <input type="text" id="man-v-name" placeholder="Họ và tên VĐV">
+            <input type="text" id="man-v-cat" placeholder="Nội dung / Hạng cân">
+            <button class="btn" style="background:var(--success)" onclick="addManVdv()">LƯU VĐV</button>
+
+            <div class="section-title" style="margin-top:10px">3. THÊM TRỌNG TÀI</div>
+            <select id="man-r-team" class="team-selects"><option value="">-- Chọn Đơn vị --</option></select>
+            <input type="text" id="man-r-name" placeholder="Họ và tên Trọng tài">
+            <button class="btn" style="background:var(--blue)" onclick="addManRef()">LƯU TRỌNG TÀI</button>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">NHẬP NHANH VĐV (COPY TỪ EXCEL)</div>
+            <p style="font-size:11px; color:#94a3b8; margin:0 0 10px 0">Copy 3 cột trong Excel: <b>Đơn Vị | Tên VĐV | Nội Dung</b> và Dán vào ô dưới đây:</p>
+            <textarea id="paste-vdv" placeholder="Dán dữ liệu vào đây..."></textarea>
+            <button class="btn" style="background:var(--success)" onclick="parsePasteVdv()">XÁC NHẬN NHẬP VĐV</button>
+
+            <div class="section-title" style="margin-top:20px">NHẬP NHANH TRỌNG TÀI</div>
+            <p style="font-size:11px; color:#94a3b8; margin:0 0 10px 0">Copy 2 cột: <b>Tên Trọng Tài | Đơn Vị</b></p>
+            <textarea id="paste-ref" placeholder="Dán dữ liệu vào đây..."></textarea>
+            <button class="btn" style="background:var(--blue)" onclick="parsePasteRef()">XÁC NHẬN NHẬP TT</button>
+        </div>
+
+        <div class="panel">
+            <div style="display:flex; gap:5px">
+                <select id="m-court" style="flex:1"><option value="1">Sân 1</option><option value="2">Sân 2</option><option value="3">Sân 3</option></select>
+                <input type="number" id="m-code" placeholder="Số trận" style="flex:1">
             </div>
+            <input type="text" id="m-title" placeholder="Hạng cân/Nội dung">
             
-            <button class="btn" style="background:#334155; margin-top:10px; font-size:11px" onclick="clearDb()">XÓA TOÀN BỘ DỮ LIỆU CŨ</button>
+            <p style="font-size:11px; color:var(--red); margin:5px 0 2px 0; font-weight:bold">GIÁP ĐỎ:</p>
+            <select id="m-teamA" class="team-selects" onchange="syncPlayers(1)"></select>
+            <select id="m-vA"><option value="">-- Chọn VĐV Đỏ --</option></select>
+            
+            <p style="font-size:11px; color:var(--blue); margin:10px 0 2px 0; font-weight:bold">GIÁP XANH:</p>
+            <select id="m-teamB" class="team-selects" onchange="syncPlayers(2)"></select>
+            <select id="m-vB"><option value="">-- Chọn VĐV Xanh --</option></select>
+            
+            <button class="btn" style="background:var(--red); margin-top:10px" onclick="saveMatch()">TẠO TRẬN ĐẤU</button>
         </div>
 
         <div class="panel">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-                <span id="stat-vdv" style="font-size:10px; background:var(--success); padding:3px 8px; border-radius:4px">VĐV: 0</span>
-                <span id="stat-ref" style="font-size:10px; background:var(--blue); padding:3px 8px; border-radius:4px">TT: 0</span>
-            </div>
-            <div id="preview-list" style="font-size:11px; max-height:450px; overflow-y:auto; background:#000; padding:10px; border-radius:8px"></div>
-        </div>
-
-        <div class="panel">
-            <select id="m-court"><option value="1">Sân 1</option><option value="2">Sân 2</option><option value="3">Sân 3</option></select>
-            <input type="number" id="m-code" placeholder="Số thứ tự trận">
-            <input type="text" id="m-title" placeholder="Nội dung/Hạng cân">
-            <select id="m-teamA" onchange="syncPlayers(1)"></select>
-            <select id="m-vA"></select>
-            <select id="m-teamB" onchange="syncPlayers(2)"></select>
-            <select id="m-vB"></select>
-            <button class="btn" style="background:var(--red)" onclick="saveMatch()">LƯU TRẬN ĐẤU</button>
+            <div class="section-title">THỐNG KÊ DỮ LIỆU</div>
+            <p id="stat-db" style="font-size:12px; font-weight:bold"></p>
+            
+            <div class="section-title" style="margin-top:20px; color:var(--red)">CÔNG CỤ SỬA LỖI</div>
+            <p style="font-size:11px; color:#94a3b8">Nếu hệ thống báo lỗi không hiển thị danh sách, hãy nhấn nút dưới đây để làm sạch bộ nhớ.</p>
+            <button class="btn" style="background:var(--red)" onclick="factoryReset()">SỬA LỖI & XÓA SẠCH DỮ LIỆU</button>
+            <button class="btn" style="background:#334155; margin-top:20px" onclick="logout()">ĐĂNG XUẤT</button>
         </div>
     </div>
 </aside>
 
 <main class="main">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px">
-        <h2 style="color:var(--gold); margin:0">BẢNG ĐIỀU HÀNH THI ĐẤU</h2>
-        <div id="clock" style="font-family:monospace; font-size:1.2em">00:00:00</div>
+        <h2 style="color:var(--gold); margin:0; letter-spacing:1px">HỆ THỐNG TEAMY 10</h2>
+        <div id="clock" style="font-family:monospace; font-size:1.2em; color:#94a3b8">00:00:00</div>
     </div>
-    <div id="grid-system" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap:15px; margin-top:15px"></div>
+    <div id="grid-system" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:15px; margin-top:15px"></div>
 </main>
 
 <script>
-// --- CẤU HÌNH ---
+// --- CẤU HÌNH FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyDZvdUTZ_qskHjTBwEvRF3bfw_FiTDUrog", 
     authDomain: "tkdreferee-4fbcc.firebaseapp.com",
@@ -109,143 +131,141 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let state = { athletes: {}, refs: {}, matches: {}, teams: [] };
-const isAdmin = localStorage.getItem('tkd_admin') === 'true';
+let st = { athletes: {}, refs: {}, matches: {}, teams: [] };
+const isLogged = localStorage.getItem('tkd_admin') === 'true';
 
-if(isAdmin) {
+if(isLogged) {
     document.getElementById('auth-box').style.display = 'none';
     document.getElementById('admin-ui').style.display = 'block';
 }
 
-// --- ĐỒNG BỘ DỮ LIỆU ---
+// --- ĐỒNG BỘ DỮ LIỆU (FIX LỖI ITERABLE) ---
 db.ref('tkd_online_data').on('value', snap => {
     const v = snap.val() || {};
-    state.athletes = v.athletes || {};
-    state.refs = v.refs || {};
-    state.matches = v.matches || {};
+    st.athletes = v.athletes || {};
+    st.refs = v.refs || {};
+    st.matches = v.matches || {};
     
-    // FIX TRIỆT ĐỂ LỖI ITERABLE: Ép kiểu mảng cho teams
-    const rawTeams = v.teams || [];
-    state.teams = Array.isArray(rawTeams) ? rawTeams : Object.values(rawTeams);
+    // Thuật toán ép kiểu an toàn nhất cho mảng Teams
+    let t = v.teams || [];
+    st.teams = Array.isArray(t) ? t : Object.values(t);
 
     renderBoard();
-    if(isAdmin) updateAdmin();
+    if(isLogged) updateUI();
 });
 
-// --- XỬ LÝ CHUỖI ---
-function normalize(s) {
-    if(!s) return "";
-    return s.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+// --- TÍNH NĂNG NHẬP THỦ CÔNG ---
+function addManTeam() {
+    const val = document.getElementById('man-team').value.trim();
+    if(val && !st.teams.includes(val)) {
+        st.teams.push(val);
+        db.ref('tkd_online_data/teams').set(st.teams);
+        document.getElementById('man-team').value = '';
+        alert("Đã thêm Đơn vị: " + val);
+    }
 }
-
-// --- TẢI FILE ---
-function processUpload(type) {
-    const input = document.getElementById(type === 'vdv' ? 'file-vdv' : 'file-ref');
-    const log = document.getElementById(type === 'vdv' ? 'log-vdv' : 'log-ref');
-    const file = input.files[0];
-    if(!file) return alert("Vui lòng chọn file!");
-
-    log.innerHTML = "Đang xử lý...";
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-            const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]) || [];
-            
-            if(type === 'vdv') {
-                let up = {}, tSet = new Set(state.teams);
-                data.forEach(r => {
-                    let n, t, c;
-                    for(let k in r) {
-                        let nk = normalize(k);
-                        // Khớp với tiêu đề file: "Họ và Tên VĐV", "Tên Đơn Vị"
-                        if(nk.includes("hovaten") || nk.includes("tenvdv")) n = r[k];
-                        if(nk.includes("donvi") || nk.includes("clb") || nk.includes("tendonvi")) t = r[k];
-                        if(nk.includes("noidung") || nk.includes("hangcan") || nk.includes("luatuoi")) c = r[k];
-                    }
-                    if(n && t) {
-                        const id = "V" + Math.random().toString(36).substr(2, 7);
-                        up[id] = { name: String(n).trim(), team: String(t).trim(), cat: String(c || '').trim() };
-                        tSet.add(String(t).trim());
-                    }
-                });
-                db.ref('tkd_online_data/athletes').update(up);
-                db.ref('tkd_online_data/teams').set(Array.from(tSet));
-                log.innerHTML = `<b style="color:var(--success)">Thành công: +${Object.keys(up).length} VĐV</b>`;
-            } else {
-                let up = {};
-                data.forEach(r => {
-                    let n, t;
-                    for(let k in r) {
-                        let nk = normalize(k);
-                        if(nk.includes("trongtai") || nk.includes("hoten")) n = r[k];
-                        if(nk.includes("donvi") || nk.includes("clb")) t = r[k];
-                    }
-                    if(n && t) {
-                        const id = "R" + Math.random().toString(36).substr(2, 7);
-                        up[id] = { name: String(n).trim(), team: String(t).trim() };
-                    }
-                });
-                db.ref('tkd_online_data/refs').update(up);
-                log.innerHTML = `<b style="color:var(--success)">Thành công: +${Object.keys(up).length} Trọng tài</b>`;
-            }
-        } catch(err) { log.innerHTML = `<span style="color:var(--red)">Lỗi: ${err.message}</span>`; }
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-// --- HIỂN THỊ ---
-function renderBoard() {
-    const grid = document.getElementById('grid-system'); grid.innerHTML = '';
-    ["1", "2", "3"].forEach(sn => {
-        const ms = Object.entries(state.matches || {}).filter(([k,m]) => m.court == sn);
-        let h = `<div class="court-card"><h3 style="text-align:center;color:var(--gold);margin:0">SÂN ${sn}</h3>`;
-        
-        ms.sort((a,b) => a[1].code - b[1].code).forEach(([k,m]) => {
-            const isLive = m.status === 'LIVE';
-            h += `<div class="match-item" style="${isLive ? 'border-color:var(--success); border-width:2px' : ''}">
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px">
-                    <b style="background:var(--gold); color:black; padding:2px 5px; border-radius:3px">TRẬN ${m.code}</b>
-                    <span>${m.title}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center">
-                    <div style="width:38%; color:var(--red); font-weight:bold; line-height:1.2; font-size:14px">${m.athleteA}<br><small style="color:white; font-weight:normal">${m.teamA}</small></div>
-                    <div style="font-size:26px; font-weight:bold; color:var(--gold); font-family:monospace">${m.score1}-${m.score2}</div>
-                    <div style="width:38%; color:var(--blue); text-align:right; font-weight:bold; line-height:1.2; font-size:14px">${m.athleteB}<br><small style="color:white; font-weight:normal">${m.teamB}</small></div>
-                </div>
-                ${isAdmin ? `
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:10px">
-                    ${isLive ? `
-                        <button onclick="upS('${k}',1,1)" style="background:var(--red); border:none; color:white; border-radius:4px; height:30px; font-weight:bold">+</button>
-                        <button onclick="upS('${k}',2,1)" style="background:var(--blue); border:none; color:white; border-radius:4px; height:30px; font-weight:bold">+</button>
-                        <button class="btn" style="grid-column:span 2; background:#444; font-size:10px" onclick="setS('${k}','DONE')">KẾT THÚC TRẬN</button>
-                    ` : `<button class="btn" style="background:var(--success); grid-column:span 2; font-size:10px" onclick="setS('${k}','LIVE')">BẮT ĐẦU THI ĐẤU</button>`}
-                    <button style="grid-column:span 2; background:transparent; border:none; color:#555; font-size:9px" onclick="delM('${k}')">XÓA TRẬN</button>
-                </div>` : ''}
-            </div>`;
+function addManVdv() {
+    const team = document.getElementById('man-v-team').value;
+    const name = document.getElementById('man-v-name').value.trim();
+    const cat = document.getElementById('man-v-cat').value.trim();
+    if(team && name) {
+        db.ref('tkd_online_data/athletes').push({ team, name, cat }).then(()=>{
+            document.getElementById('man-v-name').value = '';
+            document.getElementById('man-v-cat').value = '';
+            alert("Đã lưu VĐV!");
         });
-        grid.innerHTML += h + `</div>`;
-    });
+    } else alert("Chọn Đơn vị và nhập tên!");
+}
+function addManRef() {
+    const team = document.getElementById('man-r-team').value;
+    const name = document.getElementById('man-r-name').value.trim();
+    if(team && name) {
+        db.ref('tkd_online_data/refs').push({ team, name }).then(()=>{
+            document.getElementById('man-r-name').value = '';
+            alert("Đã lưu Trọng tài!");
+        });
+    } else alert("Chọn Đơn vị và nhập tên!");
 }
 
-// --- ADMIN CONTROL ---
-function updateAdmin() {
-    const tH = `<option value="">-- Đơn vị --</option>` + state.teams.sort().map(t => `<option value="${t}">${t}</option>`).join('');
-    if(!document.getElementById('m-teamA').value) document.getElementById('m-teamA').innerHTML = tH;
-    if(!document.getElementById('m-teamB').value) document.getElementById('m-teamB').innerHTML = tH;
+// --- TÍNH NĂNG DÁN (PASTE) TỪ EXCEL ---
+function parsePasteVdv() {
+    const text = document.getElementById('paste-vdv').value;
+    if(!text.trim()) return alert("Hãy dán dữ liệu vào ô trống!");
     
-    document.getElementById('stat-vdv').innerText = `VĐV: ${Object.keys(state.athletes).length}`;
-    document.getElementById('stat-ref').innerText = `TT: ${Object.keys(state.refs).length}`;
+    const lines = text.split('\n');
+    let newV = {}, newT = new Set(st.teams);
+    let count = 0;
+
+    lines.forEach(line => {
+        if(!line.trim()) return;
+        // Hỗ trợ cả file Copy từ Excel (Tab) và file CSV (Dấu phẩy)
+        const delim = line.includes('\t') ? '\t' : ',';
+        const cols = line.split(delim).map(c => c.trim());
+        
+        if(cols.length >= 2) {
+            const team = cols[0]; const name = cols[1]; const cat = cols[2] || '';
+            // Bỏ qua dòng tiêu đề
+            if(team.toLowerCase().includes("đơn vị") || name.toLowerCase().includes("vđv")) return;
+            
+            if(team && name) {
+                newV["V" + Math.random().toString(36).substr(2,7)] = { team, name, cat };
+                newT.add(team); count++;
+            }
+        }
+    });
     
-    let pList = "<b>DANH SÁCH ĐƠN VỊ ĐÃ NẠP:</b><br>";
-    state.teams.sort().forEach(t => pList += `<div style="padding:2px 0; border-bottom:1px solid #333">- ${t}</div>`);
-    document.getElementById('preview-list').innerHTML = pList;
+    db.ref('tkd_online_data/athletes').update(newV);
+    db.ref('tkd_online_data/teams').set(Array.from(newT));
+    alert(`Thành công! Đã nhập ${count} Vận động viên.`);
+    document.getElementById('paste-vdv').value = '';
+}
+
+function parsePasteRef() {
+    const text = document.getElementById('paste-ref').value;
+    if(!text.trim()) return alert("Hãy dán dữ liệu vào ô trống!");
+    
+    const lines = text.split('\n');
+    let newR = {}; let count = 0;
+
+    lines.forEach(line => {
+        if(!line.trim()) return;
+        const delim = line.includes('\t') ? '\t' : ',';
+        const cols = line.split(delim).map(c => c.trim());
+        
+        if(cols.length >= 2) {
+            const name = cols[0]; const team = cols[1];
+            if(name.toLowerCase().includes("trọng tài") || team.toLowerCase().includes("đơn vị")) return;
+            
+            if(name && team) {
+                newR["R" + Math.random().toString(36).substr(2,7)] = { name, team };
+                count++;
+            }
+        }
+    });
+    
+    db.ref('tkd_online_data/refs').update(newR);
+    alert(`Thành công! Đã nhập ${count} Trọng tài.`);
+    document.getElementById('paste-ref').value = '';
+}
+
+// --- CẬP NHẬT GIAO DIỆN ---
+function updateUI() {
+    const opts = `<option value="">-- Chọn Đơn vị --</option>` + st.teams.sort().map(t=>`<option value="${t}">${t}</option>`).join('');
+    document.querySelectorAll('.team-selects').forEach(el => {
+        if(!el.value) el.innerHTML = opts;
+    });
+    
+    document.getElementById('stat-db').innerHTML = `
+        <span style="color:var(--success)">VĐV: ${Object.keys(st.athletes).length}</span> | 
+        <span style="color:var(--blue)">Trọng tài: ${Object.keys(st.refs).length}</span> | 
+        <span style="color:white">Đơn vị: ${st.teams.length}</span>
+    `;
 }
 
 function syncPlayers(side) {
-    const t = document.getElementById(side === 1 ? 'm-teamA' : 'm-teamB').value;
-    const l = Object.values(state.athletes).filter(a => a.team === t);
-    document.getElementById(side === 1 ? 'm-vA' : 'm-vB').innerHTML = l.map(a => `<option value="${a.name}">${a.name} (${a.cat})</option>`).join('');
+    const team = document.getElementById(side===1?'m-teamA':'m-teamB').value;
+    const list = Object.values(st.athletes).filter(a => a.team === team);
+    document.getElementById(side===1?'m-vA':'m-vB').innerHTML = `<option value="">-- Chọn VĐV --</option>` + list.map(a=>`<option value="${a.name}">${a.name} (${a.cat})</option>`).join('');
 }
 
 function saveMatch() {
@@ -253,24 +273,60 @@ function saveMatch() {
         court: document.getElementById('m-court').value, code: document.getElementById('m-code').value,
         title: document.getElementById('m-title').value, teamA: document.getElementById('m-teamA').value,
         teamB: document.getElementById('m-teamB').value, athleteA: document.getElementById('m-vA').value,
-        athleteB: document.getElementById('m-vB').value, score1: 0, score2: 0, status: 'WAIT'
+        athleteB: document.getElementById('m-vB').value, score1:0, score2:0, status:'WAIT'
     };
-    if(!m.code || !m.athleteA || !m.athleteB) return alert("Vui lòng điền đủ thông tin trận đấu!");
-    db.ref('tkd_online_data/matches').push(m).then(() => {
-        document.getElementById('m-code').value = parseInt(m.code) + 1;
-        alert("Đã tạo trận đấu!");
+    if(!m.code || !m.athleteA || !m.athleteB) return alert("Vui lòng chọn đủ VĐV thi đấu!");
+    db.ref('tkd_online_data/matches').push(m).then(()=>{ 
+        document.getElementById('m-code').value = parseInt(m.code) + 1; 
+        alert("Đã tạo trận!"); 
     });
 }
 
-function upS(k, t, v) { const f = t === 1 ? 'score1' : 'score2'; db.ref(`tkd_online_data/matches/${k}/${f}`).set((state.matches[k][f] || 0) + v); }
-function setS(k, s) { db.ref(`tkd_online_data/matches/${k}/status`).set(s); }
-function delM(k) { if(confirm("Xóa trận này?")) db.ref(`tkd_online_data/matches/${k}`).remove(); }
-function clearDb() { if(confirm("CẢNH BÁO: Xóa sạch toàn bộ dữ liệu giải đấu?")) db.ref('tkd_online_data').set({tName: "TST"}); }
-function login() { if(document.getElementById('pass').value === '123') { localStorage.setItem('tkd_admin', 'true'); location.reload(); } }
-function showTab(i) { 
-    if(i === 3) { localStorage.removeItem('tkd_admin'); location.reload(); }
-    document.querySelectorAll('.tab-btn, .panel').forEach((el, idx) => el.classList.toggle('active', i === idx % 4)); 
+function renderBoard() {
+    const grid = document.getElementById('grid-system'); grid.innerHTML = '';
+    ["1","2","3"].forEach(sn => {
+        const ms = Object.entries(st.matches).filter(([k,m]) => m.court == sn);
+        let h = `<div class="court-card"><h3 style="text-align:center;color:var(--gold);margin:0">SÂN ${sn}</h3>`;
+        ms.sort((a,b)=>a[1].code-b[1].code).forEach(([k,m]) => {
+            const isLive = m.status === 'LIVE';
+            h += `<div class="match-item" style="${isLive?'border-color:var(--success)':''}">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:8px">
+                    <b style="background:var(--gold);color:black;padding:2px 5px;border-radius:3px">TRẬN ${m.code}</b>
+                    <span>${m.title}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="width:38%;color:var(--red);font-weight:bold;line-height:1.2">${m.athleteA}<br><small style="color:white;font-weight:normal">${m.teamA}</small></div>
+                    <div style="font-size:24px;font-weight:bold;color:var(--gold)">${m.score1}-${m.score2}</div>
+                    <div style="width:38%;color:var(--blue);text-align:right;font-weight:bold;line-height:1.2">${m.athleteB}<br><small style="color:white;font-weight:normal">${m.teamB}</small></div>
+                </div>
+                ${isLogged ? `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:12px">
+                    ${isLive ? `
+                        <button onclick="upS('${k}',1,1)" style="background:var(--red);border:none;color:white;padding:5px;border-radius:4px">+</button>
+                        <button onclick="upS('${k}',2,1)" style="background:var(--blue);border:none;color:white;padding:5px;border-radius:4px">+</button>
+                        <button class="btn" style="grid-column:span 2;background:#444;font-size:10px" onclick="setS('${k}','DONE')">KẾT THÚC TRẬN</button>
+                    ` : `<button class="btn" style="background:var(--success);grid-column:span 2;font-size:10px" onclick="setS('${k}','LIVE')">BẮT ĐẦU</button>`}
+                    <button style="grid-column:span 2;background:none;border:none;color:#555;font-size:9px" onclick="delM('${k}')">XÓA TRẬN NÀY</button>
+                </div>`:''}
+            </div>`;
+        });
+        grid.innerHTML += h + `</div>`;
+    });
 }
+
+// --- UTILS ---
+function upS(k,t,v) { const f = t===1?'score1':'score2'; db.ref(`tkd_online_data/matches/${k}/${f}`).set((st.matches[k][f]||0)+v); }
+function setS(k,s) { db.ref(`tkd_online_data/matches/${k}/status`).set(s); }
+function delM(k) { if(confirm("Xóa trận này?")) db.ref(`tkd_online_data/matches/${k}`).remove(); }
+function factoryReset() { 
+    if(confirm("Hành động này sẽ XÓA SẠCH toàn bộ dữ liệu VĐV, Trọng tài, Đơn vị cũ để sửa lỗi. Bạn có chắc chắn?")) {
+        db.ref('tkd_online_data').set({ teams:[], athletes:{}, refs:{}, matches:{} });
+        alert("Đã làm sạch hệ thống!");
+    } 
+}
+function login() { if(document.getElementById('pass').value==='123') { localStorage.setItem('tkd_admin','true'); location.reload(); } }
+function logout() { localStorage.removeItem('tkd_admin'); location.reload(); }
+function showTab(i) { document.querySelectorAll('.tab-btn, .panel').forEach((el, idx) => el.classList.toggle('active', i === idx % 4)); }
 setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
 </script>
 </body>
