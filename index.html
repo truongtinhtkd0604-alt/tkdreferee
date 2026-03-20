@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TEAMY TKD 14 - PROFESSIONAL EDITION</title>
+    <title>TEAMY TKD 15 - SYSTEM MASTER</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --red: #e11d48; --blue: #2563eb; --gold: #f59e0b; --bg: #020617; --card: #1e293b; --text: #f8fafc; --border: #334155; --success: #10b981; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); margin: 0; color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 400px; background: #0f172a; border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; }
+        .sidebar { width: 420px; background: #0f172a; border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; }
         .main { flex: 1; padding: 20px; overflow-y: auto; background: radial-gradient(circle at top right, #1e293b, #020617); }
         .panel { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
         .panel.active { display: block; }
@@ -20,14 +20,14 @@
         input, select, textarea { width: 100%; padding: 10px; margin-bottom: 8px; background: #000; color: white; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
         .btn { padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; width: 100%; color: white; margin-bottom: 5px; }
         
-        /* UI Trận đấu */
         .court-card { background: rgba(30, 41, 59, 0.5); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--border); }
         .match-live { border: 2px solid var(--success); background: #064e3b; padding: 15px; border-radius: 10px; margin-bottom: 12px; animation: pulse 2s infinite; }
-        .match-wait { background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 8px; border-left: 6px solid var(--gold); }
-        .match-done { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 8px; border-left: 6px solid #64748b; opacity: 0.8; }
+        .match-wait { background: #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 10px; border-left: 8px solid var(--gold); }
+        .match-done { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 8px; border-left: 8px solid #64748b; opacity: 0.8; }
         
-        .team-title { font-size: 16px; font-weight: 800; text-transform: uppercase; display: block; }
-        .player-name { font-size: 14px; color: #cbd5e1; display: block; margin-top: 2px; }
+        .team-title { font-size: 18px; font-weight: 800; text-transform: uppercase; display: block; }
+        .player-name { font-size: 15px; color: #cbd5e1; display: block; margin-top: 4px; }
+        .ref-info { font-size: 11px; color: var(--gold); margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); }
         
         @keyframes pulse { 0% { border-color: var(--success); } 50% { border-color: #fff; } 100% { border-color: var(--success); } }
         .tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
@@ -38,7 +38,7 @@
 <body>
 
 <aside class="sidebar">
-    <h3 style="color:var(--gold); text-align:center; margin-top:0">ĐIỀU HÀNH THI ĐẤU V14</h3>
+    <h3 style="color:var(--gold); text-align:center; margin-top:0">ĐIỀU HÀNH THI ĐẤU V15</h3>
     
     <div id="auth-box">
         <input type="password" id="pass" placeholder="Mã PIN">
@@ -47,7 +47,7 @@
 
     <div id="admin-ui" style="display:none">
         <div class="tab-grid">
-            <button class="tab-btn active" onclick="showTab(0)">NHẬP</button>
+            <button class="tab-btn active" onclick="showTab(0)">NHẬP NHANH</button>
             <button class="tab-btn" onclick="showTab(1)">TRẬN</button>
             <button class="tab-btn" onclick="showTab(2)">TTÀI</button>
             <button class="tab-btn" onclick="showTab(3)">DỮ LIỆU</button>
@@ -55,15 +55,10 @@
         </div>
 
         <div class="panel active">
-            <select id="man-v-team" class="team-selects"><option value="">-- Chọn Đơn vị --</option></select>
-            <input type="text" id="man-v-name" placeholder="Tên VĐV">
-            <input type="text" id="man-v-cat" placeholder="Nội dung/Hạng cân">
-            <input type="text" id="man-v-age" placeholder="Lứa tuổi (VD: 12-14)">
-            <button class="btn" style="background:var(--success)" onclick="addManVdv()">LƯU VĐV</button>
-            <hr border="0" style="border-top:1px solid #334155; margin:15px 0">
-            <input type="text" id="man-r-name" placeholder="Tên Trọng tài">
-            <select id="man-r-team" class="team-selects"></select>
-            <button class="btn" style="background:var(--blue)" onclick="addManRef()">LƯU TRỌNG TÀI</button>
+            <label style="font-size:11px; color:var(--success)">DÁN DANH SÁCH TỪ EXCEL (Đơn vị, Tên, Nội dung, Lứa tuổi):</label>
+            <textarea id="bulk-input" rows="12" placeholder="Ví dụ:&#10;CLB TST	Nguyễn Văn A	Đối kháng 45kg	12-14 tuổi&#10;CLB TST	Trần Thị B	Poomsae Cá nhân	15-17 tuổi"></textarea>
+            <button class="btn" style="background:var(--success)" onclick="processBulk()">XỬ LÝ & LƯU DANH SÁCH</button>
+            <p style="font-size:10px; color:#94a3b8 italic">* Lưu ý: Các cột cách nhau bằng dấu Tab hoặc phẩy.</p>
         </div>
 
         <div class="panel">
@@ -71,20 +66,16 @@
                 <select id="m-court" style="flex:1"><option value="1">Sân 1</option><option value="2">Sân 2</option><option value="3">Sân 3</option></select>
                 <input type="number" id="m-code" placeholder="Số trận" style="flex:1">
             </div>
-            <label style="font-size:11px; color:var(--gold)">NỘI DUNG & LỨA TUỔI:</label>
             <div style="display:flex; gap:5px">
                 <select id="m-title-select" onchange="syncPlayers(1); syncPlayers(2);"><option value="">-- Nội dung --</option></select>
                 <select id="m-age-select" onchange="syncPlayers(1); syncPlayers(2);"><option value="">-- Lứa tuổi --</option></select>
             </div>
-            
             <label style="font-size:11px; color:var(--red)">GIÁP ĐỎ:</label>
             <select id="m-teamA" class="team-selects" onchange="syncPlayers(1)"></select>
             <select id="m-vA"><option value="">-- VĐV Đỏ --</option></select>
-            
             <label style="font-size:11px; color:var(--blue)">GIÁP XANH:</label>
             <select id="m-teamB" class="team-selects" onchange="syncPlayers(2)"></select>
             <select id="m-vB"><option value="">-- VĐV Xanh --</option></select>
-            
             <button class="btn" style="background:var(--red); margin-top:10px" onclick="saveMatch()">TẠO TRẬN ĐẤU</button>
         </div>
 
@@ -96,14 +87,8 @@
         </div>
 
         <div class="panel">
-            <label style="font-size:11px; color:var(--gold)">LỌC THEO ĐƠN VỊ/CLB:</label>
-            <select id="filter-team-data" onchange="renderDataList()"><option value="">-- Tất cả đơn vị --</option></select>
-            
-            <div style="font-size:11px; color:var(--success); margin:10px 0 5px 0">DANH SÁCH VĐV:</div>
+            <select id="filter-team-data" onchange="renderDataList()"><option value="">-- Lọc theo CLB --</option></select>
             <div id="list-vdv" class="data-list"></div>
-            
-            <div style="font-size:11px; color:var(--blue); margin:15px 0 5px 0">DANH SÁCH TRỌNG TÀI:</div>
-            <div id="list-ref" class="data-list"></div>
         </div>
 
         <div class="panel">
@@ -115,7 +100,7 @@
 
 <main class="main">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px">
-        <h2 style="color:var(--gold); margin:0">GIÁM SÁT THI ĐẤU V14</h2>
+        <h2 style="color:var(--gold); margin:0">GIÁM SÁT THI ĐẤU</h2>
         <div id="clock" style="font-family:monospace; font-size:1.2em">00:00:00</div>
     </div>
     <div id="grid-system" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap:25px; margin-top:15px"></div>
@@ -145,82 +130,62 @@ db.ref('tkd_online_data').on('value', snap => {
     st.athletes = v.athletes || {};
     st.refs = v.refs || {};
     st.matches = v.matches || {};
-    st.teams = Array.isArray(v.teams) ? v.teams : Object.values(v.teams || {});
-
+    st.teams = Array.isArray(v.teams) ? v.teams : Object.values(v.teams || []);
     renderBoard();
     if(isLogged) { updateUI(); renderDataList(); }
 });
 
+// XỬ LÝ NHẬP NHANH (COPY PASTE)
+function processBulk() {
+    const raw = document.getElementById('bulk-input').value;
+    if(!raw.trim()) return;
+    const lines = raw.split('\n');
+    let count = 0;
+    let newTeams = [...st.teams];
+
+    lines.forEach(line => {
+        if(!line.trim()) return;
+        const parts = line.split(/\t|,/); // Tách bằng Tab hoặc Phẩy
+        if(parts.length >= 2) {
+            const team = parts[0].trim();
+            const name = parts[1].trim();
+            const cat = parts[2] ? parts[2].trim() : "Chưa rõ";
+            const age = parts[3] ? parts[3].trim() : "Chưa rõ";
+            
+            db.ref('tkd_online_data/athletes').push({ team, name, cat, age });
+            if(!newTeams.includes(team)) newTeams.push(team);
+            count++;
+        }
+    });
+    
+    db.ref('tkd_online_data/teams').set(newTeams);
+    alert(`Đã thêm thành công ${count} vận động viên!`);
+    document.getElementById('bulk-input').value = '';
+}
+
 function updateUI() {
     const teamOpts = `<option value="">-- Chọn Đơn vị --</option>` + st.teams.sort().map(t=>`<option value="${t}">${t}</option>`).join('');
     document.querySelectorAll('.team-selects').forEach(el => { if(!el.value) el.innerHTML = teamOpts; });
-    
-    // Cập nhật bộ lọc ở Tab Dữ liệu
-    const filterEl = document.getElementById('filter-team-data');
-    const curFilter = filterEl.value;
-    filterEl.innerHTML = `<option value="">-- Tất cả đơn vị --</option>` + st.teams.sort().map(t=>`<option value="${t}">${t}</option>`).join('');
-    filterEl.value = curFilter;
+    document.getElementById('filter-team-data').innerHTML = `<option value="">-- Lọc theo CLB --</option>` + st.teams.sort().map(t=>`<option value="${t}">${t}</option>`).join('');
 
-    // Gom Nội dung & Lứa tuổi
     const cats = new Set(), ages = new Set();
     Object.values(st.athletes).forEach(a => { if(a.cat) cats.add(a.cat); if(a.age) ages.add(a.age); });
-    
     document.getElementById('m-title-select').innerHTML = `<option value="">-- Nội dung --</option>` + Array.from(cats).sort().map(c => `<option value="${c}">${c}</option>`).join('');
     document.getElementById('m-age-select').innerHTML = `<option value="">-- Lứa tuổi --</option>` + Array.from(ages).sort().map(a => `<option value="${a}">${a}</option>`).join('');
 
-    const unassigned = Object.entries(st.matches).filter(([k,m]) => !m.assigned && m.status !== 'DONE');
-    document.getElementById('assign-m').innerHTML = `<option value="">-- Chọn trận phân công --</option>` + 
-        unassigned.map(([k,m]) => `<option value="${k}">Trận ${m.code} (${m.title})</option>`).join('');
+    const unassigned = Object.entries(st.matches).filter(([k,m]) => m.status !== 'DONE');
+    document.getElementById('assign-m').innerHTML = `<option value="">-- Phân công Trọng tài trận... --</option>` + 
+        unassigned.map(([k,m]) => `<option value="${k}">Sân ${m.court} - Trận ${m.code} (${m.athleteA} vs ${m.athleteB})</option>`).join('');
 }
 
 function syncPlayers(side) {
     const team = document.getElementById(side===1?'m-teamA':'m-teamB').value;
     const cat = document.getElementById('m-title-select').value;
     const age = document.getElementById('m-age-select').value;
-    
     let list = Object.values(st.athletes).filter(a => a.team === team && (!cat || a.cat === cat) && (!age || a.age === age));
     const selectEl = document.getElementById(side===1?'m-vA':'m-vB');
     selectEl.innerHTML = `<option value="">-- Chọn VĐV --</option>` + list.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
     if(list.length === 1) selectEl.value = list[0].name;
-}
-
-function renderDataList() {
-    const filter = document.getElementById('filter-team-data').value;
-    
-    const vList = document.getElementById('list-vdv');
-    vList.innerHTML = Object.entries(st.athletes)
-        .filter(([k,v]) => !filter || v.team === filter)
-        .map(([k,v]) => `
-        <div class="data-item">
-            <div style="line-height:1.2">
-                <b style="color:var(--gold)">${v.name}</b><br>
-                <small>${v.team} | ${v.cat} | ${v.age || 'N/A'}</small>
-            </div>
-            <div style="display:flex; gap:10px">
-                <button onclick="editData('athletes','${k}')" style="color:var(--success);background:none;border:none;cursor:pointer;font-size:11px">Sửa</button>
-                <button onclick="deleteData('athletes','${k}')" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:11px">Xóa</button>
-            </div>
-        </div>
-    `).join('');
-
-    const rList = document.getElementById('list-ref');
-    rList.innerHTML = Object.entries(st.refs)
-        .filter(([k,v]) => !filter || v.team === filter)
-        .map(([k,v]) => `
-        <div class="data-item">
-            <span><b>${v.name}</b> (${v.team})</span>
-            <button onclick="deleteData('refs','${k}')" style="color:var(--red);background:none;border:none;cursor:pointer">Xóa</button>
-        </div>
-    `).join('');
-}
-
-function editData(type, id) {
-    const item = st[type][id];
-    const newName = prompt("Sửa Tên:", item.name);
-    if(newName === null) return;
-    const newCat = prompt("Sửa Nội dung:", item.cat);
-    const newAge = prompt("Sửa Lứa tuổi:", item.age || "");
-    db.ref(`tkd_online_data/${type}/${id}`).update({ name: newName, cat: newCat, age: newAge });
 }
 
 function renderBoard() {
@@ -234,74 +199,51 @@ function renderBoard() {
         if(liveMatch) {
             const [k,m] = liveMatch;
             html += `<div class="match-live">
-                <div style="text-align:center"><span class="tag" style="background:var(--red)">ĐANG THI ĐẤU</span></div>
-                <div style="font-size:12px; text-align:center; margin:5px 0; color:var(--gold)">Trận ${m.code}: ${m.title} (${m.age || ''})</div>
+                <div style="text-align:center; margin-bottom:10px"><span class="tag" style="background:var(--red)">ĐANG THI ĐẤU</span></div>
                 <div style="display:flex; justify-content:space-between; align-items:center">
-                    <div style="width:40%; text-align:center">
-                        <span class="team-title" style="color:var(--red)">${m.teamA}</span>
-                        <span class="player-name">${m.athleteA}</span>
-                    </div>
-                    <div style="font-size:38px; font-weight:900; color:#fff">${m.score1} - ${m.score2}</div>
-                    <div style="width:40%; text-align:center">
-                        <span class="team-title" style="color:var(--blue)">${m.teamB}</span>
-                        <span class="player-name">${m.athleteB}</span>
-                    </div>
+                    <div style="width:40%; text-align:center"><span class="team-title" style="color:var(--red)">${m.teamA}</span><span class="player-name">${m.athleteA}</span></div>
+                    <div style="font-size:42px; font-weight:900">${m.score1} - ${m.score2}</div>
+                    <div style="width:40%; text-align:center"><span class="team-title" style="color:var(--blue)">${m.teamB}</span><span class="player-name">${m.athleteB}</span></div>
                 </div>
-                <div style="font-size:10px; color:#94a3b8; text-align:center; margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:5px">
-                    ${m.assigned ? '⚖️ ' + m.assigned : 'Chưa phân trọng tài'}
-                </div>
+                <div class="ref-info">⚖️ ${m.assigned || 'Chưa phân công trọng tài'}</div>
                 ${isLogged?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:10px">
-                    <button class="btn" style="background:var(--red)" onclick="upS('${k}',1,1)">+ ĐỎ</button>
-                    <button class="btn" style="background:var(--blue)" onclick="upS('${k}',2,1)">+ XANH</button>
+                    <button class="btn" style="background:var(--red)" onclick="upS('${k}',1,1)">+ ĐỎ</button><button class="btn" style="background:var(--blue)" onclick="upS('${k}',2,1)">+ XANH</button>
                     <button class="btn" style="grid-column:span 2; background:#444" onclick="setS('${k}','DONE')">KẾT THÚC TRẬN</button>
                 </div>`:''}
             </div>`;
         }
 
-        // 2. WAITING (2 TRẬN)
+        // 2. WAITING (Hiện trọng tài)
         const waiting = ms.filter(([k,m]) => m.status === 'WAIT').sort((a,b)=>a[1].code - b[1].code).slice(0,2);
         if(waiting.length > 0) {
-            html += `<div style="font-size:12px; color:var(--gold); font-weight:bold; margin:15px 0 8px 0">TIẾP THEO:</div>`;
+            html += `<div style="font-size:12px; color:var(--gold); font-weight:bold; margin-bottom:10px">TRẬN CHỜ KẾ TIẾP:</div>`;
             waiting.forEach(([k,m]) => {
                 html += `<div class="match-wait">
-                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-bottom:10px">
-                        <b>TRẬN ${m.code}</b> <span>${m.title} - ${m.age || ''}</span>
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-bottom:12px">
+                        <b>TRẬN ${m.code}</b> <span>${m.title} - ${m.age}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start">
-                        <div style="width:45%">
-                            <b class="team-title" style="color:var(--red)">${m.teamA}</b>
-                            <span class="player-name">${m.athleteA}</span>
-                        </div>
-                        <div style="font-weight:bold; color:var(--gold); margin-top:5px">VS</div>
-                        <div style="width:45%; text-align:right">
-                            <b class="team-title" style="color:var(--blue)">${m.teamB}</b>
-                            <span class="player-name">${m.athleteB}</span>
-                        </div>
+                    <div style="display:flex; justify-content:space-between">
+                        <div style="width:45%"><b class="team-title" style="color:var(--red)">${m.teamA}</b><span class="player-name">${m.athleteA}</span></div>
+                        <div style="font-weight:bold; color:var(--gold); padding-top:10px">VS</div>
+                        <div style="width:45%; text-align:right"><b class="team-title" style="color:var(--blue)">${m.teamB}</b><span class="player-name">${m.athleteB}</span></div>
                     </div>
-                    ${isLogged?`<button class="btn" style="background:var(--success); margin-top:10px; font-size:11px" onclick="setS('${k}','LIVE')">BẮT ĐẦU</button>`:''}
+                    <div class="ref-info" style="color:#94a3b8; border-color:rgba(255,255,255,0.05)">
+                        <b>TT NHIỆM VỤ:</b> ${m.assigned || '<span style="color:var(--red)">Đang chờ phân công...</span>'}
+                    </div>
+                    ${isLogged?`<button class="btn" style="background:var(--success); margin-top:15px" onclick="setS('${k}','LIVE')">BẮT ĐẦU TRẬN ĐẤU</button>`:''}
                 </div>`;
             });
         }
 
-        // 3. DONE (2 TRẬN)
-        const done = ms.filter(([k,m]) => m.status === 'DONE').sort((a,b)=>b[1].code - a[1].code).slice(0,2);
+        // 3. DONE
+        const done = ms.filter(([k,m]) => m.status === 'DONE').sort((a,b)=>b[1].code - a[1].code).slice(0,1);
         if(done.length > 0) {
-            html += `<div style="font-size:12px; color:#64748b; font-weight:bold; margin:15px 0 8px 0">VỪA XONG:</div>`;
             done.forEach(([k,m]) => {
                 html += `<div class="match-done">
-                     <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-bottom:5px">
-                        <b>TRẬN ${m.code}</b> <span>KẾT QUẢ</span>
-                    </div>
                     <div style="display:flex; justify-content:space-between; align-items:center">
-                        <div style="width:40%">
-                            <b style="color:var(--red); font-size:13px">${m.teamA}</b><br>
-                            <small>${m.athleteA}</small>
-                        </div>
+                        <div style="width:40%"><b style="color:var(--red)">${m.teamA}</b><br><small>${m.athleteA}</small></div>
                         <div style="font-size:20px; font-weight:bold">${m.score1}-${m.score2}</div>
-                        <div style="width:40%; text-align:right">
-                            <b style="color:var(--blue); font-size:13px">${m.teamB}</b><br>
-                            <small>${m.athleteB}</small>
-                        </div>
+                        <div style="width:40%; text-align:right"><b style="color:var(--blue)">${m.teamB}</b><br><small>${m.athleteB}</small></div>
                     </div>
                 </div>`;
             });
@@ -310,23 +252,49 @@ function renderBoard() {
     });
 }
 
-// CÁC HÀM CƠ BẢN (GIỮ NGUYÊN VÀ CẬP NHẬT TRƯỜNG DỮ LIỆU)
-function addManVdv() {
-    const team = document.getElementById('man-v-team').value, name = document.getElementById('man-v-name').value.trim(), cat = document.getElementById('man-v-cat').value.trim(), age = document.getElementById('man-v-age').value.trim();
-    if(team && name) db.ref('tkd_online_data/athletes').push({ team, name, cat, age }).then(()=> { document.getElementById('man-v-name').value=''; alert("Xong!"); });
+// HÀM TIỆN ÍCH
+function renderDataList() {
+    const filter = document.getElementById('filter-team-data').value;
+    const vList = document.getElementById('list-vdv');
+    vList.innerHTML = Object.entries(st.athletes).filter(([k,v]) => !filter || v.team === filter).map(([k,v]) => `
+        <div class="data-item">
+            <div><b style="color:var(--gold)">${v.name}</b><br><small>${v.team} | ${v.cat} | ${v.age}</small></div>
+            <div style="display:flex; gap:10px">
+                <button onclick="editData('${k}')" style="color:var(--success);background:none;border:none;cursor:pointer">Sửa</button>
+                <button onclick="deleteData('athletes','${k}')" style="color:var(--red);background:none;border:none;cursor:pointer">Xóa</button>
+            </div>
+        </div>
+    `).join('');
 }
-function addManRef() {
-    const name = document.getElementById('man-r-name').value.trim(), team = document.getElementById('man-r-team').value;
-    if(name && team) db.ref('tkd_online_data/refs').push({ name, team }).then(()=> { document.getElementById('man-r-name').value=''; alert("Xong!"); });
+function editData(id) {
+    const v = st.athletes[id];
+    const n = prompt("Tên:", v.name), c = prompt("Nội dung:", v.cat), a = prompt("Lứa tuổi:", v.age);
+    if(n) db.ref(`tkd_online_data/athletes/${id}`).update({ name:n, cat:c, age:a });
+}
+function prepAssign() {
+    const mid = document.getElementById('assign-m').value; if(!mid) return;
+    const m = st.matches[mid];
+    const neutralRefs = Object.entries(st.refs).filter(([k,r]) => r.team !== m.teamA && r.team !== m.teamB);
+    const opts = `<option value="">-- Chọn TT --</option>` + neutralRefs.map(([k,r]) => `<option value="${r.name}">${r.name} (${r.team})</option>`).join('');
+    const lb = ["Trọng tài chính", "Giám định 1", "Giám định 2", "Giám định 3"];
+    let html = ''; for(let i=1; i<=4; i++) html += `<label style="font-size:10px; color:var(--gold)">${lb[i-1]}:</label><select id="s-ref-${i}">${opts}</select>`;
+    document.getElementById('ref-slots').innerHTML = html;
+    document.getElementById('btn-save-ref').style.display = 'block'; document.getElementById('btn-auto-ref').style.display = 'block';
+}
+function autoAssignRef() {
+    const mid = document.getElementById('assign-m').value; const m = st.matches[mid];
+    let nr = Object.entries(st.refs).filter(([k,r]) => r.team !== m.teamA && r.team !== m.teamB).sort(() => 0.5 - Math.random());
+    if(nr.length < 4) return alert("Không đủ trọng tài trung lập!");
+    for(let i=1; i<=4; i++) document.getElementById(`s-ref-${i}`).value = nr[i-1][1].name;
+}
+function saveAssign() {
+    const mid = document.getElementById('assign-m').value; const lb = ["TTC", "GĐ1", "GĐ2", "GĐ3"]; const ass = [];
+    for(let i=1; i<=4; i++) { const n = document.getElementById(`s-ref-${i}`).value; if(n) ass.push(`${lb[i-1]}: ${n}`); }
+    db.ref(`tkd_online_data/matches/${mid}/assigned`).set(ass.join(" | "));
+    alert("Đã phân công!"); document.getElementById('assign-m').value = ''; prepAssign();
 }
 function saveMatch() {
-    const m = { 
-        court: document.getElementById('m-court').value, code: document.getElementById('m-code').value, 
-        title: document.getElementById('m-title-select').value, age: document.getElementById('m-age-select').value,
-        teamA: document.getElementById('m-teamA').value, teamB: document.getElementById('m-teamB').value, 
-        athleteA: document.getElementById('m-vA').value, athleteB: document.getElementById('m-vB').value, 
-        score1:0, score2:0, status:'WAIT' 
-    };
+    const m = { court: document.getElementById('m-court').value, code: document.getElementById('m-code').value, title: document.getElementById('m-title-select').value, age: document.getElementById('m-age-select').value, teamA: document.getElementById('m-teamA').value, teamB: document.getElementById('m-teamB').value, athleteA: document.getElementById('m-vA').value, athleteB: document.getElementById('m-vB').value, score1:0, score2:0, status:'WAIT' };
     if(!m.code || !m.athleteA || !m.athleteB) return alert("Thiếu thông tin!");
     db.ref('tkd_online_data/matches').push(m).then(()=> { document.getElementById('m-code').value++; alert("Đã tạo!"); });
 }
@@ -336,45 +304,7 @@ function deleteData(type, id) { if(confirm("Xóa vĩnh viễn?")) db.ref(`tkd_on
 function login() { if(document.getElementById('pass').value==='123') { localStorage.setItem('tkd_admin','true'); location.reload(); } }
 function logout() { localStorage.removeItem('tkd_admin'); location.reload(); }
 function showTab(i) { document.querySelectorAll('.tab-btn, .panel').forEach((el, idx) => el.classList.toggle('active', i === idx % 5)); }
-
-function prepAssign() {
-    const mid = document.getElementById('assign-m').value;
-    if(!mid) return;
-    const m = st.matches[mid];
-    const neutralRefs = Object.entries(st.refs).filter(([k,r]) => r.team !== m.teamA && r.team !== m.teamB);
-    const opts = `<option value="">-- Chọn TT --</option>` + neutralRefs.map(([k,r]) => `<option value="${r.name}">${r.name} (${r.team})</option>`).join('');
-    
-    const labels = ["Trọng tài chính", "Giám định 1", "Giám định 2", "Giám định 3"];
-    let html = ''; 
-    for(let i=1; i<=4; i++) {
-        html += `<label style="font-size:10px; color:var(--gold)">${labels[i-1]}:</label><select id="s-ref-${i}">${opts}</select>`;
-    }
-    document.getElementById('ref-slots').innerHTML = html;
-    document.getElementById('btn-save-ref').style.display = 'block';
-    document.getElementById('btn-auto-ref').style.display = 'block';
-}
-
-function autoAssignRef() {
-    const mid = document.getElementById('assign-m').value;
-    const m = st.matches[mid];
-    let neutralRefs = Object.entries(st.refs).filter(([k,r]) => r.team !== m.teamA && r.team !== m.teamB).sort(() => 0.5 - Math.random());
-    if(neutralRefs.length < 4) return alert("Không đủ trọng tài trung lập!");
-    for(let i=1; i<=4; i++) document.getElementById(`s-ref-${i}`).value = neutralRefs[i-1][1].name;
-}
-
-function saveAssign() {
-    const mid = document.getElementById('assign-m').value;
-    const labels = ["TTC", "GĐ1", "GĐ2", "GĐ3"];
-    const assignments = [];
-    for(let i=1; i<=4; i++) {
-        const name = document.getElementById(`s-ref-${i}`).value;
-        if(name) assignments.push(`${labels[i-1]}: ${name}`);
-    }
-    db.ref(`tkd_online_data/matches/${mid}/assigned`).set(assignments.join(" | "));
-    alert("Đã phân công!"); document.getElementById('assign-m').value = ''; prepAssign();
-}
-
-function factoryReset() { if(confirm("Xóa sạch toàn bộ data?")) db.ref('tkd_online_data').set({ teams:[], athletes:{}, refs:{}, matches:{} }); }
+function factoryReset() { if(confirm("XÓA SẠCH DỮ LIỆU GIẢI?")) db.ref('tkd_online_data').set({ teams:[], athletes:{}, refs:{}, matches:{} }); }
 setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
 </script>
 </body>
