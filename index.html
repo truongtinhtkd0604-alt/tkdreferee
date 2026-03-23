@@ -431,39 +431,73 @@ async function doDrawAndRender() {
     const court = document.getElementById('view-court').value;
     let startCode = document.getElementById('draw-start-code').value || '001';
 
-    if(!cat || !age) return alert("Vui lòng chọn Nội dung và Lứa tuổi!");
+    if (!cat || !age) {
+        return alert("Vui lòng chọn Nội dung và Lứa tuổi!");
+    }
 
     let athletes = Object.values(st.athletes).filter(a => a.cat === cat && a.age === age);
-    if(athletes.length < 2) return alert("Không đủ VĐV ở nội dung này!");
+    if (athletes.length < 2) {
+        return alert("Không đủ VĐV ở nội dung này!");
+    }
 
-    let existing = Object.values(st.matches).filter(m => m.title === cat && m.age === age && m.type === type);
-    
+    let existing = Object.values(st.matches).filter(
+        m => m.title === cat && m.age === age && m.type === type
+    );
+
     if (existing.length === 0) {
-        // Trộn mảng ngẫu nhiên
         for (let i = athletes.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [athletes[i], athletes[j]] = [athletes[j], athletes[i]];
         }
 
         let codeNum = parseInt(startCode, 10);
-        for(let i = 0; i < athletes.length; i+=2) {
-            if(i + 1 < athletes.length) {
-                const m = { 
-                    court: court, code: String(codeNum++).padStart(3, '0'), type: type, title: cat, age: age, 
-                    teamA: athletes[i].team, athleteA: athletes[i].name, 
-                    teamB: athletes[i+1].team, athleteB: athletes[i+1].name, 
-                    score1:0, score2:0, status:'WAIT' 
+
+        for (let i = 0; i < athletes.length; i += 2) {
+            const a = athletes[i];
+            const b = athletes[i + 1];
+
+            if (b) {
+                const m = {
+                    court: court,
+                    code: String(codeNum++).padStart(3, '0'),
+                    type: type,
+                    title: cat,
+                    age: age,
+                    teamA: a.team,
+                    athleteA: a.name,
+                    teamB: b.team,
+                    athleteB: b.name,
+                    score1: 0,
+                    score2: 0,
+                    status: 'WAIT'
+                };
+                await db.ref('tkd_online_data/matches').push(m);
+            } else {
+                const m = {
+                    court: court,
+                    code: String(codeNum++).padStart(3, '0'),
+                    type: type,
+                    title: cat,
+                    age: age,
+                    teamA: a.team,
+                    athleteA: a.name,
+                    teamB: 'BYE',
+                    athleteB: 'BYE',
+                    score1: 1,
+                    score2: 0,
+                    status: 'DONE'
                 };
                 await db.ref('tkd_online_data/matches').push(m);
             }
         }
+
         alert("Đã bốc thăm tạo nhánh!");
     } else {
         alert("Đã được bốc thăm trước đó. Hiển thị lại sơ đồ.");
     }
+
     renderBracketVisual();
 }
-
 function renderBracketVisual() {
     const type = document.getElementById('view-type').value;
     const cat = document.getElementById('view-filter-cat').value;
