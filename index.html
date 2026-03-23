@@ -103,6 +103,44 @@
             input[type="text"].print-input { border: none !important; }
             input[type="text"].print-input::placeholder { color: transparent; }
         }
+/* --- PHẦN BỔ SUNG: GIAO DIỆN SƠ ĐỒ & IN ẤN SẠCH --- */
+        #bracket-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; color: #0f172a; z-index: 2000; overflow: auto; padding: 30px; }
+        .no-print-bar { display: flex; gap: 10px; background: #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; align-items: center; }
+        .excel-header { text-align: center; border-bottom: 3px solid #1e293b; padding-bottom: 15px; margin-bottom: 25px; }
+        
+        .schema-container { display: flex; justify-content: space-between; width: 100%; min-width: 1100px; margin-top: 20px;}
+        .schema-col { display: flex; flex-direction: column; justify-content: space-around; flex: 1; padding: 0 15px;}
+        
+        /* CHỈNH KHOẢNG CÁCH DÀI HƠN ĐỂ THƯ KÝ ĐIỀN TÊN (min-height: 140px) */
+        .schema-match { position: relative; display: flex; flex-direction: column; justify-content: space-between; flex: 1; min-height: 140px; margin: 30px 0;} 
+        
+        /* MÀU SẮC CHUẨN: TRÊN XANH - DƯỚI ĐỎ */
+        .schema-player { height: 32px; display: flex; align-items: flex-end; padding-bottom: 4px; font-size: 14px; white-space: nowrap; padding-left: 5px; font-weight: bold;}
+        .schema-player.blue { border-bottom: 2px solid #2563eb; color: #1e3a8a; }
+        .schema-player.red { border-bottom: 2px solid #e11d48; color: #881337; }
+        
+        .connector { position: absolute; top: 32px; bottom: 0; width: 25px; border: 2px solid #334155; z-index: 0;}
+        .connector.left { right: -12px; border-left: none; border-radius: 0 6px 6px 0; }
+        .connector.left::after { content: ''; position: absolute; right: -25px; top: 50%; width: 25px; border-bottom: 2px solid #334155; }
+        .connector.right { left: -12px; border-right: none; border-radius: 6px 0 0 6px; }
+        .connector.right::after { content: ''; position: absolute; left: -25px; top: 50%; width: 25px; border-bottom: 2px solid #334155; }
+        
+        .final-box { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 160px; z-index: 5; }
+        .final-title { border: 2px solid #0f172a; padding: 12px 25px; font-weight: 900; font-size: 18px; background: #e2e8f0; border-radius: 8px; text-align: center;}
+
+        /* XÓA VIỀN KHOANH ĐỎ KHI IN (Đường dẫn file & Ngày giờ) */
+        @media print {
+            @page { margin: 0; size: landscape; } /* Triệt tiêu hoàn toàn margin mặc định của trình duyệt chứa text rác */
+            body * { visibility: hidden; }
+            #bracket-modal, #bracket-modal * { visibility: visible; }
+            #bracket-modal { position: absolute; left: 0; top: 0; padding: 0; width: 100%; background: white; }
+            .no-print-bar { display: none !important; }
+            .excel-header { border-bottom-color: #000; }
+            .schema-player.blue { border-bottom-color: #2563eb; color: #000; }
+            .schema-player.red { border-bottom-color: #e11d48; color: #000; }
+            .print-input { border: none !important; color: #000 !important; }
+            .print-input::placeholder { color: transparent; }
+        }
     </style>
 </head>
 <body>
@@ -492,6 +530,88 @@ function buildHalfTree(players, side) {
     });
     return html;
 }
+// --- PHẦN BỔ SUNG: LOGIC SƠ ĐỒ VÀ BỘ LỌC QUYỀN ---
+    function openBracketModal() {
+        document.getElementById('bracket-modal').style.display = 'block';
+        updateBracketFilter();
+    }
+
+    function updateBracketFilter() {
+        const type = document.getElementById('v-type').value;
+        const cats = new Set();
+        
+        // Lọc thông minh: Nhận diện nội dung Quyền/Đối kháng
+        Object.values(localMatches).forEach(m => {
+            const isQ = m.title.toLowerCase().includes("quyền") || m.title.toLowerCase().includes("poomsae");
+            if((type === 'Quyền' && isQ) || (type === 'Đối kháng' && !isQ)) {
+                cats.add(m.title);
+            }
+        });
+        
+        document.getElementById('v-cat').innerHTML = `<option value="">-- Chọn Hạng Cân --</option>` + 
+            Array.from(cats).sort().map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function renderBracketVisual() {
+        const cat = document.getElementById('v-cat').value;
+        if(!cat) { document.getElementById('left-side').innerHTML=''; document.getElementById('right-side').innerHTML=''; return; }
+
+        let existingMatches = Object.values(localMatches).filter(m => m.title === cat).sort((a,b) => a.code.localeCompare(b.code));
+        
+        let vdvList = [];
+        existingMatches.forEach(m => {
+            vdvList.push({name: m.teamA, team: 'Đỏ'}); 
+            vdvList.push({name: m.teamB, team: 'Xanh'});
+        });
+
+        document.getElementById('pr-cat').innerText = "NỘI DUNG: " + cat;
+        document.getElementById('pr-qty').innerText = "TỔNG VĐV: " + vdvList.length;
+
+        let mid = Math.ceil(vdvList.length / 2);
+        document.getElementById('left-side').innerHTML = buildHalfTree(vdvList.slice(0, mid), 'left');
+        document.getElementById('right-side').innerHTML = buildHalfTree(vdvList.slice(mid), 'right');
+    }
+
+    function buildHalfTree(players, side) {
+        if(players.length === 0) return '';
+        let pow = 1; while(pow < players.length) pow *= 2;
+        let padded = [...players];
+        while(padded.length < pow) padded.push({name: '', team: ''}); 
+
+        let rounds = [];
+        let currentRound = padded;
+        while(currentRound.length >= 1) {
+            rounds.push(currentRound);
+            if(currentRound.length === 1) break;
+            let nextRound = [];
+            for(let i=0; i<currentRound.length; i+=2) nextRound.push({name: '', team: ''});
+            currentRound = nextRound;
+        }
+
+        let html = '';
+        rounds.forEach((round, rIndex) => {
+            html += `<div class="schema-col">`;
+            for(let i=0; i<round.length; i+=2) {
+                if(round.length === 1) {
+                    let p1 = round[i];
+                    html += `<div class="schema-match" style="justify-content: center; min-height: 80px;">
+                        <div class="schema-player blue" style="width:100%; border-bottom-color:#0f172a; color:#0f172a;">${p1.name ? `<b>${p1.team}</b> ${p1.name}` : ''}</div>
+                    </div>`;
+                } else {
+                    let p1 = round[i];
+                    let p2 = round[i+1];
+                    html += `
+                    <div class="schema-match">
+                        <div class="schema-player blue">${p1.name ? `<b>${p1.team}</b> ${p1.name}` : ''}</div>
+                        <div class="schema-player red">${p2.name ? `<b>${p2.team}</b> ${p2.name}` : ''}</div>
+                        <div class="connector ${side}"></div>
+                    </div>`;
+                }
+            }
+            html += `</div>`;
+        });
+        return html;
+    }
 </script>
 </body>
 </html>
