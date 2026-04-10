@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Tài Chính Online - CLUB TAEKWONDO TST</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary-color: #0033A0;
@@ -16,14 +17,14 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             margin: 0;
-            padding: 20px;
+            padding: 10px; /* Giảm padding trên mobile */
             color: #333;
         }
         .container {
             max-width: 1200px;
             margin: auto;
             background: var(--card-bg);
-            padding: 25px;
+            padding: 15px; /* Giảm padding trên mobile */
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
@@ -32,28 +33,36 @@
             color: var(--primary-color);
             border-bottom: 3px solid var(--primary-color);
             padding-bottom: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             text-transform: uppercase;
+            font-size: 1.4em; /* Tối ưu font tiêu đề mobile */
         }
         .controls {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+            flex-direction: column; /* Chuyển thành cột trên mobile */
+            gap: 12px;
             margin-bottom: 25px;
             background: #eef2f5;
             padding: 15px;
             border-radius: 10px;
-            align-items: center;
+        }
+        @media (min-width: 768px) {
+            .controls { flex-direction: row; align-items: center; }
+            h1 { font-size: 2em; }
+            body { padding: 20px; }
+            .container { padding: 25px; }
         }
         .dashboard {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr; /* 1 cột trên mobile */
+            gap: 10px;
             margin-bottom: 25px;
-            gap: 15px;
+        }
+        @media (min-width: 600px) {
+            .dashboard { grid-template-columns: repeat(3, 1fr); }
         }
         .card {
-            flex: 1;
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             text-align: center;
             color: white;
@@ -62,49 +71,71 @@
         .card-income { background-color: var(--success-color); }
         .card-expense { background-color: var(--danger-color); }
         .card-balance { background-color: var(--primary-color); }
-        .card p { margin: 5px 0 0 0; font-size: 1.6em; }
+        .card h3 { margin: 0; font-size: 0.9em; opacity: 0.9; }
+        .card p { margin: 5px 0 0 0; font-size: 1.4em; }
+
         .form-container {
             background-color: #fff;
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             margin-bottom: 30px;
             border: 2px solid #eef2f5;
         }
         .form-row {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 15px;
-            flex-wrap: wrap;
+            flex-direction: column; /* Luôn ưu tiên cột trên mobile */
+        }
+        @media (min-width: 768px) {
+            .form-row { flex-direction: row; }
         }
         .form-group {
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-width: 180px;
         }
-        .form-group label { font-size: 0.85em; margin-bottom: 8px; font-weight: bold; }
-        .form-group input, .form-group select { padding: 12px; border: 1px solid #ccd1d9; border-radius: 6px; }
+        .form-group label { font-size: 0.85em; margin-bottom: 6px; font-weight: bold; }
+        .form-group input, .form-group select { 
+            padding: 12px; 
+            border: 1px solid #ccd1d9; 
+            border-radius: 6px; 
+            font-size: 16px; /* Chống zoom tự động trên iPhone */
+        }
         #newStudentInfo { display: none; background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--success-color); margin-bottom: 15px; }
-        button.btn-add {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
+        
+        .btn-group { display: flex; gap: 10px; flex-direction: column; }
+        @media (min-width: 768px) { .btn-group { flex-direction: row; } }
+
+        button {
             padding: 15px;
             cursor: pointer;
             border-radius: 6px;
             font-weight: bold;
-            width: 100%;
+            border: none;
+            transition: 0.3s;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .btn-add { background-color: var(--primary-color); color: white; flex: 2; }
+        .btn-excel { background-color: #1D6F42; color: white; flex: 1; }
+        button:active { transform: scale(0.98); }
+
+        /* Tối ưu bảng cho mobile */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9em; }
         th { background-color: var(--primary-color); color: white; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; display: inline-block; margin-bottom: 4px; }
         .badge-new { background: #e8f5e9; color: #2e7d32; }
         .badge-old { background: #e3f2fd; color: #0d47a1; }
         .text-income { color: var(--success-color); font-weight: bold; }
         .text-expense { color: var(--danger-color); font-weight: bold; }
-        .contact-info { font-size: 0.8em; color: #666; display: block; margin-top: 4px; }
-        .delete-btn { color: #ff4c4c; cursor: pointer; border: 1px solid #ff4c4c; background: transparent; padding: 4px 8px; border-radius: 4px; }
+        .contact-info { font-size: 0.8em; color: #666; display: block; margin-top: 4px; line-height: 1.4; }
+        .delete-btn { color: #ff4c4c; cursor: pointer; border: 1px solid #ff4c4c; background: transparent; padding: 6px 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -113,29 +144,32 @@
     <h1>CLUB TAEKWONDO TST - QUẢN LÝ ONLINE</h1>
     
     <div class="controls">
-        <div>
-            <label>Xem Tháng: </label>
-            <input type="month" id="filterMonth">
+        <div style="flex: 1;">
+            <label>Tháng: </label>
+            <input type="month" id="filterMonth" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
         </div>
-        <div>
+        <div style="flex: 1;">
             <label>Cơ sở: </label>
-            <select id="filterBranch">
+            <select id="filterBranch" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
                 <option value="all">Tất cả cơ sở</option>
                 <option value="CS1">CS1: 66 Huỳnh Tấn Phát</option>
                 <option value="CS2">CS2: Sân vận động</option>
             </select>
         </div>
-        <input type="text" id="searchInput" placeholder="🔍 Tìm tên hoặc nội dung..." style="padding:10px; border-radius:6px; border:1px solid #ccc; flex:1">
+        <div style="flex: 2;">
+            <label>Tìm kiếm: </label>
+            <input type="text" id="searchInput" placeholder="🔍 Tên hoặc nội dung..." style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+        </div>
     </div>
 
     <div class="dashboard">
-        <div class="card card-income"><h3>Tổng Thu</h3><p id="totalIncome">0 ₫</p></div>
-        <div class="card card-expense"><h3>Tổng Chi</h3><p id="totalExpense">0 ₫</p></div>
-        <div class="card card-balance"><h3>Quỹ Hiện Tại</h3><p id="balance">0 ₫</p></div>
+        <div class="card card-income"><h3>TỔNG THU</h3><p id="totalIncome">0 ₫</p></div>
+        <div class="card card-expense"><h3>TỔNG CHI</h3><p id="totalExpense">0 ₫</p></div>
+        <div class="card card-balance"><h3>QUỸ HIỆN TẠI</h3><p id="balance">0 ₫</p></div>
     </div>
 
     <div class="form-container">
-        <h3 style="margin-top:0; color: var(--primary-color)">Nhập Giao Dịch Mới</h3>
+        <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1em;">Nhập Giao Dịch Mới</h3>
         <form id="transactionForm">
             <div class="form-row">
                 <div class="form-group">
@@ -187,16 +221,21 @@
                     <input type="date" id="date" required>
                 </div>
             </div>
-            <button type="submit" class="btn-add" id="submitBtn">LƯU LÊN HỆ THỐNG</button>
+            <div class="btn-group">
+                <button type="submit" class="btn-add" id="submitBtn">LƯU LÊN HỆ THỐNG</button>
+                <button type="button" class="btn-excel" id="exportBtn">XUẤT BÁO CÁO EXCEL</button>
+            </div>
         </form>
     </div>
 
-    <table>
-        <thead>
-            <tr><th>Ngày</th><th>Cơ Sở</th><th>Võ Sinh / Thông Tin</th><th>Loại</th><th>Số Tiền</th><th>Thao Tác</th></tr>
-        </thead>
-        <tbody id="transactionList"></tbody>
-    </table>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr><th>Ngày</th><th>Cơ Sở</th><th>Võ Sinh / Thông Tin</th><th>Loại</th><th>Số Tiền</th><th>Thao Tác</th></tr>
+            </thead>
+            <tbody id="transactionList"></tbody>
+        </table>
+    </div>
 </div>
 
 <script type="module">
@@ -218,6 +257,9 @@
     const db = getFirestore(app);
     const colRef = collection(db, "tst_transactions");
 
+    // Lưu trữ dữ liệu hiện tại để xuất Excel
+    let currentData = [];
+
     // Định dạng tiền
     const amountDisplay = document.getElementById('amountDisplay');
     const amountActual = document.getElementById('amountActual');
@@ -231,7 +273,6 @@
         }
     });
 
-    // Nhận diện võ sinh mới/cũ
     const statusSelect = document.getElementById('studentStatus');
     const newInfoBox = document.getElementById('newStudentInfo');
     const descInput = document.getElementById('description');
@@ -241,8 +282,8 @@
     descInput.onblur = async () => {
         const name = descInput.value.trim();
         if (name.length < 2) return;
-        const q = query(colRef, where("description", "==", name));
-        const snap = await getDocs(q);
+        const qSearch = query(colRef, where("description", "==", name));
+        const snap = await getDocs(qSearch);
         if (!snap.empty) {
             statusSelect.value = 'old';
             newInfoBox.style.display = 'none';
@@ -252,7 +293,6 @@
         }
     };
 
-    // Lưu giao dịch
     document.getElementById('transactionForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
@@ -274,6 +314,7 @@
             e.target.reset();
             document.getElementById('date').valueAsDate = new Date();
             newInfoBox.style.display = 'none';
+            amountActual.value = '';
         } catch (err) {
             alert("Lỗi: " + err.message);
         } finally {
@@ -281,7 +322,6 @@
         }
     };
 
-    // Hiển thị dữ liệu Realtime
     const q = query(colRef, orderBy("date", "desc"));
     onSnapshot(q, (snapshot) => {
         const list = document.getElementById('transactionList');
@@ -290,16 +330,18 @@
         const search = document.getElementById('searchInput').value.toLowerCase();
         
         list.innerHTML = '';
+        currentData = []; // Reset dữ liệu xuất Excel
         let inc = 0, exp = 0;
 
         snapshot.forEach((docSnap) => {
             const t = docSnap.data();
             const id = docSnap.id;
             
-            // Bộ lọc
             if (selMonth && t.date.substring(0, 7) !== selMonth) return;
             if (selBranch !== 'all' && t.branch !== selBranch) return;
             if (search && !t.description.toLowerCase().includes(search)) return;
+
+            currentData.push(t); // Lưu vào mảng để xuất Excel
 
             const isInc = t.type !== 'Chi phí vận hành';
             isInc ? inc += t.amount : exp += t.amount;
@@ -325,7 +367,33 @@
         document.getElementById('balance').innerText = (inc - exp).toLocaleString('vi-VN') + " ₫";
     });
 
-    // Xóa
+    // Hàm Xuất Excel
+    document.getElementById('exportBtn').onclick = () => {
+        if (currentData.length === 0) {
+            alert("Không có dữ liệu để xuất!");
+            return;
+        }
+
+        const dataExcel = currentData.map(item => ({
+            "Ngày": item.date,
+            "Cơ sở": item.branch,
+            "Nội dung/Võ sinh": item.description,
+            "Loại": item.type,
+            "Số tiền": item.amount,
+            "Trạng thái": item.status === 'new' ? 'Mới' : 'Cũ',
+            "SĐT Võ sinh": item.sPhone,
+            "SĐT Phụ huynh": item.pPhone,
+            "Ngày sinh": item.dob
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataExcel);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "SaoKe");
+        
+        const fileName = `SaoKe_TST_${document.getElementById('filterMonth').value || 'ToanBo'}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    };
+
     document.addEventListener('click', async (e) => {
         if (e.target.classList.contains('delete-btn')) {
             if (confirm("Xóa giao dịch này?")) {
@@ -334,14 +402,12 @@
         }
     });
 
-    // Khởi tạo ngày
     document.getElementById('date').valueAsDate = new Date();
     document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
     
-    // Sự kiện lọc
-    document.getElementById('filterMonth').onchange = () => location.reload(); // Reload nhẹ để refresh snapshot nếu cần
-    document.getElementById('filterBranch').onchange = () => document.getElementById('searchInput').dispatchEvent(new Event('input'));
-    document.getElementById('searchInput').oninput = () => {}; // Snapshot tự xử lý
+    document.getElementById('filterMonth').onchange = () => {}; 
+    document.getElementById('filterBranch').onchange = () => {};
+    document.getElementById('searchInput').oninput = () => {};
 </script>
 </body>
 </html>
