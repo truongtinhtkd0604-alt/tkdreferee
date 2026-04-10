@@ -3,225 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý CLUB TAEKWONDO TST</title>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, onSnapshot, deleteDoc, doc } 
-        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-  apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
-  authDomain: "quanly-tst.firebaseapp.com",
-  projectId: "quanly-tst",
-  storageBucket: "quanly-tst.firebasestorage.app",
-  messagingSenderId: "981970279440",
-  appId: "1:981970279440:web:8ac137ec4f72a39faa7e95",
-  measurementId: "G-Z1M9YYDZL1"
-};
-        const firebaseConfig = {
-            apiKey: "AIzaSy...",
-            authDomain: "tst-management.firebaseapp.com",
-            projectId: "tst-management",
-            storageBucket: "tst-management.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const transCol = collection(db, "transactions");
-
-        // --- 2. LOGIC ĐỊNH DẠNG TIỀN TỆ ---
-        const amountDisplay = document.getElementById('amountDisplay');
-        const amountActual = document.getElementById('amountActual');
-
-        amountDisplay.addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            if (value) {
-                amountActual.value = value;
-                this.value = parseInt(value).toLocaleString('vi-VN');
-            } else {
-                amountActual.value = '';
-                this.value = '';
-            }
-        });
-
-        // --- 3. TỰ ĐỘNG NHẬN DIỆN VÕ SINH ---
-        const descInput = document.getElementById('description');
-        const statusSelect = document.getElementById('studentStatus');
-        const newInfoBox = document.getElementById('newStudentInfo');
-
-        descInput.addEventListener('blur', async () => {
-            const name = descInput.value.trim();
-            if (name.length < 2) return;
-
-            const q = query(transCol, where("description", "==", name));
-            const querySnapshot = await getDocs(q);
-            
-            if (!querySnapshot.empty) {
-                statusSelect.value = 'old';
-                newInfoBox.style.display = 'none';
-                console.log("Hệ thống nhận diện: Võ sinh Cũ");
-            } else {
-                statusSelect.value = 'new';
-                newInfoBox.style.display = 'block';
-            }
-        });
-
-        statusSelect.addEventListener('change', () => {
-            newInfoBox.style.display = statusSelect.value === 'new' ? 'block' : 'none';
-        });
-
-        // --- 4. LƯU DỮ LIỆU ---
-        document.getElementById('transactionForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.disabled = true;
-            btn.innerText = "Đang lưu...";
-
-            try {
-                await addDoc(transCol, {
-                    branch: document.getElementById('branch').value,
-                    type: document.getElementById('type').value,
-                    status: statusSelect.value,
-                    description: descInput.value.trim(),
-                    amount: Number(amountActual.value),
-                    date: document.getElementById('date').value,
-                    dob: document.getElementById('studentDob').value || "",
-                    sPhone: document.getElementById('studentPhone').value || "",
-                    pPhone: document.getElementById('parentPhone').value || "",
-                    createdAt: new Date()
-                });
-                e.target.reset();
-                document.getElementById('date').valueAsDate = new Date();
-                newInfoBox.style.display = 'none';
-                alert("Đã lưu thành công lên Firebase!");
-            } catch (error) {
-                alert("Lỗi: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "LƯU GIAO DỊCH";
-            }
-        };
-
-        // --- 5. HIỂN THỊ DỮ LIỆU THỜI GIAN THỰC ---
-        const render = (snapshot) => {
-            const list = document.getElementById('transactionList');
-            list.innerHTML = '';
-            let totalIn = 0, totalOut = 0;
-
-            snapshot.forEach((docSnap) => {
-                const t = docSnap.data();
-                const id = docSnap.id;
-                const isInc = t.type !== 'Chi phí vận hành';
-                isInc ? totalIn += t.amount : totalOut += t.amount;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${t.date}</td>
-                    <td><span class="badge">${t.branch}</span></td>
-                    <td>
-                        <strong>${t.description}</strong>
-                        <div style="font-size:0.8em; color:gray">${t.sPhone ? '📞 '+t.sPhone : ''}</div>
-                    </td>
-                    <td>${t.type}</td>
-                    <td class="${isInc ? 'text-income' : 'text-expense'}">
-                        ${isInc ? '+' : '-'}${t.amount.toLocaleString('vi-VN')} ₫
-                    </td>
-                    <td><button class="del-btn" data-id="${id}">Xóa</button></td>
-                `;
-                list.appendChild(row);
-            });
-
-            document.getElementById('totalIncome').innerText = totalIn.toLocaleString('vi-VN') + " ₫";
-            document.getElementById('totalExpense').innerText = totalOut.toLocaleString('vi-VN') + " ₫";
-            document.getElementById('balance').innerText = (totalIn - totalOut).toLocaleString('vi-VN') + " ₫";
-        };
-
-        // Lắng nghe thay đổi từ Firebase
-        const qSorted = query(transCol, orderBy("date", "desc"));
-        onSnapshot(qSorted, render);
-
-        // Xóa dữ liệu
-        document.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('del-btn')) {
-                if(confirm("Xóa giao dịch này?")) {
-                    await deleteDoc(doc(db, "transactions", e.target.dataset.id));
-                }
-            }
-        });
-
-    </script>
+    <title>Quản Lý Tài Chính Online - CLUB TAEKWONDO TST</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header { text-align: center; color: #0033A0; border-bottom: 2px solid #0033A0; margin-bottom: 20px; }
-        .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-card { padding: 15px; border-radius: 8px; text-align: center; color: white; }
-        .bg-green { background: #28a745; } .bg-red { background: #dc3545; } .bg-blue { background: #0033A0; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        input, select, button { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box; }
-        button { background: #0033A0; color: white; font-weight: bold; cursor: pointer; border: none; }
-        button:hover { opacity: 0.9; }
-        #newStudentInfo { display: none; background: #f9f9f9; padding: 10px; border: 1px dashed #28a745; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
-        th { background: #eee; text-align: left; padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; }
-        .text-income { color: #28a745; font-weight: bold; }
-        .text-expense { color: #dc3545; font-weight: bold; }
-        .badge { background: #eee; padding: 2px 5px; border-radius: 3px; font-size: 0.8em; }
-        .del-btn { background: none; color: #dc3545; border: 1px solid #dc3545; padding: 2px 5px; font-size: 0.7em; }
-        @media (max-width: 600px) { .stats, .form-row { grid-template-columns: 1fr; } }
+        :root {
+            --primary-color: #0033A0;
+            --danger-color: #C8102E;
+            --success-color: #28a745;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+            background: #eef2f5;
+            padding: 15px;
+            border-radius: 10px;
+            align-items: center;
+        }
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+        .card {
+            flex: 1;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+        .card-income { background-color: var(--success-color); }
+        .card-expense { background-color: var(--danger-color); }
+        .card-balance { background-color: var(--primary-color); }
+        .card p { margin: 5px 0 0 0; font-size: 1.6em; }
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 2px solid #eef2f5;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+        .form-group label { font-size: 0.85em; margin-bottom: 8px; font-weight: bold; }
+        .form-group input, .form-group select { padding: 12px; border: 1px solid #ccd1d9; border-radius: 6px; }
+        #newStudentInfo { display: none; background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--success-color); margin-bottom: 15px; }
+        button.btn-add {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: bold;
+            width: 100%;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: var(--primary-color); color: white; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        .badge-new { background: #e8f5e9; color: #2e7d32; }
+        .badge-old { background: #e3f2fd; color: #0d47a1; }
+        .text-income { color: var(--success-color); font-weight: bold; }
+        .text-expense { color: var(--danger-color); font-weight: bold; }
+        .contact-info { font-size: 0.8em; color: #666; display: block; margin-top: 4px; }
+        .delete-btn { color: #ff4c4c; cursor: pointer; border: 1px solid #ff4c4c; background: transparent; padding: 4px 8px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header"><h2>TST TAEKWONDO - CLOUD MGMT</h2></div>
-
-    <div class="stats">
-        <div class="stat-card bg-green"><div>Thu</div><div id="totalIncome">0 ₫</div></div>
-        <div class="stat-card bg-red"><div>Chi</div><div id="totalExpense">0 ₫</div></div>
-        <div class="stat-card bg-blue"><div>Quỹ</div><div id="balance">0 ₫</div></div>
+    <h1>CLUB TAEKWONDO TST - QUẢN LÝ ONLINE</h1>
+    
+    <div class="controls">
+        <div>
+            <label>Xem Tháng: </label>
+            <input type="month" id="filterMonth">
+        </div>
+        <div>
+            <label>Cơ sở: </label>
+            <select id="filterBranch">
+                <option value="all">Tất cả cơ sở</option>
+                <option value="CS1">CS1: 66 Huỳnh Tấn Phát</option>
+                <option value="CS2">CS2: Sân vận động</option>
+            </select>
+        </div>
+        <input type="text" id="searchInput" placeholder="🔍 Tìm tên hoặc nội dung..." style="padding:10px; border-radius:6px; border:1px solid #ccc; flex:1">
     </div>
 
-    <form id="transactionForm">
-        <div class="form-row">
-            <select id="branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
-            <select id="type">
-                <option value="Học phí">Học phí</option>
-                <option value="Võ phục">Võ phục</option>
-                <option value="Học phí và Võ phục">Học phí & Võ phục</option>
-                <option value="Chi phí vận hành">Chi phí vận hành</option>
-            </select>
-            <select id="studentStatus"><option value="old">Võ sinh Cũ</option><option value="new">Võ sinh Mới</option></select>
-        </div>
+    <div class="dashboard">
+        <div class="card card-income"><h3>Tổng Thu</h3><p id="totalIncome">0 ₫</p></div>
+        <div class="card card-expense"><h3>Tổng Chi</h3><p id="totalExpense">0 ₫</p></div>
+        <div class="card card-balance"><h3>Quỹ Hiện Tại</h3><p id="balance">0 ₫</p></div>
+    </div>
 
-        <div id="newStudentInfo">
+    <div class="form-container">
+        <h3 style="margin-top:0; color: var(--primary-color)">Nhập Giao Dịch Mới</h3>
+        <form id="transactionForm">
             <div class="form-row">
-                <input type="date" id="studentDob" placeholder="Ngày sinh">
-                <input type="tel" id="studentPhone" placeholder="SĐT Võ sinh">
-                <input type="tel" id="parentPhone" placeholder="SĐT Phụ huynh">
+                <div class="form-group">
+                    <label>Cơ sở</label>
+                    <select id="branch" required>
+                        <option value="CS1">CS1: 66 Huỳnh Tấn Phát</option>
+                        <option value="CS2">CS2: Sân vận động</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Loại giao dịch</label>
+                    <select id="type" required>
+                        <option value="Học phí">Học phí</option>
+                        <option value="Võ phục">Võ phục</option>
+                        <option value="Học phí và Võ phục">Học phí & Võ phục</option>
+                        <option value="Chi phí vận hành">Chi (Điện, nước, thảm...)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Trạng thái</label>
+                    <select id="studentStatus">
+                        <option value="old">Võ sinh Cũ</option>
+                        <option value="new">Võ sinh Mới</option>
+                        <option value="none">Khác</option>
+                    </select>
+                </div>
             </div>
-        </div>
 
-        <div class="form-row">
-            <input type="text" id="description" placeholder="Tên võ sinh / Nội dung" required>
-            <input type="text" id="amountDisplay" placeholder="Số tiền (VD: 500.000)" required>
-            <input type="hidden" id="amountActual">
-            <input type="date" id="date" required>
-        </div>
-        <button type="submit">LƯU GIAO DỊCH</button>
-    </form>
+            <div id="newStudentInfo">
+                <div class="form-row">
+                    <div class="form-group"><label>Ngày sinh</label><input type="date" id="studentDob"></div>
+                    <div class="form-group"><label>SĐT Võ sinh</label><input type="tel" id="studentPhone"></div>
+                    <div class="form-group"><label>SĐT Phụ huynh</label><input type="tel" id="parentPhone"></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label>Tên Võ Sinh / Nội dung chi</label>
+                    <input type="text" id="description" placeholder="Gõ tên võ sinh..." required>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền (VNĐ)</label>
+                    <input type="text" id="amountDisplay" placeholder="500.000" required>
+                    <input type="hidden" id="amountActual">
+                </div>
+                <div class="form-group">
+                    <label>Ngày đóng</label>
+                    <input type="date" id="date" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-add" id="submitBtn">LƯU LÊN HỆ THỐNG</button>
+        </form>
+    </div>
 
     <table>
         <thead>
-            <tr><th>Ngày</th><th>CS</th><th>Nội dung</th><th>Loại</th><th>Số tiền</th><th></th></tr>
+            <tr><th>Ngày</th><th>Cơ Sở</th><th>Võ Sinh / Thông Tin</th><th>Loại</th><th>Số Tiền</th><th>Thao Tác</th></tr>
         </thead>
         <tbody id="transactionList"></tbody>
     </table>
 </div>
 
-<script>document.getElementById('date').valueAsDate = new Date();</script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDocs, where } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
+      authDomain: "quanly-tst.firebaseapp.com",
+      projectId: "quanly-tst",
+      storageBucket: "quanly-tst.firebasestorage.app",
+      messagingSenderId: "981970279440",
+      appId: "1:981970279440:web:8ac137ec4f72a39faa7e95",
+      measurementId: "G-Z1M9YYDZL1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, "tst_transactions");
+
+    // Định dạng tiền
+    const amountDisplay = document.getElementById('amountDisplay');
+    const amountActual = document.getElementById('amountActual');
+    amountDisplay.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        if (value) {
+            amountActual.value = value;
+            this.value = parseInt(value).toLocaleString('vi-VN');
+        } else {
+            amountActual.value = ''; this.value = '';
+        }
+    });
+
+    // Nhận diện võ sinh mới/cũ
+    const statusSelect = document.getElementById('studentStatus');
+    const newInfoBox = document.getElementById('newStudentInfo');
+    const descInput = document.getElementById('description');
+
+    statusSelect.onchange = () => newInfoBox.style.display = statusSelect.value === 'new' ? 'block' : 'none';
+
+    descInput.onblur = async () => {
+        const name = descInput.value.trim();
+        if (name.length < 2) return;
+        const q = query(colRef, where("description", "==", name));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+            statusSelect.value = 'old';
+            newInfoBox.style.display = 'none';
+        } else {
+            statusSelect.value = 'new';
+            newInfoBox.style.display = 'block';
+        }
+    };
+
+    // Lưu giao dịch
+    document.getElementById('transactionForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true; btn.innerText = "Đang lưu...";
+
+        try {
+            await addDoc(colRef, {
+                branch: document.getElementById('branch').value,
+                type: document.getElementById('type').value,
+                status: statusSelect.value,
+                description: descInput.value.trim(),
+                amount: Number(amountActual.value),
+                date: document.getElementById('date').value,
+                dob: document.getElementById('studentDob').value || "",
+                sPhone: document.getElementById('studentPhone').value || "",
+                pPhone: document.getElementById('parentPhone').value || "",
+                timestamp: new Date()
+            });
+            e.target.reset();
+            document.getElementById('date').valueAsDate = new Date();
+            newInfoBox.style.display = 'none';
+        } catch (err) {
+            alert("Lỗi: " + err.message);
+        } finally {
+            btn.disabled = false; btn.innerText = "LƯU LÊN HỆ THỐNG";
+        }
+    };
+
+    // Hiển thị dữ liệu Realtime
+    const q = query(colRef, orderBy("date", "desc"));
+    onSnapshot(q, (snapshot) => {
+        const list = document.getElementById('transactionList');
+        const selMonth = document.getElementById('filterMonth').value;
+        const selBranch = document.getElementById('filterBranch').value;
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        
+        list.innerHTML = '';
+        let inc = 0, exp = 0;
+
+        snapshot.forEach((docSnap) => {
+            const t = docSnap.data();
+            const id = docSnap.id;
+            
+            // Bộ lọc
+            if (selMonth && t.date.substring(0, 7) !== selMonth) return;
+            if (selBranch !== 'all' && t.branch !== selBranch) return;
+            if (search && !t.description.toLowerCase().includes(search)) return;
+
+            const isInc = t.type !== 'Chi phí vận hành';
+            isInc ? inc += t.amount : exp += t.amount;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${t.date.split('-').reverse().join('/')}</td>
+                <td><span class="badge" style="background:#eee;color:#333">${t.branch}</span></td>
+                <td>
+                    <span class="badge ${t.status === 'new' ? 'badge-new' : 'badge-old'}">${t.status === 'new' ? 'Mới' : 'Cũ'}</span>
+                    <strong>${t.description}</strong>
+                    <span class="contact-info">${t.sPhone ? '📞 '+t.sPhone : ''} ${t.pPhone ? ' | 🏠 '+t.pPhone : ''}</span>
+                </td>
+                <td>${t.type}</td>
+                <td class="${isInc ? 'text-income' : 'text-expense'}">${isInc ? '+' : '-'}${t.amount.toLocaleString('vi-VN')} ₫</td>
+                <td><button class="delete-btn" data-id="${id}">Xóa</button></td>
+            `;
+            list.appendChild(row);
+        });
+
+        document.getElementById('totalIncome').innerText = inc.toLocaleString('vi-VN') + " ₫";
+        document.getElementById('totalExpense').innerText = exp.toLocaleString('vi-VN') + " ₫";
+        document.getElementById('balance').innerText = (inc - exp).toLocaleString('vi-VN') + " ₫";
+    });
+
+    // Xóa
+    document.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-btn')) {
+            if (confirm("Xóa giao dịch này?")) {
+                await deleteDoc(doc(db, "tst_transactions", e.target.dataset.id));
+            }
+        }
+    });
+
+    // Khởi tạo ngày
+    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
+    
+    // Sự kiện lọc
+    document.getElementById('filterMonth').onchange = () => location.reload(); // Reload nhẹ để refresh snapshot nếu cần
+    document.getElementById('filterBranch').onchange = () => document.getElementById('searchInput').dispatchEvent(new Event('input'));
+    document.getElementById('searchInput').oninput = () => {}; // Snapshot tự xử lý
+</script>
 </body>
 </html>
