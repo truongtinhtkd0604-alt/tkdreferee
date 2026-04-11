@@ -9,12 +9,18 @@
         :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; }
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #eef2f7; margin: 0; padding: 10px; color: var(--dark); }
         
+        /* Cải thiện giao diện Login */
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
+        .login-card img { width: 120px; margin-bottom: 1rem; }
 
         .app-container { max-width: 1100px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
         
+        /* Header có Logo */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-left img { height: 50px; width: auto; }
+
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-box { padding: 20px; border-radius: 12px; color: white; position: relative; overflow: hidden; }
         .stat-box h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; opacity: 0.8; }
@@ -30,8 +36,7 @@
         .btn-success { background: var(--success); color: white; }
         .btn-warning { background: var(--warning); color: #856404; font-weight: 700; }
         .btn-zalo { background: #0068ff; color: white; padding: 6px 12px; font-size: 0.85rem; text-decoration: none; border-radius: 6px; }
-        .btn-zalo:hover { background: #0056d2; }
-
+        
         .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
         th { background: #fcfcfc; color: #666; font-size: 0.8rem; text-transform: uppercase; padding: 15px; text-align: left; border-bottom: 2px solid #eee; }
@@ -39,16 +44,30 @@
         .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
         .badge-new { background: var(--success); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: normal; }
         
+        /* Modal Profile */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; padding: 20px; }
         .modal-content { background: white; max-width: 500px; margin: 50px auto; border-radius: 16px; padding: 25px; position: relative; }
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
+
+        /* Sửa lỗi đè chữ lịch sử (Image 2) */
+        #m_history { font-size: 0.95rem; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+        .history-item { 
+            padding: 12px 0; 
+            border-bottom: 1px solid #f0f0f0; 
+            line-height: 1.5; /* Khoảng cách dòng thoáng hơn */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-card">
-        <h2 style="color:var(--primary)">HỆ THỐNG TST</h2>
+        <img src="logo_tst.png" alt="Logo TST" onerror="this.style.display='none'">
+        <h2 style="color:var(--primary); margin-bottom: 1.5rem;">HỆ THỐNG TST</h2>
         <input type="password" id="passInput" placeholder="Mật khẩu" style="margin-bottom:1rem;">
         <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
     </div>
@@ -56,7 +75,10 @@
 
 <div class="app-container" id="mainApp">
     <div class="header">
-        <h2 style="margin:0; color:var(--primary)">CLUB TAEKWONDO TST</h2>
+        <div class="header-left">
+            <img src="logo_tst.png" alt="TST Logo" onerror="this.style.display='none'">
+            <h2 style="margin:0; color:var(--primary)">CLUB TAEKWONDO TST</h2>
+        </div>
         <button class="btn btn-success" id="exportBtn">📥 XUẤT EXCEL</button>
     </div>
 
@@ -138,8 +160,8 @@
 
         <button class="btn btn-primary" onclick="updateProfile()" style="width:100%">CẬP NHẬT THÔNG TIN</button>
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-        <h4 style="margin-bottom:10px;">Lịch sử đóng phí gần nhất:</h4>
-        <div id="m_history" style="font-size:0.9rem; max-height:150px; overflow-y:auto;"></div>
+        <h4 style="margin-bottom:10px;">Lịch sử đóng phí:</h4>
+        <div id="m_history"></div>
     </div>
 </div>
 
@@ -169,7 +191,6 @@
         } else alert("Sai mật khẩu!");
     };
 
-    // Hàm chuẩn hóa tên: Viết hoa chữ cái đầu, xóa khoảng trắng thừa
     function formatName(str) {
         return str.trim().replace(/\s+/g, ' ').split(' ')
                   .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -202,11 +223,10 @@
         renderApp();
     });
 
-    // Auto-fill thông tin khi chọn Võ sinh
     document.getElementById('description').addEventListener('change', (e) => {
         if(document.getElementById('type').value === 'Chi phí vận hành') return;
         const name = formatName(e.target.value);
-        e.target.value = name; // Cập nhật lại khung nhập cho đẹp
+        e.target.value = name;
         
         const p = allProfiles[name];
         if (p) {
@@ -218,10 +238,6 @@
         }
     });
 
-    document.getElementById('filterMonth').addEventListener('input', () => renderApp());
-    document.getElementById('filterBranch').addEventListener('change', () => renderApp());
-    document.getElementById('searchInput').addEventListener('input', () => renderApp());
-
     function renderApp(debtMode = false) {
         const list = document.getElementById('transactionList');
         const selMonth = document.getElementById('filterMonth').value;
@@ -229,15 +245,12 @@
         const search = document.getElementById('searchInput').value.toLowerCase();
         
         list.innerHTML = '';
-        let inc = 0, exp = 0, newStudentsThisMonth = 0;
+        let inc = 0, exp = 0, newStudentsCount = 0;
 
-        // Tính nợ chính xác
         const activeStudents = Object.keys(allProfiles).filter(name => {
             const p = allProfiles[name];
             if(p.status !== 'active') return false;
-            // Ràng buộc cơ sở
             if(selBranch !== 'all' && p.branch !== selBranch) return false;
-            // Bỏ qua nếu võ sinh mới tạo hồ sơ SAU tháng đang lọc
             if(p.createdAt && selMonth && p.createdAt.substring(0,7) > selMonth) return false;
             return true;
         });
@@ -250,18 +263,16 @@
         document.getElementById('debtCount').innerText = debtStudents.length + " Bạn";
 
         Object.values(allProfiles).forEach(p => {
-            if (p.createdAt && selMonth && p.createdAt.startsWith(selMonth)) {
-                newStudentsThisMonth++;
-            }
+            if (p.createdAt && selMonth && p.createdAt.startsWith(selMonth)) newStudentsCount++;
         });
-        document.getElementById('newStudentCount').innerText = newStudentsThisMonth + " Bạn";
+        document.getElementById('newStudentCount').innerText = newStudentsCount + " Bạn";
 
         if(debtMode) {
             debtStudents.forEach(name => {
                 const profile = allProfiles[name] || {};
                 const branch = profile.branch || '---';
                 const phone = profile.phone || "";
-                const msg = `Xin chào phụ huynh võ sinh ${name}, CLUB TAEKWONDO TST gửi thông báo học phí tháng ${selMonth.split('-')[1]} của bé vẫn chưa được hoàn thành. Nhờ anh/chị kiểm tra và đóng học phí cho bé ạ. Trân trọng!`;
+                const msg = `Thông báo từ CLB Taekwondo TST: Học phí tháng ${selMonth.split('-')[1]} của võ sinh ${name} hiện chưa được cập nhật. Nhờ phụ huynh kiểm tra giúp ạ. Trân trọng!`;
                 const zaloLink = phone ? `https://zalo.me/${phone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
 
                 list.innerHTML += `<tr style="background:#fff9e6">
@@ -282,8 +293,6 @@
 
             const isInc = t.type !== 'Chi phí vận hành';
             isInc ? (inc += t.amount) : (exp += t.amount);
-
-            // Gắn badge "Mới" nếu học viên đăng ký trong tháng
             const p = allProfiles[t.description];
             const isNew = (p && p.createdAt && p.createdAt.startsWith(selMonth)) ? `<span class="badge-new">Mới</span>` : '';
 
@@ -293,7 +302,7 @@
                 <td class="name-link" onclick="openProfile('${t.description}')">${isNew}${t.description}</td>
                 <td>${t.type}</td>
                 <td style="font-weight:700; color:${isInc?'var(--success)':'var(--secondary)'}">${isInc?'+':'-'}${t.amount.toLocaleString()} ₫</td>
-                <td><button onclick="deleteTx('${t.id}')" style="color:red; border:none; background:none; cursor:pointer;">Xóa</button></td>
+                <td><button onclick="deleteTx('${t.id}')" style="color:red; border:none; background:none; cursor:pointer; font-weight:600;">Xóa</button></td>
             </tr>`;
         });
 
@@ -301,9 +310,9 @@
         document.getElementById('totalExpense').innerText = exp.toLocaleString() + " ₫";
     }
 
-    window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); alert("Đã copy tin nhắn nhắc nợ!"); };
+    window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); alert("Đã copy nội dung nhắc nợ!"); };
 
-    window.openProfile = async (name) => {
+    window.openProfile = (name) => {
         document.getElementById('m_name').innerText = name;
         const p = allProfiles[name] || { status: 'active', branch: 'CS1', tuitionFee: '', phone: '' };
         
@@ -312,10 +321,14 @@
         document.getElementById('m_tuitionFee').value = p.tuitionFee || '';
         document.getElementById('m_phone').value = p.phone || '';
 
-        const history = allTransactions.filter(t => t.description === name).slice(0, 5);
+        const history = allTransactions.filter(t => t.description === name).slice(0, 10);
         document.getElementById('m_history').innerHTML = history.length 
-            ? history.map(h => `<div style="padding:8px 0; border-bottom:1px solid #f9f9f9">${h.date.split('-').reverse().join('/')}: ${h.type} <strong style="color:var(--success)">(${h.amount.toLocaleString()}đ)</strong></div>`).join('')
-            : 'Chưa có lịch sử giao dịch.';
+            ? history.map(h => `
+                <div class="history-item">
+                    <span>${h.date.split('-').reverse().join('/')} - ${h.type}</span>
+                    <strong style="color:var(--success)">+${h.amount.toLocaleString()}đ</strong>
+                </div>`).join('')
+            : '<p style="color:#999; text-align:center;">Chưa có lịch sử giao dịch.</p>';
 
         document.getElementById('profileModal').style.display = 'block';
     };
@@ -340,18 +353,14 @@
         e.preventDefault();
         const type = document.getElementById('type').value;
         let rawName = document.getElementById('description').value;
-        
-        // Luôn chuẩn hóa tên trước khi lưu
         const name = (type === 'Chi phí vận hành') ? rawName : formatName(rawName);
-        
         const txDate = document.getElementById('date').value;
         const selectedBranch = document.getElementById('branch').value;
 
-        // Chống lộn cơ sở
         const existingProfile = allProfiles[name];
         if (existingProfile && existingProfile.branch && type !== 'Chi phí vận hành') {
             if (existingProfile.branch !== selectedBranch) {
-                alert(`❌ LỖI SAI CƠ SỞ!\nVõ sinh "${name}" đang thuộc ${existingProfile.branch}.\nHãy chuyển đúng cơ sở trước khi nhập!`);
+                alert(`❌ SAI CƠ SỞ!\nVõ sinh "${name}" đang sinh hoạt tại ${existingProfile.branch}.`);
                 return;
             }
         }
@@ -366,16 +375,18 @@
         
         if (!existingProfile && type !== 'Chi phí vận hành') {
             await setDoc(doc(db, "tst_profiles", name), { 
-                status: 'active', 
-                branch: selectedBranch, 
-                tuitionFee: amtAct.value, // Lấy luôn số tiền lần đầu làm học phí mặc định
-                phone: '',
-                createdAt: txDate 
+                status: 'active', branch: selectedBranch, 
+                tuitionFee: amtAct.value, phone: '', createdAt: txDate 
             });
         }
-
         e.target.reset();
         document.getElementById('date').valueAsDate = new Date();
+    };
+
+    window.deleteTx = (id) => {
+        if(confirm("Xác nhận xóa giao dịch này? Hệ thống sẽ cập nhật lại toàn bộ số liệu ngay lập tức.")) {
+            deleteDoc(doc(db, "tst_transactions", id));
+        }
     };
 
     document.getElementById('showDebtBtn').onclick = function() {
@@ -384,7 +395,9 @@
         renderApp(isDebt);
     };
 
-    window.deleteTx = (id) => confirm("Xóa giao dịch này?") && deleteDoc(doc(db, "tst_transactions", id));
+    document.getElementById('filterMonth').onchange = () => renderApp();
+    document.getElementById('filterBranch').onchange = () => renderApp();
+    document.getElementById('searchInput').oninput = () => renderApp();
 
     document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
     document.getElementById('date').valueAsDate = new Date();
