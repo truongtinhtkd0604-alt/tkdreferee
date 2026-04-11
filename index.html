@@ -1,413 +1,302 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Tài Chính Online - CLUB TAEKWONDO TST</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        :root {
-            --primary-color: #0033A0;
-            --danger-color: #C8102E;
-            --success-color: #28a745;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 10px; /* Giảm padding trên mobile */
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            background: var(--card-bg);
-            padding: 15px; /* Giảm padding trên mobile */
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            font-size: 1.4em; /* Tối ưu font tiêu đề mobile */
-        }
-        .controls {
-            display: flex;
-            flex-direction: column; /* Chuyển thành cột trên mobile */
-            gap: 12px;
-            margin-bottom: 25px;
-            background: #eef2f5;
-            padding: 15px;
-            border-radius: 10px;
-        }
-        @media (min-width: 768px) {
-            .controls { flex-direction: row; align-items: center; }
-            h1 { font-size: 2em; }
-            body { padding: 20px; }
-            .container { padding: 25px; }
-        }
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr; /* 1 cột trên mobile */
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        @media (min-width: 600px) {
-            .dashboard { grid-template-columns: repeat(3, 1fr); }
-        }
-        .card {
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            color: white;
-            font-weight: bold;
-        }
-        .card-income { background-color: var(--success-color); }
-        .card-expense { background-color: var(--danger-color); }
-        .card-balance { background-color: var(--primary-color); }
-        .card h3 { margin: 0; font-size: 0.9em; opacity: 0.9; }
-        .card p { margin: 5px 0 0 0; font-size: 1.4em; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý TST Professional</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --dark: #1a1a1a; --light: #f8f9fa; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #eef2f7; margin: 0; padding: 10px; color: var(--dark); }
+        
+        /* Auth Overlay */
+        #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
 
-        .form-container {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border: 2px solid #eef2f5;
-        }
-        .form-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-            flex-direction: column; /* Luôn ưu tiên cột trên mobile */
-        }
-        @media (min-width: 768px) {
-            .form-row { flex-direction: row; }
-        }
-        .form-group {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .form-group label { font-size: 0.85em; margin-bottom: 6px; font-weight: bold; }
-        .form-group input, .form-group select { 
-            padding: 12px; 
-            border: 1px solid #ccd1d9; 
-            border-radius: 6px; 
-            font-size: 16px; /* Chống zoom tự động trên iPhone */
-        }
-        #newStudentInfo { display: none; background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--success-color); margin-bottom: 15px; }
-        
-        .btn-group { display: flex; gap: 10px; flex-direction: column; }
-        @media (min-width: 768px) { .btn-group { flex-direction: row; } }
+        .app-container { max-width: 1100px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
+        
+        /* Header & Stats */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-box { padding: 20px; border-radius: 12px; color: white; position: relative; overflow: hidden; }
+        .stat-box h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; opacity: 0.8; }
+        .stat-box p { margin: 10px 0 0; font-size: 1.6rem; font-weight: 800; }
 
-        button {
-            padding: 15px;
-            cursor: pointer;
-            border-radius: 6px;
-            font-weight: bold;
-            border: none;
-            transition: 0.3s;
-        }
-        .btn-add { background-color: var(--primary-color); color: white; flex: 2; }
-        .btn-excel { background-color: #1D6F42; color: white; flex: 1; }
-        button:active { transform: scale(0.98); }
+        /* Forms & Filters */
+        .section-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: var(--light); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        input, select { border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-size: 15px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,160,0.1); }
 
-        /* Tối ưu bảng cho mobile */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9em; }
-        th { background-color: var(--primary-color); color: white; }
-        
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; display: inline-block; margin-bottom: 4px; }
-        .badge-new { background: #e8f5e9; color: #2e7d32; }
-        .badge-old { background: #e3f2fd; color: #0d47a1; }
-        .text-income { color: var(--success-color); font-weight: bold; }
-        .text-expense { color: var(--danger-color); font-weight: bold; }
-        .contact-info { font-size: 0.8em; color: #666; display: block; margin-top: 4px; line-height: 1.4; }
-        .delete-btn { color: #ff4c4c; cursor: pointer; border: 1px solid #ff4c4c; background: transparent; padding: 6px 10px; border-radius: 4px; }
-    </style>
+        /* Buttons */
+        .btn { padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: var(--dark); }
+        .btn:active { transform: translateY(1px); }
+
+        /* Table */
+        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
+        th { background: #fcfcfc; color: #666; font-size: 0.8rem; text-transform: uppercase; padding: 15px; text-align: left; border-bottom: 2px solid #eee; }
+        td { padding: 15px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
+        .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+
+        /* Profile Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; padding: 20px; }
+        .modal-content { background: white; max-width: 500px; margin: 50px auto; border-radius: 16px; padding: 25px; position: relative; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>CLUB TAEKWONDO TST - QUẢN LÝ ONLINE</h1>
-    
-    <div class="controls">
-        <div style="flex: 1;">
-            <label>Tháng: </label>
-            <input type="month" id="filterMonth" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
-        </div>
-        <div style="flex: 1;">
-            <label>Cơ sở: </label>
-            <select id="filterBranch" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
-                <option value="all">Tất cả cơ sở</option>
-                <option value="CS1">CS1: 66 Huỳnh Tấn Phát</option>
-                <option value="CS2">CS2: Sân vận động</option>
-            </select>
-        </div>
-        <div style="flex: 2;">
-            <label>Tìm kiếm: </label>
-            <input type="text" id="searchInput" placeholder="🔍 Tên hoặc nội dung..." style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
-        </div>
-    </div>
+<div id="loginOverlay">
+    <div class="login-card">
+        <h2 style="color:var(--primary)">HỆ THỐNG TST</h2>
+        <input type="password" id="passInput" placeholder="Mật khẩu" style="width:100%; margin-bottom:1rem; box-sizing:border-box;">
+        <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
+    </div>
+</div>
 
-    <div class="dashboard">
-        <div class="card card-income"><h3>TỔNG THU</h3><p id="totalIncome">0 ₫</p></div>
-        <div class="card card-expense"><h3>TỔNG CHI</h3><p id="totalExpense">0 ₫</p></div>
-        <div class="card card-balance"><h3>QUỸ HIỆN TẠI</h3><p id="balance">0 ₫</p></div>
-    </div>
+<div class="app-container" id="mainApp">
+    <div class="header">
+        <h2 style="margin:0; color:var(--primary)">CLUB TAEKWONDO TST</h2>
+        <button class="btn btn-success" id="exportBtn">📥 XUẤT EXCEL</button>
+    </div>
 
-    <div class="form-container">
-        <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1em;">Nhập Giao Dịch Mới</h3>
-        <form id="transactionForm">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Cơ sở</label>
-                    <select id="branch" required>
-                        <option value="CS1">CS1: 66 Huỳnh Tấn Phát</option>
-                        <option value="CS2">CS2: Sân vận động</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Loại giao dịch</label>
-                    <select id="type" required>
-                        <option value="Học phí">Học phí</option>
-                        <option value="Võ phục">Võ phục</option>
-                        <option value="Học phí và Võ phục">Học phí & Võ phục</option>
-                        <option value="Chi phí vận hành">Chi (Điện, nước, thảm...)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Trạng thái</label>
-                    <select id="studentStatus">
-                        <option value="old">Võ sinh Cũ</option>
-                        <option value="new">Võ sinh Mới</option>
-                        <option value="none">Khác</option>
-                    </select>
-                </div>
-            </div>
+    <div class="stats-grid">
+        <div class="stat-box" style="background: var(--success);"><h3>Tổng thu tháng</h3><p id="totalIncome">0 ₫</p></div>
+        <div class="stat-box" style="background: var(--secondary);"><h3>Tổng chi tháng</h3><p id="totalExpense">0 ₫</p></div>
+        <div class="stat-box" style="background: var(--warning);"><h3>Võ sinh nợ phí</h3><p id="debtCount">0 Bạn</p></div>
+    </div>
 
-            <div id="newStudentInfo">
-                <div class="form-row">
-                    <div class="form-group"><label>Ngày sinh</label><input type="date" id="studentDob"></div>
-                    <div class="form-group"><label>SĐT Võ sinh</label><input type="tel" id="studentPhone"></div>
-                    <div class="form-group"><label>SĐT Phụ huynh</label><input type="tel" id="parentPhone"></div>
-                </div>
-            </div>
+    <div class="section-title">🔍 BỘ LỌC & TÌM KIẾM</div>
+    <div class="grid-form">
+        <input type="month" id="filterMonth">
+        <select id="filterBranch">
+            <option value="all">Tất cả cơ sở</option>
+            <option value="CS1">CS1: 66 Huỳnh Tấn Phát</option>
+            <option value="CS2">CS2: Sân vận động</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="Nhập tên võ sinh...">
+        <button class="btn btn-warning" id="showDebtBtn">LỌC DANH SÁCH NỢ</button>
+    </div>
 
-            <div class="form-row">
-                <div class="form-group" style="flex: 2;">
-                    <label>Tên Võ Sinh / Nội dung chi</label>
-                    <input type="text" id="description" placeholder="Gõ tên võ sinh..." required>
-                </div>
-                <div class="form-group">
-                    <label>Số tiền (VNĐ)</label>
-                    <input type="text" id="amountDisplay" placeholder="500.000" required>
-                    <input type="hidden" id="amountActual">
-                </div>
-                <div class="form-group">
-                    <label>Ngày đóng</label>
-                    <input type="date" id="date" required>
-                </div>
-            </div>
-            <div class="btn-group">
-                <button type="submit" class="btn-add" id="submitBtn">LƯU LÊN HỆ THỐNG</button>
-                <button type="button" class="btn-excel" id="exportBtn">XUẤT BÁO CÁO EXCEL</button>
-            </div>
-        </form>
-    </div>
+    <div class="section-title">📝 NHẬP GIAO DỊCH MỚI</div>
+    <form id="transactionForm" class="grid-form">
+        <select id="branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
+        <select id="type"><option value="Học phí">Học phí</option><option value="Võ phục">Võ phục</option><option value="Chi phí vận hành">Chi phí</option></select>
+        <input type="text" id="description" placeholder="Tên võ sinh / Nội dung" required>
+        <input type="text" id="amountDisplay" placeholder="Số tiền">
+        <input type="hidden" id="amountActual">
+        <input type="date" id="date" required>
+        <button type="submit" class="btn btn-primary">LƯU HỆ THỐNG</button>
+    </form>
 
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr><th>Ngày</th><th>Cơ Sở</th><th>Võ Sinh / Thông Tin</th><th>Loại</th><th>Số Tiền</th><th>Thao Tác</th></tr>
-            </thead>
-            <tbody id="transactionList"></tbody>
-        </table>
-    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Ngày</th><th>Cơ sở</th><th>Võ sinh</th><th>Loại giao dịch</th><th>Số tiền</th><th>Thao tác</th></tr>
+            </thead>
+            <tbody id="transactionList"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="profileModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h3 id="m_name" style="color:var(--primary); margin-top:0;"></h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+            <div>
+                <label style="font-size:0.8rem; color:#666;">Trạng thái tập luyện:</label><br>
+                <select id="m_status" style="width:100%; margin-top:5px;">
+                    <option value="active">Đang tập luyện</option>
+                    <option value="quit">Đã nghỉ tập</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:#666;">Ngày sinh:</label><br>
+                <input type="date" id="m_dob" style="width:100%; margin-top:5px; box-sizing:border-box;">
+            </div>
+        </div>
+        <div style="margin-bottom:20px;">
+            <label style="font-size:0.8rem; color:#666;">Số điện thoại liên hệ:</label>
+            <input type="tel" id="m_phone" placeholder="SĐT phụ huynh/võ sinh" style="width:100%; margin-top:5px; box-sizing:border-box;">
+        </div>
+        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%">CẬP NHẬT THÔNG TIN</button>
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        <h4 style="margin-bottom:10px;">Lịch sử đóng phí gần nhất:</h4>
+        <div id="m_history" style="font-size:0.9rem; max-height:150px; overflow-y:auto;"></div>
+    </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDocs, where } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
-      authDomain: "quanly-tst.firebaseapp.com",
-      projectId: "quanly-tst",
-      storageBucket: "quanly-tst.firebasestorage.app",
-      messagingSenderId: "981970279440",
-      appId: "1:981970279440:web:8ac137ec4f72a39faa7e95",
-      measurementId: "G-Z1M9YYDZL1"
-    };
+    const firebaseConfig = {
+      apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
+      authDomain: "quanly-tst.firebaseapp.com",
+      projectId: "quanly-tst",
+      storageBucket: "quanly-tst.firebasestorage.app",
+      messagingSenderId: "981970279440",
+      appId: "1:981970279440:web:8ac137ec4f72a39faa7e95"
+    };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const colRef = collection(db, "tst_transactions");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, "tst_transactions");
+    const profRef = collection(db, "tst_profiles");
 
-    // Lưu trữ dữ liệu hiện tại để xuất Excel
-    let currentData = [];
+    // Login logic
+    window.checkLogin = () => {
+        if(document.getElementById('passInput').value === "Tinhts64") {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+        } else alert("Sai mật khẩu!");
+    };
 
-    // Định dạng tiền
-    const amountDisplay = document.getElementById('amountDisplay');
-    const amountActual = document.getElementById('amountActual');
-    amountDisplay.addEventListener('input', function() {
-        let value = this.value.replace(/\D/g, '');
-        if (value) {
-            amountActual.value = value;
-            this.value = parseInt(value).toLocaleString('vi-VN');
-        } else {
-            amountActual.value = ''; this.value = '';
-        }
-    });
+    // Tiền tệ
+    const amtDisp = document.getElementById('amountDisplay');
+    const amtAct = document.getElementById('amountActual');
+    amtDisp.oninput = (e) => {
+        let v = e.target.value.replace(/\D/g, '');
+        amtAct.value = v;
+        e.target.value = v ? parseInt(v).toLocaleString('vi-VN') : '';
+    };
 
-    const statusSelect = document.getElementById('studentStatus');
-    const newInfoBox = document.getElementById('newStudentInfo');
-    const descInput = document.getElementById('description');
+    // Load Data
+    let allTransactions = [];
+    let allProfiles = {};
 
-    statusSelect.onchange = () => newInfoBox.style.display = statusSelect.value === 'new' ? 'block' : 'none';
+    onSnapshot(profRef, (snap) => {
+        snap.forEach(d => allProfiles[d.id] = d.data());
+        renderApp();
+    });
 
-    descInput.onblur = async () => {
-        const name = descInput.value.trim();
-        if (name.length < 2) return;
-        const qSearch = query(colRef, where("description", "==", name));
-        const snap = await getDocs(qSearch);
-        if (!snap.empty) {
-            statusSelect.value = 'old';
-            newInfoBox.style.display = 'none';
-        } else {
-            statusSelect.value = 'new';
-            newInfoBox.style.display = 'block';
-        }
-    };
+    onSnapshot(query(colRef, orderBy("date", "desc")), (snap) => {
+        allTransactions = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderApp();
+    });
 
-    document.getElementById('transactionForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true; btn.innerText = "Đang lưu...";
+    function renderApp(debtMode = false) {
+        const list = document.getElementById('transactionList');
+        const selMonth = document.getElementById('filterMonth').value;
+        const selBranch = document.getElementById('filterBranch').value;
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        
+        list.innerHTML = '';
+        let inc = 0, exp = 0;
 
-        try {
-            await addDoc(colRef, {
-                branch: document.getElementById('branch').value,
-                type: document.getElementById('type').value,
-                status: statusSelect.value,
-                description: descInput.value.trim(),
-                amount: Number(amountActual.value),
-                date: document.getElementById('date').value,
-                dob: document.getElementById('studentDob').value || "",
-                sPhone: document.getElementById('studentPhone').value || "",
-                pPhone: document.getElementById('parentPhone').value || "",
-                timestamp: new Date()
-            });
-            e.target.reset();
-            document.getElementById('date').valueAsDate = new Date();
-            newInfoBox.style.display = 'none';
-            amountActual.value = '';
-        } catch (err) {
-            alert("Lỗi: " + err.message);
-        } finally {
-            btn.disabled = false; btn.innerText = "LƯU LÊN HỆ THỐNG";
-        }
-    };
+        // Tính toán nợ
+        const activeStudents = Object.keys(allProfiles).filter(name => allProfiles[name].status === 'active');
+        const paidThisMonth = allTransactions.filter(t => t.date.startsWith(selMonth) && t.type === 'Học phí').map(t => t.description);
+        const debtStudents = activeStudents.filter(name => !paidThisMonth.includes(name));
+        document.getElementById('debtCount').innerText = debtStudents.length + " Bạn";
 
-    const q = query(colRef, orderBy("date", "desc"));
-    onSnapshot(q, (snapshot) => {
-        const list = document.getElementById('transactionList');
-        const selMonth = document.getElementById('filterMonth').value;
-        const selBranch = document.getElementById('filterBranch').value;
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        
-        list.innerHTML = '';
-        currentData = []; // Reset dữ liệu xuất Excel
-        let inc = 0, exp = 0;
+        if(debtMode) {
+            debtStudents.forEach(name => {
+                list.innerHTML += `<tr style="background:#fff9e6">
+                    <td>---</td><td>---</td>
+                    <td class="name-link" onclick="openProfile('${name}')">${name}</td>
+                    <td><span class="badge" style="background:#ff9800; color:white">Nợ học phí</span></td>
+                    <td style="color:red">Chưa đóng</td>
+                    <td>-</td>
+                </tr>`;
+            });
+            return;
+        }
 
-        snapshot.forEach((docSnap) => {
-            const t = docSnap.data();
-            const id = docSnap.id;
-            
-            if (selMonth && t.date.substring(0, 7) !== selMonth) return;
-            if (selBranch !== 'all' && t.branch !== selBranch) return;
-            if (search && !t.description.toLowerCase().includes(search)) return;
+        allTransactions.forEach(t => {
+            if(selMonth && !t.date.startsWith(selMonth)) return;
+            if(selBranch !== 'all' && t.branch !== selBranch) return;
+            if(search && !t.description.toLowerCase().includes(search)) return;
 
-            currentData.push(t); // Lưu vào mảng để xuất Excel
+            const isInc = t.type !== 'Chi phí vận hành';
+            isInc ? (inc += t.amount) : (exp += t.amount);
 
-            const isInc = t.type !== 'Chi phí vận hành';
-            isInc ? inc += t.amount : exp += t.amount;
+            list.innerHTML += `<tr>
+                <td>${t.date.split('-').reverse().join('/')}</td>
+                <td>${t.branch}</td>
+                <td class="name-link" onclick="openProfile('${t.description}')">${t.description}</td>
+                <td>${t.type}</td>
+                <td style="font-weight:700; color:${isInc?'var(--success)':'var(--secondary)'}">${isInc?'+':'-'}${t.amount.toLocaleString()} ₫</td>
+                <td><button onclick="deleteTx('${t.id}')" style="color:red; border:none; background:none; cursor:pointer;">Xóa</button></td>
+            </tr>`;
+        });
 
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${t.date.split('-').reverse().join('/')}</td>
-                <td><span class="badge" style="background:#eee;color:#333">${t.branch}</span></td>
-                <td>
-                    <span class="badge ${t.status === 'new' ? 'badge-new' : 'badge-old'}">${t.status === 'new' ? 'Mới' : 'Cũ'}</span>
-                    <strong>${t.description}</strong>
-                    <span class="contact-info">${t.sPhone ? '📞 '+t.sPhone : ''} ${t.pPhone ? ' | 🏠 '+t.pPhone : ''}</span>
-                </td>
-                <td>${t.type}</td>
-                <td class="${isInc ? 'text-income' : 'text-expense'}">${isInc ? '+' : '-'}${t.amount.toLocaleString('vi-VN')} ₫</td>
-                <td><button class="delete-btn" data-id="${id}">Xóa</button></td>
-            `;
-            list.appendChild(row);
-        });
+        document.getElementById('totalIncome').innerText = inc.toLocaleString() + " ₫";
+        document.getElementById('totalExpense').innerText = exp.toLocaleString() + " ₫";
+    }
 
-        document.getElementById('totalIncome').innerText = inc.toLocaleString('vi-VN') + " ₫";
-        document.getElementById('totalExpense').innerText = exp.toLocaleString('vi-VN') + " ₫";
-        document.getElementById('balance').innerText = (inc - exp).toLocaleString('vi-VN') + " ₫";
-    });
+    // Quản lý Hồ sơ
+    window.openProfile = async (name) => {
+        document.getElementById('m_name').innerText = name;
+        const p = allProfiles[name] || { status: 'active', dob: '', phone: '' };
+        
+        document.getElementById('m_status').value = p.status;
+        document.getElementById('m_dob').value = p.dob;
+        document.getElementById('m_phone').value = p.phone;
 
-    // Hàm Xuất Excel
-    document.getElementById('exportBtn').onclick = () => {
-        if (currentData.length === 0) {
-            alert("Không có dữ liệu để xuất!");
-            return;
-        }
+        const history = allTransactions.filter(t => t.description === name).slice(0, 5);
+        document.getElementById('m_history').innerHTML = history.length 
+            ? history.map(h => `<div style="padding:5px 0; border-bottom:1px solid #f9f9f9">${h.date}: ${h.type} (${h.amount.toLocaleString()}đ)</div>`).join('')
+            : 'Chưa có lịch sử giao dịch.';
 
-        const dataExcel = currentData.map(item => ({
-            "Ngày": item.date,
-            "Cơ sở": item.branch,
-            "Nội dung/Võ sinh": item.description,
-            "Loại": item.type,
-            "Số tiền": item.amount,
-            "Trạng thái": item.status === 'new' ? 'Mới' : 'Cũ',
-            "SĐT Võ sinh": item.sPhone,
-            "SĐT Phụ huynh": item.pPhone,
-            "Ngày sinh": item.dob
-        }));
+        document.getElementById('profileModal').style.display = 'block';
+    };
 
-        const worksheet = XLSX.utils.json_to_sheet(dataExcel);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "SaoKe");
-        
-        const fileName = `SaoKe_TST_${document.getElementById('filterMonth').value || 'ToanBo'}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
-    };
+    window.updateProfile = async () => {
+        const name = document.getElementById('m_name').innerText;
+        await setDoc(doc(db, "tst_profiles", name), {
+            status: document.getElementById('m_status').value,
+            dob: document.getElementById('m_dob').value,
+            phone: document.getElementById('m_phone').value
+        });
+        alert("Đã cập nhật hồ sơ!");
+        closeModal();
+    };
 
-    document.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('delete-btn')) {
-            if (confirm("Xóa giao dịch này?")) {
-                await deleteDoc(doc(db, "tst_transactions", e.target.dataset.id));
-            }
-        }
-    });
+    window.closeModal = () => document.getElementById('profileModal').style.display = 'none';
 
-    document.getElementById('date').valueAsDate = new Date();
-    document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
-    
-    document.getElementById('filterMonth').onchange = () => {}; 
-    document.getElementById('filterBranch').onchange = () => {};
-    document.getElementById('searchInput').oninput = () => {};
+    // Thêm giao dịch & auto-create profile
+    document.getElementById('transactionForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('description').value.trim();
+        await addDoc(colRef, {
+            branch: document.getElementById('branch').value,
+            type: document.getElementById('type').value,
+            description: name,
+            amount: Number(amtAct.value),
+            date: document.getElementById('date').value
+        });
+        
+        // Tạo profile mặc định nếu chưa có
+        const docRef = doc(db, "tst_profiles", name);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+            await setDoc(docRef, { status: 'active', dob: '', phone: '' });
+        }
+
+        e.target.reset();
+        document.getElementById('date').valueAsDate = new Date();
+    };
+
+    // Điều khiển khác
+    document.getElementById('showDebtBtn').onclick = function() {
+        const isDebt = this.innerText.includes("NỢ");
+        this.innerText = isDebt ? "HIỆN TẤT CẢ" : "LỌC DANH SÁCH NỢ";
+        renderApp(isDebt);
+    };
+
+    window.deleteTx = (id) => confirm("Xóa giao dịch này?") && deleteDoc(doc(db, "tst_transactions", id));
+
+    document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
+    document.getElementById('date').valueAsDate = new Date();
 </script>
 </body>
 </html>
