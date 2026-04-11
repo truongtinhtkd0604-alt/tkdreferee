@@ -34,6 +34,8 @@
         .btn-success { background: var(--success); color: white; }
         .btn-warning { background: var(--warning); color: var(--dark); }
         .btn:active { transform: translateY(1px); }
+        .btn-zalo { background: #0068ff; color: white; padding: 4px 8px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; }
+        .btn-zalo:hover { background: #0056d2; }
 
         /* Table */
         .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; }
@@ -113,7 +115,8 @@
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal()">&times;</span>
         <h3 id="m_name" style="color:var(--primary); margin-top:0;"></h3>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
             <div>
                 <label style="font-size:0.8rem; color:#666;">Trạng thái tập luyện:</label><br>
                 <select id="m_status" style="width:100%; margin-top:5px;">
@@ -122,14 +125,25 @@
                 </select>
             </div>
             <div>
+                <label style="font-size:0.8rem; color:#666;">Cơ sở tập luyện:</label><br>
+                <select id="m_branch" style="width:100%; margin-top:5px;">
+                    <option value="CS1">CS1: Huỳnh Tấn Phát</option>
+                    <option value="CS2">CS2: Sân vận động</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+            <div>
                 <label style="font-size:0.8rem; color:#666;">Ngày sinh:</label><br>
                 <input type="date" id="m_dob" style="width:100%; margin-top:5px; box-sizing:border-box;">
             </div>
+            <div>
+                <label style="font-size:0.8rem; color:#666;">SĐT Liên hệ:</label>
+                <input type="tel" id="m_phone" placeholder="SĐT phụ huynh" style="width:100%; margin-top:5px; box-sizing:border-box;">
+            </div>
         </div>
-        <div style="margin-bottom:20px;">
-            <label style="font-size:0.8rem; color:#666;">Số điện thoại liên hệ:</label>
-            <input type="tel" id="m_phone" placeholder="SĐT phụ huynh/võ sinh" style="width:100%; margin-top:5px; box-sizing:border-box;">
-        </div>
+
         <button class="btn btn-primary" onclick="updateProfile()" style="width:100%">CẬP NHẬT THÔNG TIN</button>
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
         <h4 style="margin-bottom:10px;">Lịch sử đóng phí gần nhất:</h4>
@@ -179,11 +193,11 @@
 
     onSnapshot(profRef, (snap) => {
         const dataList = document.getElementById('studentList');
-        dataList.innerHTML = ''; // Cập nhật danh sách gợi ý tên
+        dataList.innerHTML = ''; 
         
         snap.forEach(d => {
             allProfiles[d.id] = d.data();
-            dataList.innerHTML += `<option value="${d.id}">`; // Thêm vào datalist
+            dataList.innerHTML += `<option value="${d.id}">`; 
         });
         renderApp();
     });
@@ -193,7 +207,6 @@
         renderApp();
     });
 
-    // Bắt sự kiện tự động thay đổi danh sách khi chỉnh bộ lọc
     document.getElementById('filterMonth').addEventListener('input', () => renderApp());
     document.getElementById('filterBranch').addEventListener('change', () => renderApp());
     document.getElementById('searchInput').addEventListener('input', () => renderApp());
@@ -208,13 +221,12 @@
         let inc = 0, exp = 0;
         let newStudentsThisMonth = 0;
 
-        // Tính toán nợ & võ sinh mới
+        const monthText = selMonth ? selMonth.split('-')[1] : (new Date().getMonth() + 1);
         const activeStudents = Object.keys(allProfiles).filter(name => allProfiles[name].status === 'active');
         const paidThisMonth = allTransactions.filter(t => t.date.startsWith(selMonth) && t.type === 'Học phí').map(t => t.description);
         const debtStudents = activeStudents.filter(name => !paidThisMonth.includes(name));
         document.getElementById('debtCount').innerText = debtStudents.length + " Bạn";
 
-        // Đếm võ sinh mới: Dựa vào createdAt (nếu có) hoặc lọc những hồ sơ mới tạo trong tháng đang xem
         Object.values(allProfiles).forEach(p => {
             if (p.createdAt && p.createdAt.startsWith(selMonth)) {
                 newStudentsThisMonth++;
@@ -224,12 +236,24 @@
 
         if(debtMode) {
             debtStudents.forEach(name => {
+                const profile = allProfiles[name] || {};
+                const phone = profile.phone || "";
+                
+                const msg = `Xin chào phụ huynh võ sinh ${name}, CLUB TAEKWONDO TST gửi thông báo học phí tháng ${monthText} của bé vẫn chưa được hoàn thành. Nhờ anh/chị kiểm tra và đóng học phí cho bé ạ. Trân trọng!`;
+                const zaloLink = phone 
+                    ? `https://zalo.me/${phone}` 
+                    : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
+
                 list.innerHTML += `<tr style="background:#fff9e6">
                     <td>---</td><td>---</td>
                     <td class="name-link" onclick="openProfile('${name}')">${name}</td>
                     <td><span class="badge" style="background:#ff9800; color:white">Nợ học phí</span></td>
                     <td style="color:red">Chưa đóng</td>
-                    <td>-</td>
+                    <td>
+                        <a href="${zaloLink}" target="_blank" class="btn btn-zalo" onclick="copyToClipboard('${msg}')">
+                            💬 Nhắc Zalo
+                        </a>
+                    </td>
                 </tr>`;
             });
             return;
@@ -257,12 +281,19 @@
         document.getElementById('totalExpense').innerText = exp.toLocaleString() + " ₫";
     }
 
+    window.copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Đã sao chép nội dung nhắc nợ. Mở Zalo và dán (Paste) vào ô chat.");
+        });
+    };
+
     // Quản lý Hồ sơ
     window.openProfile = async (name) => {
         document.getElementById('m_name').innerText = name;
-        const p = allProfiles[name] || { status: 'active', dob: '', phone: '' };
+        const p = allProfiles[name] || { status: 'active', dob: '', phone: '', branch: 'CS1' };
         
         document.getElementById('m_status').value = p.status;
+        document.getElementById('m_branch').value = p.branch || 'CS1'; // Nạp cơ sở
         document.getElementById('m_dob').value = p.dob;
         document.getElementById('m_phone').value = p.phone;
 
@@ -276,11 +307,11 @@
 
     window.updateProfile = async () => {
         const name = document.getElementById('m_name').innerText;
-        // Giữ lại trường createdAt nếu đã có để không bị mất ngày gia nhập
         const currentData = allProfiles[name] || {};
         await setDoc(doc(db, "tst_profiles", name), {
             ...currentData,
             status: document.getElementById('m_status').value,
+            branch: document.getElementById('m_branch').value, // Cập nhật cơ sở
             dob: document.getElementById('m_dob').value,
             phone: document.getElementById('m_phone').value
         });
@@ -295,24 +326,36 @@
         e.preventDefault();
         const name = document.getElementById('description').value.trim();
         const txDate = document.getElementById('date').value;
+        const selectedBranch = document.getElementById('branch').value;
+        const type = document.getElementById('type').value;
+
+        // KIỂM TRA CHÉO CƠ SỞ (Chỉ kiểm tra nếu không phải Chi phí vận hành)
+        const existingProfile = allProfiles[name];
+        if (existingProfile && existingProfile.branch && type !== 'Chi phí vận hành') {
+            if (existingProfile.branch !== selectedBranch) {
+                alert(`❌ LỖI SAI CƠ SỞ!\nVõ sinh "${name}" hiện đang quản lý tại ${existingProfile.branch}.\nBạn đang cố nhập phiếu thu vào ${selectedBranch}.\n\nGiải pháp: Hãy chọn đúng cơ sở ${existingProfile.branch} hoặc click vào tên võ sinh để đổi cơ sở trước khi nhập!`);
+                return; // Dừng, không cho phép lưu
+            }
+        }
 
         await addDoc(colRef, {
-            branch: document.getElementById('branch').value,
-            type: document.getElementById('type').value,
+            branch: selectedBranch,
+            type: type,
             description: name,
             amount: Number(amtAct.value),
             date: txDate
         });
         
-        // Tạo profile mặc định nếu chưa có, kèm theo trường createdAt để theo dõi học viên mới
+        // Tạo profile mặc định nếu chưa có
         const docRef = doc(db, "tst_profiles", name);
         const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) {
+        if (!docSnap.exists() && type !== 'Chi phí vận hành') {
             await setDoc(docRef, { 
                 status: 'active', 
+                branch: selectedBranch, // Lưu cơ sở ngay từ lần đầu nhập
                 dob: '', 
                 phone: '',
-                createdAt: txDate // Đánh dấu ngày tạo hồ sơ dựa vào ngày giao dịch đầu tiên
+                createdAt: txDate 
             });
         }
 
