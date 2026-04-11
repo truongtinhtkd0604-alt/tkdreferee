@@ -9,46 +9,38 @@
         :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; }
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #eef2f7; margin: 0; padding: 10px; color: var(--dark); }
         
-        /* Auth Overlay */
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
 
         .app-container { max-width: 1100px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
         
-        /* Header & Stats */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-box { padding: 20px; border-radius: 12px; color: white; position: relative; overflow: hidden; }
         .stat-box h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; opacity: 0.8; }
         .stat-box p { margin: 10px 0 0; font-size: 1.6rem; font-weight: 800; }
 
-        /* Forms & Filters */
         .section-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
         .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: var(--light); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        input, select { border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-size: 15px; outline: none; transition: 0.2s; }
+        input, select { border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-size: 15px; outline: none; transition: 0.2s; box-sizing: border-box; width: 100%; }
         input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,160,0.1); }
 
-        /* Buttons */
         .btn { padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: var(--dark); }
-        .btn:active { transform: translateY(1px); }
-        .btn-zalo { background: #0068ff; color: white; padding: 4px 8px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; }
+        .btn-warning { background: var(--warning); color: #856404; font-weight: 700; }
+        .btn-zalo { background: #0068ff; color: white; padding: 6px 12px; font-size: 0.85rem; text-decoration: none; border-radius: 6px; }
         .btn-zalo:hover { background: #0056d2; }
 
-        /* Table */
         .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
         th { background: #fcfcfc; color: #666; font-size: 0.8rem; text-transform: uppercase; padding: 15px; text-align: left; border-bottom: 2px solid #eee; }
         td { padding: 15px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
         .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-
-        /* Profile Modal */
+        .badge-new { background: var(--success); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: normal; }
+        
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; padding: 20px; }
-        .modal-content { background: white; max-width: 500px; margin: 50px auto; border-radius: 16px; padding: 25px; position: relative; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-content { background: white; max-width: 500px; margin: 50px auto; border-radius: 16px; padding: 25px; position: relative; }
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
     </style>
 </head>
@@ -57,7 +49,7 @@
 <div id="loginOverlay">
     <div class="login-card">
         <h2 style="color:var(--primary)">HỆ THỐNG TST</h2>
-        <input type="password" id="passInput" placeholder="Mật khẩu" style="width:100%; margin-bottom:1rem; box-sizing:border-box;">
+        <input type="password" id="passInput" placeholder="Mật khẩu" style="margin-bottom:1rem;">
         <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
     </div>
 </div>
@@ -71,7 +63,7 @@
     <div class="stats-grid">
         <div class="stat-box" style="background: var(--success);"><h3>Tổng thu tháng</h3><p id="totalIncome">0 ₫</p></div>
         <div class="stat-box" style="background: var(--secondary);"><h3>Tổng chi tháng</h3><p id="totalExpense">0 ₫</p></div>
-        <div class="stat-box" style="background: var(--warning);"><h3>Võ sinh nợ phí</h3><p id="debtCount">0 Bạn</p></div>
+        <div class="stat-box" style="background: var(--warning); color:#856404;"><h3>Võ sinh nợ phí</h3><p id="debtCount">0 Bạn</p></div>
         <div class="stat-box" style="background: var(--info);"><h3>Võ sinh mới</h3><p id="newStudentCount">0 Bạn</p></div>
     </div>
 
@@ -84,7 +76,7 @@
             <option value="CS2">CS2: Sân vận động</option>
         </select>
         <input type="text" id="searchInput" placeholder="Nhập tên võ sinh...">
-        <button class="btn btn-warning" id="showDebtBtn">LỌC DANH SÁCH NỢ</button>
+        <button class="btn btn-warning" id="showDebtBtn">LỌC VÕ SINH NỢ PHÍ</button>
     </div>
 
     <div class="section-title">📝 NHẬP GIAO DỊCH MỚI</div>
@@ -95,10 +87,10 @@
         <input type="text" id="description" list="studentList" placeholder="Tên võ sinh / Nội dung" autocomplete="off" required>
         <datalist id="studentList"></datalist>
 
-        <input type="text" id="amountDisplay" placeholder="Số tiền">
+        <input type="text" id="amountDisplay" placeholder="Số tiền" required>
         <input type="hidden" id="amountActual">
         <input type="date" id="date" required>
-        <button type="submit" class="btn btn-primary">LƯU HỆ THỐNG</button>
+        <button type="submit" class="btn btn-primary" style="grid-column: 1 / -1; max-width: 250px; justify-self: center;">LƯU HỆ THỐNG</button>
     </form>
 
     <div class="table-wrapper">
@@ -118,15 +110,15 @@
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
             <div>
-                <label style="font-size:0.8rem; color:#666;">Trạng thái tập luyện:</label><br>
-                <select id="m_status" style="width:100%; margin-top:5px;">
+                <label style="font-size:0.8rem; color:#666;">Trạng thái tập luyện:</label>
+                <select id="m_status" style="margin-top:5px;">
                     <option value="active">Đang tập luyện</option>
                     <option value="quit">Đã nghỉ tập</option>
                 </select>
             </div>
             <div>
-                <label style="font-size:0.8rem; color:#666;">Cơ sở tập luyện:</label><br>
-                <select id="m_branch" style="width:100%; margin-top:5px;">
+                <label style="font-size:0.8rem; color:#666;">Cơ sở tập luyện:</label>
+                <select id="m_branch" style="margin-top:5px;">
                     <option value="CS1">CS1: Huỳnh Tấn Phát</option>
                     <option value="CS2">CS2: Sân vận động</option>
                 </select>
@@ -135,12 +127,12 @@
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
             <div>
-                <label style="font-size:0.8rem; color:#666;">Ngày sinh:</label><br>
-                <input type="date" id="m_dob" style="width:100%; margin-top:5px; box-sizing:border-box;">
+                <label style="font-size:0.8rem; color:#666;">Mức học phí (VNĐ):</label>
+                <input type="number" id="m_tuitionFee" placeholder="VD: 500000" style="margin-top:5px;">
             </div>
             <div>
                 <label style="font-size:0.8rem; color:#666;">SĐT Liên hệ:</label>
-                <input type="tel" id="m_phone" placeholder="SĐT phụ huynh" style="width:100%; margin-top:5px; box-sizing:border-box;">
+                <input type="tel" id="m_phone" placeholder="SĐT phụ huynh" style="margin-top:5px;">
             </div>
         </div>
 
@@ -170,7 +162,6 @@
     const colRef = collection(db, "tst_transactions");
     const profRef = collection(db, "tst_profiles");
 
-    // Login logic
     window.checkLogin = () => {
         if(document.getElementById('passInput').value === "Tinhts64") {
             document.getElementById('loginOverlay').style.display = 'none';
@@ -178,7 +169,13 @@
         } else alert("Sai mật khẩu!");
     };
 
-    // Tiền tệ
+    // Hàm chuẩn hóa tên: Viết hoa chữ cái đầu, xóa khoảng trắng thừa
+    function formatName(str) {
+        return str.trim().replace(/\s+/g, ' ').split(' ')
+                  .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                  .join(' ');
+    }
+
     const amtDisp = document.getElementById('amountDisplay');
     const amtAct = document.getElementById('amountActual');
     amtDisp.oninput = (e) => {
@@ -187,14 +184,12 @@
         e.target.value = v ? parseInt(v).toLocaleString('vi-VN') : '';
     };
 
-    // Load Data
     let allTransactions = [];
     let allProfiles = {};
 
     onSnapshot(profRef, (snap) => {
         const dataList = document.getElementById('studentList');
         dataList.innerHTML = ''; 
-        
         snap.forEach(d => {
             allProfiles[d.id] = d.data();
             dataList.innerHTML += `<option value="${d.id}">`; 
@@ -205,6 +200,22 @@
     onSnapshot(query(colRef, orderBy("date", "desc")), (snap) => {
         allTransactions = snap.docs.map(d => ({id: d.id, ...d.data()}));
         renderApp();
+    });
+
+    // Auto-fill thông tin khi chọn Võ sinh
+    document.getElementById('description').addEventListener('change', (e) => {
+        if(document.getElementById('type').value === 'Chi phí vận hành') return;
+        const name = formatName(e.target.value);
+        e.target.value = name; // Cập nhật lại khung nhập cho đẹp
+        
+        const p = allProfiles[name];
+        if (p) {
+            if (p.branch) document.getElementById('branch').value = p.branch;
+            if (document.getElementById('type').value === 'Học phí' && p.tuitionFee) {
+                amtAct.value = p.tuitionFee;
+                amtDisp.value = parseInt(p.tuitionFee).toLocaleString('vi-VN');
+            }
+        }
     });
 
     document.getElementById('filterMonth').addEventListener('input', () => renderApp());
@@ -218,17 +229,28 @@
         const search = document.getElementById('searchInput').value.toLowerCase();
         
         list.innerHTML = '';
-        let inc = 0, exp = 0;
-        let newStudentsThisMonth = 0;
+        let inc = 0, exp = 0, newStudentsThisMonth = 0;
 
-        const monthText = selMonth ? selMonth.split('-')[1] : (new Date().getMonth() + 1);
-        const activeStudents = Object.keys(allProfiles).filter(name => allProfiles[name].status === 'active');
-        const paidThisMonth = allTransactions.filter(t => t.date.startsWith(selMonth) && t.type === 'Học phí').map(t => t.description);
+        // Tính nợ chính xác
+        const activeStudents = Object.keys(allProfiles).filter(name => {
+            const p = allProfiles[name];
+            if(p.status !== 'active') return false;
+            // Ràng buộc cơ sở
+            if(selBranch !== 'all' && p.branch !== selBranch) return false;
+            // Bỏ qua nếu võ sinh mới tạo hồ sơ SAU tháng đang lọc
+            if(p.createdAt && selMonth && p.createdAt.substring(0,7) > selMonth) return false;
+            return true;
+        });
+
+        const paidThisMonth = allTransactions
+            .filter(t => t.date.startsWith(selMonth) && t.type === 'Học phí')
+            .map(t => t.description);
+            
         const debtStudents = activeStudents.filter(name => !paidThisMonth.includes(name));
         document.getElementById('debtCount').innerText = debtStudents.length + " Bạn";
 
         Object.values(allProfiles).forEach(p => {
-            if (p.createdAt && p.createdAt.startsWith(selMonth)) {
+            if (p.createdAt && selMonth && p.createdAt.startsWith(selMonth)) {
                 newStudentsThisMonth++;
             }
         });
@@ -237,23 +259,17 @@
         if(debtMode) {
             debtStudents.forEach(name => {
                 const profile = allProfiles[name] || {};
+                const branch = profile.branch || '---';
                 const phone = profile.phone || "";
-                
-                const msg = `Xin chào phụ huynh võ sinh ${name}, CLUB TAEKWONDO TST gửi thông báo học phí tháng ${monthText} của bé vẫn chưa được hoàn thành. Nhờ anh/chị kiểm tra và đóng học phí cho bé ạ. Trân trọng!`;
-                const zaloLink = phone 
-                    ? `https://zalo.me/${phone}` 
-                    : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
+                const msg = `Xin chào phụ huynh võ sinh ${name}, CLUB TAEKWONDO TST gửi thông báo học phí tháng ${selMonth.split('-')[1]} của bé vẫn chưa được hoàn thành. Nhờ anh/chị kiểm tra và đóng học phí cho bé ạ. Trân trọng!`;
+                const zaloLink = phone ? `https://zalo.me/${phone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
 
                 list.innerHTML += `<tr style="background:#fff9e6">
-                    <td>---</td><td>---</td>
+                    <td>---</td><td>${branch}</td>
                     <td class="name-link" onclick="openProfile('${name}')">${name}</td>
-                    <td><span class="badge" style="background:#ff9800; color:white">Nợ học phí</span></td>
-                    <td style="color:red">Chưa đóng</td>
-                    <td>
-                        <a href="${zaloLink}" target="_blank" class="btn btn-zalo" onclick="copyToClipboard('${msg}')">
-                            💬 Nhắc Zalo
-                        </a>
-                    </td>
+                    <td><span style="color:#856404; font-weight:bold;">Chưa đóng học phí</span></td>
+                    <td style="color:red">Nợ</td>
+                    <td><a href="${zaloLink}" target="_blank" class="btn-zalo" onclick="copyToClipboard('${msg}')">💬 Nhắc Zalo</a></td>
                 </tr>`;
             });
             return;
@@ -267,10 +283,14 @@
             const isInc = t.type !== 'Chi phí vận hành';
             isInc ? (inc += t.amount) : (exp += t.amount);
 
+            // Gắn badge "Mới" nếu học viên đăng ký trong tháng
+            const p = allProfiles[t.description];
+            const isNew = (p && p.createdAt && p.createdAt.startsWith(selMonth)) ? `<span class="badge-new">Mới</span>` : '';
+
             list.innerHTML += `<tr>
                 <td>${t.date.split('-').reverse().join('/')}</td>
                 <td>${t.branch}</td>
-                <td class="name-link" onclick="openProfile('${t.description}')">${t.description}</td>
+                <td class="name-link" onclick="openProfile('${t.description}')">${isNew}${t.description}</td>
                 <td>${t.type}</td>
                 <td style="font-weight:700; color:${isInc?'var(--success)':'var(--secondary)'}">${isInc?'+':'-'}${t.amount.toLocaleString()} ₫</td>
                 <td><button onclick="deleteTx('${t.id}')" style="color:red; border:none; background:none; cursor:pointer;">Xóa</button></td>
@@ -281,25 +301,20 @@
         document.getElementById('totalExpense').innerText = exp.toLocaleString() + " ₫";
     }
 
-    window.copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Đã sao chép nội dung nhắc nợ. Mở Zalo và dán (Paste) vào ô chat.");
-        });
-    };
+    window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); alert("Đã copy tin nhắn nhắc nợ!"); };
 
-    // Quản lý Hồ sơ
     window.openProfile = async (name) => {
         document.getElementById('m_name').innerText = name;
-        const p = allProfiles[name] || { status: 'active', dob: '', phone: '', branch: 'CS1' };
+        const p = allProfiles[name] || { status: 'active', branch: 'CS1', tuitionFee: '', phone: '' };
         
         document.getElementById('m_status').value = p.status;
-        document.getElementById('m_branch').value = p.branch || 'CS1'; // Nạp cơ sở
-        document.getElementById('m_dob').value = p.dob;
-        document.getElementById('m_phone').value = p.phone;
+        document.getElementById('m_branch').value = p.branch || 'CS1';
+        document.getElementById('m_tuitionFee').value = p.tuitionFee || '';
+        document.getElementById('m_phone').value = p.phone || '';
 
         const history = allTransactions.filter(t => t.description === name).slice(0, 5);
         document.getElementById('m_history').innerHTML = history.length 
-            ? history.map(h => `<div style="padding:5px 0; border-bottom:1px solid #f9f9f9">${h.date}: ${h.type} (${h.amount.toLocaleString()}đ)</div>`).join('')
+            ? history.map(h => `<div style="padding:8px 0; border-bottom:1px solid #f9f9f9">${h.date.split('-').reverse().join('/')}: ${h.type} <strong style="color:var(--success)">(${h.amount.toLocaleString()}đ)</strong></div>`).join('')
             : 'Chưa có lịch sử giao dịch.';
 
         document.getElementById('profileModal').style.display = 'block';
@@ -311,8 +326,8 @@
         await setDoc(doc(db, "tst_profiles", name), {
             ...currentData,
             status: document.getElementById('m_status').value,
-            branch: document.getElementById('m_branch').value, // Cập nhật cơ sở
-            dob: document.getElementById('m_dob').value,
+            branch: document.getElementById('m_branch').value,
+            tuitionFee: document.getElementById('m_tuitionFee').value,
             phone: document.getElementById('m_phone').value
         });
         alert("Đã cập nhật hồ sơ!");
@@ -321,20 +336,23 @@
 
     window.closeModal = () => document.getElementById('profileModal').style.display = 'none';
 
-    // Thêm giao dịch & auto-create profile
     document.getElementById('transactionForm').onsubmit = async (e) => {
         e.preventDefault();
-        const name = document.getElementById('description').value.trim();
+        const type = document.getElementById('type').value;
+        let rawName = document.getElementById('description').value;
+        
+        // Luôn chuẩn hóa tên trước khi lưu
+        const name = (type === 'Chi phí vận hành') ? rawName : formatName(rawName);
+        
         const txDate = document.getElementById('date').value;
         const selectedBranch = document.getElementById('branch').value;
-        const type = document.getElementById('type').value;
 
-        // KIỂM TRA CHÉO CƠ SỞ (Chỉ kiểm tra nếu không phải Chi phí vận hành)
+        // Chống lộn cơ sở
         const existingProfile = allProfiles[name];
         if (existingProfile && existingProfile.branch && type !== 'Chi phí vận hành') {
             if (existingProfile.branch !== selectedBranch) {
-                alert(`❌ LỖI SAI CƠ SỞ!\nVõ sinh "${name}" hiện đang quản lý tại ${existingProfile.branch}.\nBạn đang cố nhập phiếu thu vào ${selectedBranch}.\n\nGiải pháp: Hãy chọn đúng cơ sở ${existingProfile.branch} hoặc click vào tên võ sinh để đổi cơ sở trước khi nhập!`);
-                return; // Dừng, không cho phép lưu
+                alert(`❌ LỖI SAI CƠ SỞ!\nVõ sinh "${name}" đang thuộc ${existingProfile.branch}.\nHãy chuyển đúng cơ sở trước khi nhập!`);
+                return;
             }
         }
 
@@ -346,14 +364,11 @@
             date: txDate
         });
         
-        // Tạo profile mặc định nếu chưa có
-        const docRef = doc(db, "tst_profiles", name);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists() && type !== 'Chi phí vận hành') {
-            await setDoc(docRef, { 
+        if (!existingProfile && type !== 'Chi phí vận hành') {
+            await setDoc(doc(db, "tst_profiles", name), { 
                 status: 'active', 
-                branch: selectedBranch, // Lưu cơ sở ngay từ lần đầu nhập
-                dob: '', 
+                branch: selectedBranch, 
+                tuitionFee: amtAct.value, // Lấy luôn số tiền lần đầu làm học phí mặc định
                 phone: '',
                 createdAt: txDate 
             });
@@ -363,10 +378,9 @@
         document.getElementById('date').valueAsDate = new Date();
     };
 
-    // Điều khiển khác
     document.getElementById('showDebtBtn').onclick = function() {
         const isDebt = this.innerText.includes("NỢ");
-        this.innerText = isDebt ? "HIỆN TẤT CẢ" : "LỌC DANH SÁCH NỢ";
+        this.innerText = isDebt ? "HIỆN TẤT CẢ" : "LỌC VÕ SINH NỢ PHÍ";
         renderApp(isDebt);
     };
 
