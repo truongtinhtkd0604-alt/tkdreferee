@@ -10,78 +10,28 @@
             --primary-color: #0033A0;
             --danger-color: #C8102E;
             --success-color: #28a745;
-            --warning-color: #ffc107; /* Màu nhãn Nợ */
+            --warning-color: #ffc107;
             --bg-color: #f4f7f6;
             --card-bg: #ffffff;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: auto; background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Logo styling */
-        .logo-container {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .logo-container img {
-            max-width: 400px; /* Cân chỉnh logo cho chuyên nghiệp */
-            height: auto;
-        }
+        /* Logo */
+        .logo-container { text-align: center; margin-bottom: 25px; }
+        .logo-container img { max-width: 400px; height: auto; }
         
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-        }
+        h1 { text-align: center; color: var(--primary-color); border-bottom: 3px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 30px; text-transform: uppercase; }
         
         /* Filters */
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 25px;
-            background: #eef2f5;
-            padding: 15px;
-            border-radius: 10px;
-            align-items: center;
-        }
+        .controls { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 25px; background: #eef2f5; padding: 15px; border-radius: 10px; align-items: center; justify-content: space-between; }
+        .controls-left { display: flex; gap: 20px; align-items: center; }
         .controls label { font-weight: bold; }
-        .controls input, .controls select {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
+        .controls input, .controls select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
 
         /* Dashboard */
-        .dashboard {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            gap: 15px;
-        }
-        .card {
-            flex: 1;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            color: white;
-            font-weight: bold;
-        }
+        .dashboard { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 15px; }
+        .card { flex: 1; padding: 20px; border-radius: 10px; text-align: center; color: white; font-weight: bold; }
         .card-income { background-color: var(--success-color); }
         .card-expense { background-color: var(--danger-color); }
         .card-balance { background-color: var(--primary-color); }
@@ -89,155 +39,72 @@
         .card p { margin: 5px 0 0 0; font-size: 1.6em; }
 
         /* Form */
-        .form-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border: 2px solid #eef2f5;
-        }
-        .form-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .form-group {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 180px;
-        }
-        .form-group label {
-            font-size: 0.85em;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-        .form-group input, .form-group select {
-            padding: 12px;
-            border: 1px solid #ccd1d9;
-            border-radius: 6px;
-            font-size: 1em;
-        }
+        .form-container { background-color: #fff; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #eef2f5; }
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group { flex: 1; display: flex; flex-direction: column; min-width: 180px; }
+        .form-group label { font-size: 0.85em; margin-bottom: 8px; font-weight: bold; color: #555; }
+        .form-group input, .form-group select { padding: 12px; border: 1px solid #ccd1d9; border-radius: 6px; font-size: 1em; }
         
-        /* Hidden fields for new students */
-        #newStudentInfo {
-            display: none;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid var(--success-color);
-            margin-bottom: 15px;
-        }
+        #newStudentInfo { display: none; background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--success-color); margin-bottom: 15px; }
 
-        /* Buttons style for professional view */
-        .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        button {
-            padding: 12px 24px;
-            cursor: pointer;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 1.1em;
-            border: none;
-            transition: 0.2s;
-        }
-        
-        button.btn-add {
-            background-color: var(--primary-color);
-            color: white;
-            flex: 2; /* Chiếm nhiều diện tích hơn */
-        }
+        /* Buttons */
+        .button-group { display: flex; gap: 10px; justify-content: center; }
+        button { padding: 12px 24px; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 1.1em; border: none; transition: 0.2s; }
+        button.btn-add { background-color: var(--primary-color); color: white; flex: 2; }
         button.btn-add:hover { background-color: #002277; }
-
-        button.btn-excel {
-            background-color: #2e7d32; /* Màu xanh lá cho Excel */
-            color: white;
-            flex: 1; /* Chiếm diện tích nhỏ hơn */
-        }
+        button.btn-excel { background-color: #2e7d32; color: white; flex: 1; }
         button.btn-excel:hover { background-color: #1b5e20; }
+        button.btn-reset { background-color: #aaa; color: white; flex: 1; }
         
-        button.btn-reset {
-            background-color: #aaa; /* Màu xám cho Làm mới */
-            color: white;
-            flex: 1; /* Chiếm diện tích nhỏ hơn */
-        }
-        button.btn-reset:hover { background-color: #888; }
-        
-        button.btn-zalo {
-            background-color: #0068ff; /* Màu xanh Zalo cho nút Nhắc nợ */
-            color: white;
-            padding: 4px 8px;
-            font-size: 0.8em;
-            text-decoration: none;
-            border-radius: 4px;
-        }
+        button.btn-zalo { background-color: #0068ff; color: white; padding: 6px 12px; font-size: 0.85em; text-decoration: none; border-radius: 4px; display: inline-block; }
         button.btn-zalo:hover { background-color: #0056d2; }
 
         /* Table */
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .search-bar {
-            width: 350px;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-            font-size: 0.95em;
-        }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .search-bar { width: 350px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.95em; }
         th { background-color: var(--primary-color); color: white; }
         
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
-        .badge-new { background: #e8f5e9; color: #2e7d32; }
-        .badge-old { background: #e3f2fd; color: #0d47a1; }
+        .badge-info { background: #e8f5e9; color: #2e7d32; }
+        .badge-warning { background-color: var(--warning-color); color: #856404; }
         
         .text-income { color: var(--success-color); font-weight: bold; }
         .text-expense { color: var(--danger-color); font-weight: bold; }
         .contact-info { font-size: 0.8em; color: #666; display: block; margin-top: 4px; }
         
         .delete-btn { color: #ff4c4c; cursor: pointer; border: 1px solid #ff4c4c; background: transparent; padding: 4px 8px; border-radius: 4px; }
+        
+        /* Loading Overlay */
+        #loading { display: none; text-align: center; padding: 20px; font-weight: bold; color: var(--primary-color); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="logo-container">
-        <img src="image_7.png" alt="TST Taekwondo Logo">
+        <img src="Logo CLB mới xóa nên.png" alt="TST Taekwondo Logo">
     </div>
     <h1>CLUB TAEKWONDO TST - QUẢN LÝ ONLINE</h1>
     
     <div class="controls">
-        <div>
-            <label>Tháng báo báo: </label>
-            <input type="month" id="filterMonth">
+        <div class="controls-left">
+            <div>
+                <label>Tháng báo cáo: </label>
+                <input type="month" id="filterMonth">
+            </div>
+            <div>
+                <label>Cơ sở: </label>
+                <select id="filterBranch">
+                    <option value="all">Tất cả cơ sở</option>
+                    <option value="CS1">CS1: Huỳnh Tấn Phát</option>
+                    <option value="CS2">CS2: Sân vận động</option>
+                </select>
+            </div>
         </div>
         <div>
-            <label>Cơ sở: </label>
-            <select id="filterBranch">
-                <option value="all">Tất cả cơ sở</option>
-                <option value="CS1">CS1: Huỳnh Tấn Phát</option>
-                <option value="CS2">CS2: Sân vận động</option>
-            </select>
-        </div>
-        <div>
-            <button class="btn btn-warning" id="showDebtBtn" style="background-color: var(--warning-color); color: #856404; font-weight: bold;">LỌC VÕ SINH NỢ PHÍ</button>
+            <button id="showDebtBtn" style="background-color: var(--warning-color); color: #856404; font-weight: bold; padding: 12px 20px;">LỌC VÕ SINH NỢ PHÍ</button>
         </div>
     </div>
 
@@ -280,7 +147,7 @@
             <div id="newStudentInfo">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Ngày sinh (để quản lý profile)</label>
+                        <label>Ngày sinh</label>
                         <input type="date" id="studentDob">
                     </div>
                     <div class="form-group">
@@ -288,7 +155,7 @@
                         <input type="tel" id="studentPhone" placeholder="090...">
                     </div>
                     <div class="form-group">
-                        <label>SĐT Phụ huynh</label>
+                        <label>SĐT Phụ huynh (Dùng để nhắc Zalo)</label>
                         <input type="tel" id="parentPhone" placeholder="091...">
                     </div>
                 </div>
@@ -311,7 +178,7 @@
                 </div>
             </div>
             <div class="button-group">
-                <button type="submit" class="btn btn-primary btn-add">LƯU HỆ THỐNG</button>
+                <button type="submit" class="btn btn-primary btn-add" id="submitBtn">LƯU HỆ THỐNG</button>
                 <button type="button" class="btn btn-excel" id="exportBtn">📋 XUẤT EXCEL</button>
                 <button type="button" class="btn btn-reset" id="resetBtn">🔄 LÀM MỚI</button>
             </div>
@@ -323,6 +190,7 @@
         <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Tìm tên hoặc nội dung...">
     </div>
 
+    <div id="loading">⏳ Đang tải dữ liệu từ Firebase...</div>
     <table>
         <thead>
             <tr>
@@ -339,64 +207,84 @@
 </div>
 
 <script type="module">
-    // --- FIREBASE CONFIGURATION PLACEHOLDER ---
-    // (Hãy dán mã config Firebase thật của bạn vào đây khi sẵn sàng)
-    const firebaseConfig = {
-      // apiKey: "...", appId: "..."
-    };
-    // initializeApp(firebaseConfig); // const db = getFirestore(); // v.v.
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // --- LOGIC JavaScript (Sử dụng fake Firebase trên localStorage) ---
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
+  authDomain: "quanly-tst.firebaseapp.com",
+  projectId: "quanly-tst",
+  storageBucket: "quanly-tst.firebasestorage.app",
+  messagingSenderId: "981970279440",
+  appId: "1:981970279440:web:8ac137ec4f72a39faa7e95",
+  measurementId: "G-Z1M9YYDZL1"
+};:
+    // Khởi tạo Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Biến lưu trữ dữ liệu cục bộ để render
+    let studentProfiles = {};
+    let transactions = [];
+    let isDebtMode = false;
+
+    // --- Lắng nghe dữ liệu thời gian thực từ Firebase ---
+    document.getElementById('loading').style.display = 'block';
     
-    // Khởi tạo/Load database profile (SĐT, ngày sinh, trạng thái thực...)
-    // (Trong thực tế, cái này nên là collection 'students' trên Firebase)
-    let studentProfiles = JSON.parse(localStorage.getItem('tst_students')) || {};
-    // Load database giao dịch
-    let transactions = JSON.parse(localStorage.getItem('tst_transactions')) || [];
+    // Lắng nghe Hồ sơ võ sinh
+    onSnapshot(collection(db, "students"), (snapshot) => {
+        studentProfiles = {};
+        snapshot.forEach((docSnap) => {
+            studentProfiles[docSnap.id] = docSnap.data();
+        });
+        updateDatalist();
+        render();
+    });
 
-    // --- HÀM HỖ TRỢ CHUẨN HÓA TÊN ---
+    // Lắng nghe Giao dịch
+    onSnapshot(collection(db, "transactions"), (snapshot) => {
+        transactions = [];
+        snapshot.forEach((docSnap) => {
+            transactions.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        document.getElementById('loading').style.display = 'none';
+        render();
+    });
+
+    // --- CÁC HÀM TIỆN ÍCH ---
     function formatName(str) {
         return str.trim().toLowerCase().replace(/\s+/g, ' ').split(' ')
-                  .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-                  .join(' ');
+                  .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     }
+    const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 
-    // --- TỰ ĐỘNG ĐỊNH DẠNG TIỀN TỆ ---
+    // Xử lý hiển thị tiền tệ input
     const amountDisplay = document.getElementById('amountDisplay');
     const amountActual = document.getElementById('amountActual');
-
     amountDisplay.addEventListener('input', function(e) {
         let value = this.value.replace(/\D/g, '');
         if (value) {
             amountActual.value = value;
             this.value = parseInt(value).toLocaleString('vi-VN');
         } else {
-            amountActual.value = '';
-            this.value = '';
+            amountActual.value = ''; this.value = '';
         }
     });
 
-    // --- HIỆN/ẨN THÔNG TIN VÕ SINH MỚI ---
+    // Xử lý hiện Form thông tin võ sinh mới
     const statusSelect = document.getElementById('studentStatus');
     const newInfoBox = document.getElementById('newStudentInfo');
+    const descInput = document.getElementById('description');
 
     function toggleNewInfo() {
-        if (statusSelect.value === 'new') {
-            newInfoBox.style.display = 'block';
-        } else {
-            newInfoBox.style.display = 'none';
-        }
+        newInfoBox.style.display = (statusSelect.value === 'new') ? 'block' : 'none';
     }
     statusSelect.addEventListener('change', toggleNewInfo);
 
-    // --- NHẬN DIỆN VÕ SINH CŨ ---
-    const descInput = document.getElementById('description');
     descInput.addEventListener('input', function() {
         const val = this.value.trim().toLowerCase();
-        
-        // Kiểm tra võ sinh đã tồn tại trong database profile chưa
         const isExisting = Object.keys(studentProfiles).some(p => p.toLowerCase() === val);
-        
         if (isExisting) {
             statusSelect.value = 'old';
         } else if (val.length > 3) {
@@ -405,73 +293,7 @@
         toggleNewInfo();
     });
 
-    // --- RENDER DỮ LIỆU THỜI GIAN THỰC ---
-    const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
-
-    function render(debtMode = false) {
-        const list = document.getElementById('transactionList');
-        const selMonth = document.getElementById('filterMonth').value;
-        const selBranch = document.getElementById('filterBranch').value;
-        const search = document.getElementById('searchInput').value.toLowerCase();
-
-        list.innerHTML = '';
-        let inc = 0, exp = 0;
-
-        const monthText = selMonth ? selMonth.split('-')[1] : (new Date().getMonth() + 1);
-
-        // --- LOGIC LỌC NỢ TỐI ƯU ---
-        if(debtMode) {
-            // 1. Lấy danh sách võ sinh đang tập (active) tại cơ sở được chọn
-            const activeStudents = Object.values(studentProfiles).filter(p => {
-                if(p.status !== 'active') return false;
-                if(selBranch !== 'all' && p.branch !== selBranch) return false;
-                // Bỏ qua nếu võ sinh mới tạo hồ sơ SAU tháng đang lọc
-                if(p.createdAt && selMonth && p.createdAt.substring(0,7) > selMonth) return false;
-                return true;
-            });
-
-            // 2. Lấy danh sách đã đóng "Học phí" trong "Tháng" được chọn
-            const paidThisMonth = transactions.filter(t => {
-                const m = t.date.substring(0, 7);
-                return t.type === 'Học phí' && m === selMonth;
-            }).map(t => t.studentName);
-
-            // 3. So sánh để tìm võ sinh nợ
-            const debtStudents = activeStudents.filter(p => !paidThisMonth.includes(p.name));
-
-            // Hiển thị danh sách nợ trong bảng
-            debtStudents.forEach(p => {
-                // Nội dung tin nhắn mẫu Zalo cá nhân
-                const msg = `Xin chào phụ huynh võ sinh ${p.name}, CLUB TAEKWONDO TST gửi thông báo học phí tháng ${monthText} của bé vẫn chưa được hoàn thành. Nhờ anh/chị kiểm tra và đóng học phí cho bé ạ. Trân trọng!`;
-                // Deep link Zalo: Mở cửa sổ chat với SĐT
-                const zaloLink = p.pPhone ? `https://zalo.me/${p.pPhone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(p.pPhone || p.sPhone || p.name)}`;
-
-                const row = `<tr>
-                    <td>---</td>
-                    <td><span class="badge" style="background:#eee; color:#333">${p.branch}</span></td>
-                    <td>
-                        <span class="badge badge-warning" style="background-color: var(--warning-color); color: #856404; font-weight: bold;">Nợ học phí</span>
-                        <strong>${p.name}</strong>
-                        <span class="contact-info">👨‍👩‍👧 PH: ${p.pPhone || '-'}</span>
-                    </td>
-                    <td><span class="badge badge-warning" style="background-color: var(--warning-color); color: #856404; font-weight: bold;">Học phí tháng ${monthText}</span></td>
-                    <td style="color:red; font-weight: bold">Chưa đóng</td>
-                    <td><a href="${zaloLink}" target="_blank" class="btn btn-zalo" onclick="copyToClipboard('${msg}')">💬 Nhắc Zalo</a></td>
-                </tr>`;
-                list.appendChild(row);
-            });
-            // Ẩn bảng dashboard khi lọc nợ
-            document.querySelector('.dashboard').style.display = 'none';
-            document.getElementById('totalIncome').innerText = "-";
-            document.getElementById('totalExpense').innerText = "-";
-            document.getElementById('balance').innerText = "-";
-            return;
-        }
-
-        // --- RENDER GIAO DỊCH BÌNH THƯỜNG ---
-        document.querySelector('.dashboard').style.display = 'flex';
-        
-        // Cập nhật lại list suggestion (datalist) chỉ gợi ý võ sinh active
+    function updateDatalist() {
         const dl = document.getElementById('allStudentList');
         dl.innerHTML = '';
         Object.values(studentProfiles).filter(p => p.status === 'active').forEach(p => {
@@ -479,11 +301,59 @@
             o.value = p.name;
             dl.appendChild(o);
         });
+    }
 
-        // Lấy lại dữ liệu thực
-        transactions = JSON.parse(localStorage.getItem('tst_transactions')) || [];
-        studentProfiles = JSON.parse(localStorage.getItem('tst_students')) || {};
+    // --- HÀM RENDER (VẼ GIAO DIỆN) ---
+    function render() {
+        const list = document.getElementById('transactionList');
+        const selMonth = document.getElementById('filterMonth').value;
+        const selBranch = document.getElementById('filterBranch').value;
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        
+        list.innerHTML = '';
+        let inc = 0, exp = 0;
+        const monthText = selMonth ? selMonth.split('-')[1] : (new Date().getMonth() + 1);
 
+        // 1. CHẾ ĐỘ LỌC NỢ
+        if(isDebtMode) {
+            const activeStudents = Object.values(studentProfiles).filter(p => {
+                if(p.status !== 'active') return false;
+                if(selBranch !== 'all' && p.branch !== selBranch) return false;
+                if(p.createdAt && selMonth && p.createdAt.substring(0,7) > selMonth) return false;
+                return true;
+            });
+
+            const paidThisMonth = transactions.filter(t => {
+                return t.type === 'Học phí' && t.date.substring(0, 7) === selMonth;
+            }).map(t => t.studentName);
+
+            const debtStudents = activeStudents.filter(p => !paidThisMonth.includes(p.name));
+
+            debtStudents.forEach(p => {
+                const msg = `Xin chào phụ huynh võ sinh ${p.name}, CLUB TAEKWONDO TST gửi thông báo học phí tháng ${monthText} của bé vẫn chưa được hoàn thành. Nhờ anh/chị kiểm tra và đóng học phí cho bé ạ. Trân trọng!`;
+                const zaloLink = p.pPhone ? `https://zalo.me/${p.pPhone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(p.pPhone || p.sPhone || p.name)}`;
+
+                const row = `<tr>
+                    <td>---</td>
+                    <td><span class="badge" style="background:#eee; color:#333">${p.branch}</span></td>
+                    <td>
+                        <span class="badge badge-warning">Nợ học phí</span> <strong>${p.name}</strong>
+                        <span class="contact-info">👨‍👩‍👧 PH: ${p.pPhone || 'Chưa cập nhật'}</span>
+                    </td>
+                    <td><span class="badge badge-warning">Tháng ${monthText}</span></td>
+                    <td style="color:red; font-weight: bold">Chưa đóng</td>
+                    <td><a href="${zaloLink}" target="_blank" class="btn-zalo" onclick="copyToClipboard('${msg}')">💬 Nhắc Zalo</a></td>
+                </tr>`;
+                list.innerHTML += row;
+            });
+
+            document.querySelector('.dashboard').style.display = 'none';
+            return;
+        }
+
+        // 2. CHẾ ĐỘ HIỂN THỊ BÌNH THƯỜNG
+        document.querySelector('.dashboard').style.display = 'flex';
+        
         const filteredTx = transactions.filter(t => {
             const m = t.date.substring(0, 7);
             const matchM = !selMonth || m === selMonth;
@@ -496,33 +366,22 @@
             const isInc = t.type !== 'Chi phí vận hành';
             if(isInc) inc += t.amount; else exp += t.amount;
 
-            // Tìm profile võ sinh để lấy contact info
             const p = studentProfiles[t.studentName];
             let extra = '';
             if (p && t.type !== 'Chi phí vận hành') {
-                extra = `<span class="contact-info">📱 Võ sinh: ${p.sPhone || '-'} | 👨‍👩‍👧 PH: ${p.pPhone || '-'}</span>`;
-            } else if (t.type === 'Chi phí vận hành' && (p && p.pPhone || t.parentPhonePlaceholder)) {
-                // placeholder sđt cho chi phí nếu khớp tên
-                extra = `<span class="contact-info">📞 LH: ${t.parentPhonePlaceholder || (p ? p.pPhone : '-')}</span>`;
+                extra = `<span class="contact-info">📱 VS: ${p.sPhone || '-'} | 👨‍👩‍👧 PH: ${p.pPhone || '-'}</span>`;
             }
 
-            // Gắn badge "Mới" nếu học viên đăng ký trong tháng
-            let isNewBadge = '';
-            if (p && p.createdAt && p.createdAt.substring(0,7) === selMonth) {
-                isNewBadge = `<span class="badge badge-info">Mới</span> `; // Thêm badge Mới giống ảnh
-            }
+            let isNewBadge = (p && p.createdAt && p.createdAt.substring(0,7) === selMonth) ? `<span class="badge badge-info">Mới</span> ` : '';
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${new Date(t.date).toLocaleDateString('vi-VN')}</td>
                 <td><span class="badge" style="background:#eee; color:#333">${t.branch}</span></td>
-                <td>
-                    ${isNewBadge}<strong>${t.description}</strong>
-                    ${extra}
-                </td>
+                <td>${isNewBadge}<strong>${t.description}</strong>${extra}</td>
                 <td>${t.type}</td>
                 <td class="${isInc ? 'text-income' : 'text-expense'}">${isInc ? '+' : '-'}${formatCurrency(t.amount)}</td>
-                <td><button class="delete-btn" onclick="remove('${t.id}')">Xóa</button></td>
+                <td><button class="delete-btn" onclick="removeTx('${t.id}')">Xóa</button></td>
             `;
             list.appendChild(row);
         });
@@ -532,156 +391,127 @@
         document.getElementById('balance').innerText = formatCurrency(inc - exp);
     }
 
-    // Hàm copy nội dung nhắc nợ và thông báo
-    window.copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Đã sao chép nội dung nhắc nợ vào bộ nhớ tạm. Hãy dán (Paste) vào cửa sổ chat Zalo.");
-        });
-    };
-
-    // --- LƯU TRỮ ---
+    // --- LƯU LÊN FIREBASE ---
     document.getElementById('transactionForm').onsubmit = async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.innerText = "ĐANG LƯU..."; btn.disabled = true;
+
         const type = document.getElementById('type').value;
         let rawName = document.getElementById('description').value;
-        
-        // Chuẩn hóa tên (Viết hoa chữ cái đầu)
         let formattedName = formatName(rawName);
-        
-        // Cập nhật lại description với tên chuẩn hóa nếu không phải chi vận hành
         const descriptionValue = type === 'Chi phí vận hành' ? rawName.trim() : formattedName;
-
         const entryDate = document.getElementById('date').value;
         const entryBranch = document.getElementById('branch').value;
 
-        // Lưu profile võ sinh (nếu chưa tồn tại)
-        if (type !== 'Chi phí vận hành') {
-            const currentProfiles = JSON.parse(localStorage.getItem('tst_students')) || {};
-            if (!currentProfiles[formattedName]) {
-                currentProfiles[formattedName] = {
+        try {
+            // Lưu profile nếu là võ sinh
+            if (type !== 'Chi phí vận hành') {
+                await setDoc(doc(db, "students", formattedName), {
                     name: formattedName,
                     dob: document.getElementById('studentDob').value || '',
                     sPhone: document.getElementById('studentPhone').value || '',
                     pPhone: document.getElementById('parentPhone').value || '',
                     branch: entryBranch,
-                    status: statusSelect.value || 'active',
-                    createdAt: entryDate // Đánh dấu ngày tạo hồ sơ dựa vào ngày giao dịch đầu tiên
-                };
-                localStorage.setItem('tst_students', JSON.stringify(currentProfiles));
-                alert(`✅ Đã tạo hồ sơ võ sinh mới: ${formattedName}`);
+                    status: statusSelect.value === 'quit' ? 'quit' : 'active',
+                    createdAt: studentProfiles[formattedName]?.createdAt || entryDate
+                }, { merge: true });
             }
-        }
 
-        // Tạo giao dịch
-        const entry = {
-            id: Date.now(),
-            branch: entryBranch,
-            type: type,
-            status: statusSelect.value, // Có thể lấy quit nếu nghỉ
-            description: descriptionValue,
-            studentName: formattedName, // Tên võ sinh chuẩn hóa dùng để map nợ
-            amount: parseFloat(amountActual.value),
-            date: entryDate,
-            // placeholder sđt phụ huynh cho chi phí
-            parentPhonePlaceholder: document.getElementById('parentPhone').value || ''
-        };
-        
-        const currentTx = JSON.parse(localStorage.getItem('tst_transactions')) || [];
-        currentTx.push(entry);
-        localStorage.setItem('tst_transactions', JSON.stringify(currentTx));
-        
-        // Reset form
-        e.target.reset();
-        document.getElementById('date').valueAsDate = new Date();
-        toggleNewInfo(); // Ẩn info box mới
-        render(); // render() bình thường, dashboard hiện lại
-        // Nếu đang trong chế độ lọc nợ, bấm lưu sẽ thoát khỏi chế độ lọc nợ
-        document.getElementById('showDebtBtn').innerText = "LỌC VÕ SINH NỢ PHÍ";
+            // Lưu giao dịch
+            await addDoc(collection(db, "transactions"), {
+                branch: entryBranch,
+                type: type,
+                status: statusSelect.value,
+                description: descriptionValue,
+                studentName: formattedName,
+                amount: parseFloat(amountActual.value),
+                date: entryDate
+            });
+
+            e.target.reset();
+            document.getElementById('date').valueAsDate = new Date();
+            toggleNewInfo();
+            
+            // Thoát chế độ lọc nợ nếu đang bật
+            isDebtMode = false;
+            document.getElementById('showDebtBtn').innerText = "LỌC VÕ SINH NỢ PHÍ";
+            
+        } catch (error) {
+            alert("Lỗi khi lưu: " + error.message);
+        } finally {
+            btn.innerText = "LƯU HỆ THỐNG"; btn.disabled = false;
+        }
     };
 
-    // --- XÓA GIAO DỊCH ---
-    window.remove = (id) => { 
-        if(confirm('Xóa giao dịch này?')) { 
-            let currentTx = JSON.parse(localStorage.getItem('tst_transactions')) || [];
-            currentTx = currentTx.filter(t => t.id !== id); 
-            localStorage.setItem('tst_transactions', JSON.stringify(currentTx)); 
-            render(); 
+    // --- HÀM GẮN CHO GIAO DIỆN HTML (Window Bindings) ---
+    window.removeTx = async (id) => { 
+        if(confirm('Xóa giao dịch này trên hệ thống?')) { 
+            await deleteDoc(doc(db, "transactions", id));
         } 
     };
 
-    // --- XUẤT EXCEL (TỐI ƯU CHO MOBILE) ---
+    window.copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Đã copy tin nhắn nhắc nợ! Bạn hãy dán (Ctrl+V) vào ô chat Zalo nhé.");
+        });
+    };
+
+    // --- CÁC NÚT ĐIỀU KHIỂN ---
+    document.getElementById('showDebtBtn').onclick = function() {
+        const selMonth = document.getElementById('filterMonth').value;
+        if(!selMonth) { alert("Vui lòng chọn 'Tháng báo cáo' để lọc nợ."); return; }
+        
+        isDebtMode = !isDebtMode;
+        this.innerText = isDebtMode ? "HIỆN TẤT CẢ GIAO DỊCH" : "LỌC VÕ SINH NỢ PHÍ";
+        render();
+    };
+    
+    document.getElementById('resetBtn').onclick = function() {
+        document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
+        document.getElementById('filterBranch').value = 'all';
+        document.getElementById('searchInput').value = '';
+        isDebtMode = false;
+        document.getElementById('showDebtBtn').innerText = "LỌC VÕ SINH NỢ PHÍ";
+        render();
+    };
+
     document.getElementById('exportBtn').onclick = () => {
         const selMonth = document.getElementById('filterMonth').value;
         const selBranch = document.getElementById('filterBranch').value;
         
-        transactions = JSON.parse(localStorage.getItem('tst_transactions')) || [];
-        studentProfiles = JSON.parse(localStorage.getItem('tst_students')) || {};
-
         const filteredTx = transactions.filter(t => {
-            const m = t.date.substring(0, 7);
-            const matchM = !selMonth || m === selMonth;
-            const matchB = selBranch === 'all' || t.branch === selBranch;
-            return matchM && matchB;
+            return (!selMonth || t.date.substring(0, 7) === selMonth) && 
+                   (selBranch === 'all' || t.branch === selBranch);
         });
 
-        if (filteredTx.length === 0) {
-            alert("Không có dữ liệu giao dịch để xuất cho tháng và cơ sở đã chọn!");
-            return;
-        }
+        if (filteredTx.length === 0) { alert("Không có dữ liệu để xuất!"); return; }
 
         const dataExcel = filteredTx.map(t => {
             const p = studentProfiles[t.studentName];
             return {
                 "Ngày": new Date(t.date).toLocaleDateString('vi-VN'),
                 "Cơ sở": t.branch,
-                "Tên Võ Sinh / Nội dung chi": t.description,
-                "Loại giao dịch": t.type,
+                "Nội dung": t.description,
+                "Loại": t.type,
                 "Số tiền": t.amount,
-                "Phân loại (Form)": t.status === 'quit' ? 'Nghỉ tập/Khác' : 'Đang tập',
-                "SĐT Phụ huynh (Profile)": p ? p.pPhone : '-',
-                "SĐT Phụ huynh (Form-Chi)": t.parentPhonePlaceholder || '-'
+                "SĐT Phụ huynh": p ? p.pPhone : '-'
             }
         });
 
         const worksheet = XLSX.utils.json_to_sheet(dataExcel);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "SaoKeTST");
-        
-        // Tên file Excel theo tháng và cơ sở
-        const fileName = `SaoKe_TST_${selBranch}_${selMonth.replace('-','_')}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
+        XLSX.writeFile(workbook, `SaoKe_TST_${selBranch}_${selMonth}.xlsx`);
     };
 
-    // Nút Lọc nợ tối ưu
-    document.getElementById('showDebtBtn').onclick = function() {
-        const selMonth = document.getElementById('filterMonth').value;
-        if(!selMonth) {
-            alert("Vui lòng chọn 'Tháng báo báo' để hệ thống lọc nợ chính xác.");
-            return;
-        }
-        const isDebtMode = this.innerText === "LỌC VÕ SINH NỢ PHÍ";
-        this.innerText = isDebtMode ? "HIỆN TẤT CẢ" : "LỌC VÕ SINH NỢ PHÍ";
-        render(isDebtMode);
-    };
-    
-    // Nút làm mới
-    document.getElementById('resetBtn').onclick = function() {
-        // Reset bộ lọc
-        document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
-        document.getElementById('filterBranch').value = 'all';
-        document.getElementById('searchInput').value = '';
-        document.getElementById('showDebtBtn').innerText = "LỌC VÕ SINH NỢ PHÍ";
-        // Làm mới database local
-        render();
-    };
-
-    // Khởi tạo
+    // Khởi tạo bộ lọc ban đầu
     document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
     document.getElementById('date').valueAsDate = new Date();
-    document.getElementById('filterMonth').onchange = () => render();
-    document.getElementById('filterBranch').onchange = () => render();
-    document.getElementById('searchInput').oninput = () => render();
-    render();
+    document.getElementById('filterMonth').onchange = render;
+    document.getElementById('filterBranch').onchange = render;
+    document.getElementById('searchInput').oninput = render;
+
 </script>
 </body>
 </html>
