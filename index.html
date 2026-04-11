@@ -167,11 +167,14 @@
         renderApp();
     });
 
-    function renderApp(debtMode = false) {
+    function renderApp() {
         const list = document.getElementById('transactionList');
         const selMonth = document.getElementById('filterMonth').value;
         const selBranch = document.getElementById('filterBranch').value;
         const search = document.getElementById('searchInput').value.toLowerCase();
+        
+        // Cập nhật trạng thái nợ học phí từ Text của nút bấm (đảm bảo không mất trạng thái khi select cơ sở)
+        const isDebtMode = document.getElementById('showDebtBtn').innerText === "HIỆN TẤT CẢ";
         
         list.innerHTML = '';
         let inc = 0, exp = 0, newCount = 0;
@@ -199,12 +202,13 @@
         });
         document.getElementById('newStudentCount').innerText = newCount + " Bạn";
 
-        if(debtMode) {
-            if(debtNames.length === 0) {
-                list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:50px; color:#999;">Không có võ sinh nợ phí.</td></tr>';
-                return;
-            }
+        if(isDebtMode) {
+            let hasDebt = false;
             debtNames.forEach(name => {
+                // Tích hợp luôn ô tìm kiếm (search) vào chế độ lọc nợ
+                if(search && !name.toLowerCase().includes(search)) return; 
+                
+                hasDebt = true;
                 const p = allProfiles[name];
                 const msg = `Thông báo học phí tháng ${selMonth.split('-')[1]} của võ sinh ${name} chưa được ghi nhận. Phụ huynh vui lòng kiểm tra giúp CLB nhé.`;
                 const zaloUrl = p.phone ? `https://zalo.me/${p.phone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
@@ -217,6 +221,10 @@
                     <td><a href="${zaloUrl}" target="_blank" class="btn-zalo" onclick="copyMsg('${msg}')">Nhắc phí</a></td>
                 </tr>`;
             });
+            
+            if(!hasDebt) {
+                list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:50px; color:#999;">Không có võ sinh nợ phí.</td></tr>';
+            }
             return;
         }
 
@@ -295,7 +303,7 @@
     document.getElementById('showDebtBtn').onclick = function() {
         const isDebt = this.innerText.includes("NỢ");
         this.innerText = isDebt ? "HIỆN TẤT CẢ" : "LỌC DANH SÁCH NỢ";
-        renderApp(isDebt);
+        renderApp(); // Gọi lại không cần truyền tham số
     };
 
     document.getElementById('filterMonth').onchange = () => renderApp();
