@@ -3,67 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý TST Professional</title>
+    <title>Quản Lý TST Professional - Fixed</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; }
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #eef2f7; margin: 0; padding: 10px; color: var(--dark); }
         
-        /* Giao diện Đăng nhập */
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
-        .login-card img { width: 120px; margin-bottom: 1rem; }
+        .login-card img { width: 150px; height: auto; margin-bottom: 1rem; object-fit: contain; }
 
         .app-container { max-width: 1100px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
         
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
         .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-left img { height: 50px; width: auto; }
+        .header-left img { height: 60px; width: auto; object-fit: contain; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-box { padding: 20px; border-radius: 12px; color: white; position: relative; overflow: hidden; }
-        .stat-box h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; opacity: 0.8; }
+        .stat-box { padding: 20px; border-radius: 12px; color: white; position: relative; }
+        .stat-box h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; opacity: 0.9; }
         .stat-box p { margin: 10px 0 0; font-size: 1.6rem; font-weight: 800; }
 
         .section-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
         .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: var(--light); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        input, select { border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-size: 15px; outline: none; transition: 0.2s; box-sizing: border-box; width: 100%; }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,160,0.1); }
+        input, select { border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-size: 15px; width: 100%; box-sizing: border-box; }
 
         .btn { padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: #856404; font-weight: 700; }
+        .btn-warning { background: var(--warning); color: #856404; }
         .btn-zalo { background: #0068ff; color: white; padding: 6px 12px; font-size: 0.85rem; text-decoration: none; border-radius: 6px; }
         
-        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
-        th { background: #fcfcfc; color: #666; font-size: 0.8rem; text-transform: uppercase; padding: 15px; text-align: left; border-bottom: 2px solid #eee; }
-        td { padding: 15px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
+        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; min-height: 200px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #fcfcfc; color: #666; font-size: 0.8rem; padding: 15px; text-align: left; border-bottom: 2px solid #eee; }
+        td { padding: 15px; border-bottom: 1px solid #f0f0f0; }
         .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
-        .badge-new { background: var(--success); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: normal; }
         
-        /* Modal Profile & Lịch sử */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; padding: 20px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; }
         .modal-content { background: white; max-width: 500px; margin: 50px auto; border-radius: 16px; padding: 25px; position: relative; }
-        .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
-
-        #m_history { font-size: 0.95rem; max-height: 250px; overflow-y: auto; padding-right: 5px; }
-        .history-item { 
-            padding: 12px 0; 
-            border-bottom: 1px solid #f0f0f0; 
-            line-height: 1.5; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .empty-msg { padding: 40px; text-align: center; color: #999; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-card">
-        <img src="CLB TST - XÓA NỀN.jpg" alt="Logo TST" onerror="this.src='https://via.placeholder.com/120?text=TST+LOGO'">
+        <img src="CLB TST - XÓA NỀN.jpg" alt="Logo TST" onerror="this.src='https://via.placeholder.com/150?text=TST+TAEKWONDO'">
         <h2 style="color:var(--primary); margin-bottom: 1.5rem;">HỆ THỐNG TST</h2>
         <input type="password" id="passInput" placeholder="Mật khẩu" style="margin-bottom:1rem;">
         <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
@@ -73,10 +58,10 @@
 <div class="app-container" id="mainApp">
     <div class="header">
         <div class="header-left">
-            <img src="CLB TST - XÓA NỀN.jpg" alt="TST Logo" onerror="this.style.display='none'">
+            <img src="CLB TST - XÓA NỀN.jpg" alt="TST Logo" onerror="this.parentElement.style.paddingLeft='10px'">
             <h2 style="margin:0; color:var(--primary)">CLUB TAEKWONDO TST</h2>
         </div>
-        <button class="btn btn-success" id="exportBtn">📥 XUẤT EXCEL</button>
+        <button class="btn btn-primary" style="background:#28a745" id="exportBtn">📥 XUẤT EXCEL</button>
     </div>
 
     <div class="stats-grid">
@@ -86,7 +71,7 @@
         <div class="stat-box" style="background: var(--info);"><h3>Võ sinh mới</h3><p id="newStudentCount">0 Bạn</p></div>
     </div>
 
-    <div class="section-title">🔍 BỘ LỌC & TÌM KIẾM THEO THÁNG</div>
+    <div class="section-title">🔍 BỘ LỌC HỆ THỐNG</div>
     <div class="grid-form">
         <input type="month" id="filterMonth">
         <select id="filterBranch">
@@ -94,28 +79,26 @@
             <option value="CS1">CS1: 66 Huỳnh Tấn Phát</option>
             <option value="CS2">CS2: Sân vận động</option>
         </select>
-        <input type="text" id="searchInput" placeholder="Nhập tên võ sinh...">
-        <button class="btn btn-warning" id="showDebtBtn">LỌC VÕ SINH NỢ PHÍ</button>
+        <input type="text" id="searchInput" placeholder="Tìm tên võ sinh...">
+        <button class="btn btn-warning" id="showDebtBtn">LỌC DANH SÁCH NỢ</button>
     </div>
 
-    <div class="section-title">📝 NHẬP GIAO DỊCH MỚI</div>
+    <div class="section-title">📝 NHẬP GIAO DỊCH</div>
     <form id="transactionForm" class="grid-form">
         <select id="branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
-        <select id="type"><option value="Học phí">Học phí</option><option value="Võ phục">Võ phục</option><option value="Chi phí vận hành">Chi phí</option></select>
-        
-        <input type="text" id="description" list="studentList" placeholder="Tên võ sinh / Nội dung" autocomplete="off" required>
+        <select id="type"><option value="Học phí">Học phí</option><option value="Võ phục">Võ phục</option><option value="Chi phí">Chi phí</option></select>
+        <input type="text" id="description" list="studentList" placeholder="Tên võ sinh / Nội dung" required>
         <datalist id="studentList"></datalist>
-
-        <input type="text" id="amountDisplay" placeholder="Số tiền" required>
+        <input type="text" id="amountDisplay" placeholder="Số tiền">
         <input type="hidden" id="amountActual">
         <input type="date" id="date" required>
-        <button type="submit" class="btn btn-primary" style="grid-column: 1 / -1; max-width: 250px; justify-self: center;">LƯU HỆ THỐNG</button>
+        <button type="submit" class="btn btn-primary" style="grid-column: 1 / -1; width: 200px; justify-self: center;">LƯU HỆ THỐNG</button>
     </form>
 
     <div class="table-wrapper">
         <table>
             <thead>
-                <tr><th>Ngày</th><th>Cơ sở</th><th>Võ sinh</th><th>Loại giao dịch</th><th>Số tiền</th><th>Thao tác</th></tr>
+                <tr><th>Ngày</th><th>Cơ sở</th><th>Võ sinh</th><th>Loại</th><th>Số tiền</th><th>Thao tác</th></tr>
             </thead>
             <tbody id="transactionList"></tbody>
         </table>
@@ -124,48 +107,21 @@
 
 <div id="profileModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
         <h3 id="m_name" style="color:var(--primary); margin-top:0;"></h3>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
-            <div>
-                <label style="font-size:0.8rem; color:#666;">Trạng thái:</label>
-                <select id="m_status" style="margin-top:5px;">
-                    <option value="active">Đang tập luyện</option>
-                    <option value="quit">Đã nghỉ tập</option>
-                </select>
-            </div>
-            <div>
-                <label style="font-size:0.8rem; color:#666;">Cơ sở:</label>
-                <select id="m_branch" style="margin-top:5px;">
-                    <option value="CS1">CS1: Huỳnh Tấn Phát</option>
-                    <option value="CS2">CS2: Sân vận động</option>
-                </select>
-            </div>
+        <div class="grid-form" style="background:none; padding:0;">
+            <select id="m_status"><option value="active">Đang tập luyện</option><option value="quit">Nghỉ tập</option></select>
+            <select id="m_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
+            <input type="tel" id="m_phone" placeholder="SĐT Phụ huynh">
+            <input type="number" id="m_fee" placeholder="Mức phí mặc định">
         </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
-            <div>
-                <label style="font-size:0.8rem; color:#666;">Mức học phí:</label>
-                <input type="number" id="m_tuitionFee" style="margin-top:5px;">
-            </div>
-            <div>
-                <label style="font-size:0.8rem; color:#666;">SĐT Phụ huynh:</label>
-                <input type="tel" id="m_phone" style="margin-top:5px;">
-            </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%">CẬP NHẬT HỒ SƠ</button>
-        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-        <h4 style="margin-bottom:10px;">Lịch sử giao dịch:</h4>
-        <div id="m_history"></div>
+        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%; margin-top:15px;">LƯU THÔNG TIN</button>
+        <button class="btn" onclick="closeModal()" style="width:100%; margin-top:10px;">ĐÓNG</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
@@ -185,14 +141,8 @@
         if(document.getElementById('passInput').value === "Tinhts64") {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-        } else alert("Sai mật khẩu!");
+        } else alert("Mật khẩu không đúng!");
     };
-
-    function formatName(str) {
-        return str.trim().replace(/\s+/g, ' ').split(' ')
-                  .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-                  .join(' ');
-    }
 
     const amtDisp = document.getElementById('amountDisplay');
     const amtAct = document.getElementById('amountActual');
@@ -206,11 +156,12 @@
     let allProfiles = {};
 
     onSnapshot(profRef, (snap) => {
+        allProfiles = {};
         const dataList = document.getElementById('studentList');
-        dataList.innerHTML = ''; 
+        dataList.innerHTML = '';
         snap.forEach(d => {
             allProfiles[d.id] = d.data();
-            dataList.innerHTML += `<option value="${d.id}">`; 
+            dataList.innerHTML += `<option value="${d.id}">`;
         });
         renderApp();
     });
@@ -220,79 +171,76 @@
         renderApp();
     });
 
-    // Xử lý bộ lọc nợ học phí nâng cao
     function renderApp(debtMode = false) {
         const list = document.getElementById('transactionList');
-        const selMonth = document.getElementById('filterMonth').value; // Định dạng YYYY-MM
+        const selMonth = document.getElementById('filterMonth').value;
         const selBranch = document.getElementById('filterBranch').value;
         const search = document.getElementById('searchInput').value.toLowerCase();
         
         list.innerHTML = '';
-        let inc = 0, exp = 0, newStudentsCount = 0;
+        let inc = 0, exp = 0, newCount = 0;
 
-        // 1. Lấy danh sách võ sinh đang hoạt động tại cơ sở đã chọn
-        const activeStudents = Object.keys(allProfiles).filter(name => {
+        // Lấy danh sách võ sinh đang tập tại cơ sở
+        const activeNames = Object.keys(allProfiles).filter(name => {
             const p = allProfiles[name];
-            if(p.status !== 'active') return false;
-            if(selBranch !== 'all' && p.branch !== selBranch) return false;
-            // Chỉ tính nợ nếu võ sinh đã nhập học TRƯỚC hoặc TRONG tháng đang lọc
-            if(p.createdAt && selMonth && p.createdAt.substring(0,7) > selMonth) return false;
-            return true;
+            const matchBranch = (selBranch === 'all' || p.branch === selBranch);
+            const isActive = (p.status === 'active');
+            // Logic: Nếu không có ngày tạo, coi như học lâu năm. Nếu có, phải tạo trước/trong tháng lọc.
+            const dateValid = (!p.createdAt || p.createdAt.substring(0,7) <= selMonth);
+            return isActive && matchBranch && dateValid;
         });
 
-        // 2. Lấy danh sách những người ĐÃ ĐÓNG học phí trong tháng này
-        const paidThisMonth = allTransactions
+        // Những người đã đóng học phí tháng này
+        const paidNames = allTransactions
             .filter(t => t.date.startsWith(selMonth) && t.type === 'Học phí')
             .map(t => t.description);
-            
-        // 3. Những người nợ = (Hoạt động) - (Đã đóng)
-        const debtStudents = activeStudents.filter(name => !paidThisMonth.includes(name));
-        document.getElementById('debtCount').innerText = debtStudents.length + " Bạn";
+
+        const debtNames = activeNames.filter(name => !paidNames.includes(name));
+        document.getElementById('debtCount').innerText = debtNames.length + " Bạn";
 
         // Thống kê võ sinh mới
         Object.values(allProfiles).forEach(p => {
-            if (p.createdAt && selMonth && p.createdAt.startsWith(selMonth)) newStudentsCount++;
+            if(p.createdAt && p.createdAt.startsWith(selMonth)) newCount++;
         });
-        document.getElementById('newStudentCount').innerText = newStudentsCount + " Bạn";
+        document.getElementById('newStudentCount').innerText = newCount + " Bạn";
 
-        // CHẾ ĐỘ HIỂN THỊ NỢ
         if(debtMode) {
-            debtStudents.forEach(name => {
-                const p = allProfiles[name] || {};
+            if(debtNames.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" class="empty-msg">Không có võ sinh nợ phí trong tháng này.</td></tr>';
+                return;
+            }
+            debtNames.forEach(name => {
+                const p = allProfiles[name];
                 const phone = p.phone || "";
-                const currentMonthDisplay = selMonth.split('-')[1];
-                const msg = `Xin chào phụ huynh võ sinh ${name}, CLUB TAEKWONDO TST gửi thông báo học phí tháng ${currentMonthDisplay} của bé hiện chưa được hoàn thành. Nhờ anh/chị kiểm tra và đóng cho bé nhé. Trân trọng!`;
-                const zaloLink = phone ? `https://zalo.me/${phone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
-
-                list.innerHTML += `<tr style="background:#fff9e6">
-                    <td>---</td><td>${p.branch || '---'}</td>
+                const msg = `Thông báo từ CLB TST: Võ sinh ${name} chưa hoàn thành học phí tháng ${selMonth.split('-')[1]}. Nhờ phụ huynh kiểm tra giúp CLB nhé.`;
+                const zaloUrl = phone ? `https://zalo.me/${phone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
+                
+                list.innerHTML += `<tr style="background:#fff4f4">
+                    <td>---</td><td>${p.branch}</td>
                     <td class="name-link" onclick="openProfile('${name}')">${name}</td>
-                    <td><span style="color:#C8102E; font-weight:bold;">Chưa nộp học phí tháng ${currentMonthDisplay}</span></td>
-                    <td style="color:red; font-weight:bold;">NỢ PHÍ</td>
-                    <td><a href="${zaloLink}" target="_blank" class="btn-zalo" onclick="copyToClipboard('${msg}')">💬 Nhắc Zalo</a></td>
+                    <td style="color:red; font-weight:bold;">NỢ HỌC PHÍ</td>
+                    <td>0 ₫</td>
+                    <td><a href="${zaloUrl}" target="_blank" class="btn-zalo" onclick="copyMsg('${msg}')">Nhắc phí</a></td>
                 </tr>`;
             });
             return;
         }
 
-        // CHẾ ĐỘ HIỂN THỊ GIAO DỊCH THÔNG THƯỜNG
         allTransactions.forEach(t => {
             if(selMonth && !t.date.startsWith(selMonth)) return;
             if(selBranch !== 'all' && t.branch !== selBranch) return;
             if(search && !t.description.toLowerCase().includes(search)) return;
 
-            const isInc = t.type !== 'Chi phí vận hành';
+            const isInc = t.type !== 'Chi phí';
             isInc ? (inc += t.amount) : (exp += t.amount);
-            const p = allProfiles[t.description];
-            const isNew = (p && p.createdAt && p.createdAt.startsWith(selMonth)) ? `<span class="badge-new">Mới</span>` : '';
-
+            
             list.innerHTML += `<tr>
                 <td>${t.date.split('-').reverse().join('/')}</td>
                 <td>${t.branch}</td>
-                <td class="name-link" onclick="openProfile('${t.description}')">${isNew}${t.description}</td>
+                <td class="name-link" onclick="openProfile('${t.description}')">${t.description}</td>
                 <td>${t.type}</td>
-                <td style="font-weight:700; color:${isInc?'var(--success)':'var(--secondary)'}">${isInc?'+':'-'}${t.amount.toLocaleString()} ₫</td>
-                <td><button onclick="deleteTx('${t.id}')" style="color:red; border:none; background:none; cursor:pointer; font-weight:600;">Xóa</button></td>
+                <td style="font-weight:bold; color:${isInc?'green':'red'}">${isInc?'+':'-'}${t.amount.toLocaleString()}</td>
+                <td><button onclick="deleteTx('${t.id}')" style="color:red; border:none; background:none; cursor:pointer;">Xóa</button></td>
             </tr>`;
         });
 
@@ -300,39 +248,26 @@
         document.getElementById('totalExpense').innerText = exp.toLocaleString() + " ₫";
     }
 
-    window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); alert("Đã copy nội dung nhắc phí!"); };
+    window.copyMsg = (txt) => navigator.clipboard.writeText(txt);
 
     window.openProfile = (name) => {
+        const p = allProfiles[name] || {status:'active', branch:'CS1', phone:'', tuitionFee:0};
         document.getElementById('m_name').innerText = name;
-        const p = allProfiles[name] || { status: 'active', branch: 'CS1', tuitionFee: '', phone: '' };
         document.getElementById('m_status').value = p.status;
-        document.getElementById('m_branch').value = p.branch || 'CS1';
-        document.getElementById('m_tuitionFee').value = p.tuitionFee || '';
+        document.getElementById('m_branch').value = p.branch;
         document.getElementById('m_phone').value = p.phone || '';
-
-        const history = allTransactions.filter(t => t.description === name).slice(0, 10);
-        document.getElementById('m_history').innerHTML = history.length 
-            ? history.map(h => `
-                <div class="history-item">
-                    <span>${h.date.split('-').reverse().join('/')} - ${h.type}</span>
-                    <strong style="color:var(--success)">+${h.amount.toLocaleString()}đ</strong>
-                </div>`).join('')
-            : '<p style="color:#999; text-align:center;">Chưa có lịch sử.</p>';
-
+        document.getElementById('m_fee').value = p.tuitionFee || '';
         document.getElementById('profileModal').style.display = 'block';
     };
 
     window.updateProfile = async () => {
         const name = document.getElementById('m_name').innerText;
-        const currentData = allProfiles[name] || {};
         await setDoc(doc(db, "tst_profiles", name), {
-            ...currentData,
             status: document.getElementById('m_status').value,
             branch: document.getElementById('m_branch').value,
-            tuitionFee: document.getElementById('m_tuitionFee').value,
-            phone: document.getElementById('m_phone').value
-        });
-        alert("Cập nhật thành công!");
+            phone: document.getElementById('m_phone').value,
+            tuitionFee: document.getElementById('m_fee').value
+        }, { merge: true });
         closeModal();
     };
 
@@ -340,21 +275,21 @@
 
     document.getElementById('transactionForm').onsubmit = async (e) => {
         e.preventDefault();
-        const type = document.getElementById('type').value;
-        let rawName = document.getElementById('description').value;
-        const name = (type === 'Chi phí vận hành') ? rawName : formatName(rawName);
+        const name = document.getElementById('description').value;
+        const branch = document.getElementById('branch').value;
         const txDate = document.getElementById('date').value;
-        const selectedBranch = document.getElementById('branch').value;
-
-        await addDoc(colRef, {
-            branch: selectedBranch, type: type, description: name,
-            amount: Number(amtAct.value), date: txDate
-        });
         
-        if (!allProfiles[name] && type !== 'Chi phí vận hành') {
-            await setDoc(doc(db, "tst_profiles", name), { 
-                status: 'active', branch: selectedBranch, 
-                tuitionFee: amtAct.value, phone: '', createdAt: txDate 
+        await addDoc(colRef, {
+            branch: branch,
+            type: document.getElementById('type').value,
+            description: name,
+            amount: Number(amtAct.value),
+            date: txDate
+        });
+
+        if(!allProfiles[name]) {
+            await setDoc(doc(db, "tst_profiles", name), {
+                status: 'active', branch: branch, createdAt: txDate
             });
         }
         e.target.reset();
@@ -365,7 +300,7 @@
 
     document.getElementById('showDebtBtn').onclick = function() {
         const isDebt = this.innerText.includes("NỢ");
-        this.innerText = isDebt ? "HIỆN TẤT CẢ" : "LỌC VÕ SINH NỢ PHÍ";
+        this.innerText = isDebt ? "HIỆN TẤT CẢ" : "LỌC DANH SÁCH NỢ";
         renderApp(isDebt);
     };
 
