@@ -9,14 +9,13 @@
         :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; }
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #eef2f7; margin: 0; padding: 10px; color: var(--dark); }
         
-        /* Cải thiện giao diện Login */
+        /* Giao diện Đăng nhập */
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
         .login-card img { width: 120px; margin-bottom: 1rem; }
 
         .app-container { max-width: 1100px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
         
-        /* Header có Logo */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
         .header-left { display: flex; align-items: center; gap: 15px; }
         .header-left img { height: 50px; width: auto; }
@@ -44,29 +43,27 @@
         .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
         .badge-new { background: var(--success); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: normal; }
         
-        /* Modal Profile */
+        /* Modal Profile & Lịch sử */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; padding: 20px; }
         .modal-content { background: white; max-width: 500px; margin: 50px auto; border-radius: 16px; padding: 25px; position: relative; }
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
 
-        /* Sửa lỗi đè chữ lịch sử (Image 2) */
         #m_history { font-size: 0.95rem; max-height: 250px; overflow-y: auto; padding-right: 5px; }
         .history-item { 
             padding: 12px 0; 
             border-bottom: 1px solid #f0f0f0; 
-            line-height: 1.5; /* Khoảng cách dòng thoáng hơn */
+            line-height: 1.5; 
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .history-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-card">
-        <img src="logo_tst.png" alt="Logo TST" onerror="this.style.display='none'">
+        <img src="CLB TST - XÓA NỀN.jpg" alt="Logo TST" onerror="this.src='https://via.placeholder.com/120?text=TST+LOGO'">
         <h2 style="color:var(--primary); margin-bottom: 1.5rem;">HỆ THỐNG TST</h2>
         <input type="password" id="passInput" placeholder="Mật khẩu" style="margin-bottom:1rem;">
         <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
@@ -76,7 +73,7 @@
 <div class="app-container" id="mainApp">
     <div class="header">
         <div class="header-left">
-            <img src="logo_tst.png" alt="TST Logo" onerror="this.style.display='none'">
+            <img src="CLB TST - XÓA NỀN.jpg" alt="TST Logo" onerror="this.style.display='none'">
             <h2 style="margin:0; color:var(--primary)">CLUB TAEKWONDO TST</h2>
         </div>
         <button class="btn btn-success" id="exportBtn">📥 XUẤT EXCEL</button>
@@ -89,7 +86,7 @@
         <div class="stat-box" style="background: var(--info);"><h3>Võ sinh mới</h3><p id="newStudentCount">0 Bạn</p></div>
     </div>
 
-    <div class="section-title">🔍 BỘ LỌC & TÌM KIẾM</div>
+    <div class="section-title">🔍 BỘ LỌC & TÌM KIẾM THEO THÁNG</div>
     <div class="grid-form">
         <input type="month" id="filterMonth">
         <select id="filterBranch">
@@ -132,14 +129,14 @@
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
             <div>
-                <label style="font-size:0.8rem; color:#666;">Trạng thái tập luyện:</label>
+                <label style="font-size:0.8rem; color:#666;">Trạng thái:</label>
                 <select id="m_status" style="margin-top:5px;">
                     <option value="active">Đang tập luyện</option>
                     <option value="quit">Đã nghỉ tập</option>
                 </select>
             </div>
             <div>
-                <label style="font-size:0.8rem; color:#666;">Cơ sở tập luyện:</label>
+                <label style="font-size:0.8rem; color:#666;">Cơ sở:</label>
                 <select id="m_branch" style="margin-top:5px;">
                     <option value="CS1">CS1: Huỳnh Tấn Phát</option>
                     <option value="CS2">CS2: Sân vận động</option>
@@ -149,25 +146,25 @@
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
             <div>
-                <label style="font-size:0.8rem; color:#666;">Mức học phí (VNĐ):</label>
-                <input type="number" id="m_tuitionFee" placeholder="VD: 500000" style="margin-top:5px;">
+                <label style="font-size:0.8rem; color:#666;">Mức học phí:</label>
+                <input type="number" id="m_tuitionFee" style="margin-top:5px;">
             </div>
             <div>
-                <label style="font-size:0.8rem; color:#666;">SĐT Liên hệ:</label>
-                <input type="tel" id="m_phone" placeholder="SĐT phụ huynh" style="margin-top:5px;">
+                <label style="font-size:0.8rem; color:#666;">SĐT Phụ huynh:</label>
+                <input type="tel" id="m_phone" style="margin-top:5px;">
             </div>
         </div>
 
-        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%">CẬP NHẬT THÔNG TIN</button>
+        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%">CẬP NHẬT HỒ SƠ</button>
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-        <h4 style="margin-bottom:10px;">Lịch sử đóng phí:</h4>
+        <h4 style="margin-bottom:10px;">Lịch sử giao dịch:</h4>
         <div id="m_history"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc } 
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -223,69 +220,62 @@
         renderApp();
     });
 
-    document.getElementById('description').addEventListener('change', (e) => {
-        if(document.getElementById('type').value === 'Chi phí vận hành') return;
-        const name = formatName(e.target.value);
-        e.target.value = name;
-        
-        const p = allProfiles[name];
-        if (p) {
-            if (p.branch) document.getElementById('branch').value = p.branch;
-            if (document.getElementById('type').value === 'Học phí' && p.tuitionFee) {
-                amtAct.value = p.tuitionFee;
-                amtDisp.value = parseInt(p.tuitionFee).toLocaleString('vi-VN');
-            }
-        }
-    });
-
+    // Xử lý bộ lọc nợ học phí nâng cao
     function renderApp(debtMode = false) {
         const list = document.getElementById('transactionList');
-        const selMonth = document.getElementById('filterMonth').value;
+        const selMonth = document.getElementById('filterMonth').value; // Định dạng YYYY-MM
         const selBranch = document.getElementById('filterBranch').value;
         const search = document.getElementById('searchInput').value.toLowerCase();
         
         list.innerHTML = '';
         let inc = 0, exp = 0, newStudentsCount = 0;
 
+        // 1. Lấy danh sách võ sinh đang hoạt động tại cơ sở đã chọn
         const activeStudents = Object.keys(allProfiles).filter(name => {
             const p = allProfiles[name];
             if(p.status !== 'active') return false;
             if(selBranch !== 'all' && p.branch !== selBranch) return false;
+            // Chỉ tính nợ nếu võ sinh đã nhập học TRƯỚC hoặc TRONG tháng đang lọc
             if(p.createdAt && selMonth && p.createdAt.substring(0,7) > selMonth) return false;
             return true;
         });
 
+        // 2. Lấy danh sách những người ĐÃ ĐÓNG học phí trong tháng này
         const paidThisMonth = allTransactions
             .filter(t => t.date.startsWith(selMonth) && t.type === 'Học phí')
             .map(t => t.description);
             
+        // 3. Những người nợ = (Hoạt động) - (Đã đóng)
         const debtStudents = activeStudents.filter(name => !paidThisMonth.includes(name));
         document.getElementById('debtCount').innerText = debtStudents.length + " Bạn";
 
+        // Thống kê võ sinh mới
         Object.values(allProfiles).forEach(p => {
             if (p.createdAt && selMonth && p.createdAt.startsWith(selMonth)) newStudentsCount++;
         });
         document.getElementById('newStudentCount').innerText = newStudentsCount + " Bạn";
 
+        // CHẾ ĐỘ HIỂN THỊ NỢ
         if(debtMode) {
             debtStudents.forEach(name => {
-                const profile = allProfiles[name] || {};
-                const branch = profile.branch || '---';
-                const phone = profile.phone || "";
-                const msg = `Thông báo từ CLB Taekwondo TST: Học phí tháng ${selMonth.split('-')[1]} của võ sinh ${name} hiện chưa được cập nhật. Nhờ phụ huynh kiểm tra giúp ạ. Trân trọng!`;
+                const p = allProfiles[name] || {};
+                const phone = p.phone || "";
+                const currentMonthDisplay = selMonth.split('-')[1];
+                const msg = `Xin chào phụ huynh võ sinh ${name}, CLUB TAEKWONDO TST gửi thông báo học phí tháng ${currentMonthDisplay} của bé hiện chưa được hoàn thành. Nhờ anh/chị kiểm tra và đóng cho bé nhé. Trân trọng!`;
                 const zaloLink = phone ? `https://zalo.me/${phone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
 
                 list.innerHTML += `<tr style="background:#fff9e6">
-                    <td>---</td><td>${branch}</td>
+                    <td>---</td><td>${p.branch || '---'}</td>
                     <td class="name-link" onclick="openProfile('${name}')">${name}</td>
-                    <td><span style="color:#856404; font-weight:bold;">Chưa đóng học phí</span></td>
-                    <td style="color:red">Nợ</td>
+                    <td><span style="color:#C8102E; font-weight:bold;">Chưa nộp học phí tháng ${currentMonthDisplay}</span></td>
+                    <td style="color:red; font-weight:bold;">NỢ PHÍ</td>
                     <td><a href="${zaloLink}" target="_blank" class="btn-zalo" onclick="copyToClipboard('${msg}')">💬 Nhắc Zalo</a></td>
                 </tr>`;
             });
             return;
         }
 
+        // CHẾ ĐỘ HIỂN THỊ GIAO DỊCH THÔNG THƯỜNG
         allTransactions.forEach(t => {
             if(selMonth && !t.date.startsWith(selMonth)) return;
             if(selBranch !== 'all' && t.branch !== selBranch) return;
@@ -310,12 +300,11 @@
         document.getElementById('totalExpense').innerText = exp.toLocaleString() + " ₫";
     }
 
-    window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); alert("Đã copy nội dung nhắc nợ!"); };
+    window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); alert("Đã copy nội dung nhắc phí!"); };
 
     window.openProfile = (name) => {
         document.getElementById('m_name').innerText = name;
         const p = allProfiles[name] || { status: 'active', branch: 'CS1', tuitionFee: '', phone: '' };
-        
         document.getElementById('m_status').value = p.status;
         document.getElementById('m_branch').value = p.branch || 'CS1';
         document.getElementById('m_tuitionFee').value = p.tuitionFee || '';
@@ -328,7 +317,7 @@
                     <span>${h.date.split('-').reverse().join('/')} - ${h.type}</span>
                     <strong style="color:var(--success)">+${h.amount.toLocaleString()}đ</strong>
                 </div>`).join('')
-            : '<p style="color:#999; text-align:center;">Chưa có lịch sử giao dịch.</p>';
+            : '<p style="color:#999; text-align:center;">Chưa có lịch sử.</p>';
 
         document.getElementById('profileModal').style.display = 'block';
     };
@@ -343,7 +332,7 @@
             tuitionFee: document.getElementById('m_tuitionFee').value,
             phone: document.getElementById('m_phone').value
         });
-        alert("Đã cập nhật hồ sơ!");
+        alert("Cập nhật thành công!");
         closeModal();
     };
 
@@ -357,23 +346,12 @@
         const txDate = document.getElementById('date').value;
         const selectedBranch = document.getElementById('branch').value;
 
-        const existingProfile = allProfiles[name];
-        if (existingProfile && existingProfile.branch && type !== 'Chi phí vận hành') {
-            if (existingProfile.branch !== selectedBranch) {
-                alert(`❌ SAI CƠ SỞ!\nVõ sinh "${name}" đang sinh hoạt tại ${existingProfile.branch}.`);
-                return;
-            }
-        }
-
         await addDoc(colRef, {
-            branch: selectedBranch,
-            type: type,
-            description: name,
-            amount: Number(amtAct.value),
-            date: txDate
+            branch: selectedBranch, type: type, description: name,
+            amount: Number(amtAct.value), date: txDate
         });
         
-        if (!existingProfile && type !== 'Chi phí vận hành') {
+        if (!allProfiles[name] && type !== 'Chi phí vận hành') {
             await setDoc(doc(db, "tst_profiles", name), { 
                 status: 'active', branch: selectedBranch, 
                 tuitionFee: amtAct.value, phone: '', createdAt: txDate 
@@ -383,11 +361,7 @@
         document.getElementById('date').valueAsDate = new Date();
     };
 
-    window.deleteTx = (id) => {
-        if(confirm("Xác nhận xóa giao dịch này? Hệ thống sẽ cập nhật lại toàn bộ số liệu ngay lập tức.")) {
-            deleteDoc(doc(db, "tst_transactions", id));
-        }
-    };
+    window.deleteTx = (id) => confirm("Xóa giao dịch này?") && deleteDoc(doc(db, "tst_transactions", id));
 
     document.getElementById('showDebtBtn').onclick = function() {
         const isDebt = this.innerText.includes("NỢ");
