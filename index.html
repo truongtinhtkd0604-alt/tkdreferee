@@ -3,37 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý TST Professional - Fixed</title>
+    <title>Quản Lý TST - Tối Ưu Cơ Sở</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; }
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #eef2f7; margin: 0; padding: 10px; color: var(--dark); }
+        body { font-family: 'Inter', sans-serif; background: #eef2f7; margin: 0; padding: 10px; }
         
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
-        .login-card img { width: 150px; height: auto; margin-bottom: 1rem; object-fit: contain; }
+        .login-card { background: white; padding: 2rem; border-radius: 1rem; width: 350px; text-align: center; }
+        .login-card img { width: 150px; margin-bottom: 1rem; }
 
-        .app-container { max-width: 1100px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
+        .app-container { max-width: 1100px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
         
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
         .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-left img { height: 60px; width: auto; object-fit: contain; }
+        .header-left img { height: 65px; object-fit: contain; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-box { padding: 20px; border-radius: 12px; color: white; position: relative; }
+        .stat-box { padding: 20px; border-radius: 12px; color: white; }
         .stat-box h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; opacity: 0.9; }
         .stat-box p { margin: 10px 0 0; font-size: 1.6rem; font-weight: 800; }
 
-        .section-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
         .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: var(--light); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        input, select { border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-size: 15px; width: 100%; box-sizing: border-box; }
+        input, select { border: 1px solid #ddd; padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; }
 
-        .btn { padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-warning { background: var(--warning); color: #856404; }
         .btn-zalo { background: #0068ff; color: white; padding: 6px 12px; font-size: 0.85rem; text-decoration: none; border-radius: 6px; }
         
-        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; min-height: 200px; }
+        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th { background: #fcfcfc; color: #666; font-size: 0.8rem; padding: 15px; text-align: left; border-bottom: 2px solid #eee; }
         td { padding: 15px; border-bottom: 1px solid #f0f0f0; }
@@ -41,16 +40,15 @@
         
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; }
         .modal-content { background: white; max-width: 500px; margin: 50px auto; border-radius: 16px; padding: 25px; position: relative; }
-        .empty-msg { padding: 40px; text-align: center; color: #999; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-card">
-        <img src="CLB TST - XÓA NỀN.jpg" alt="Logo TST" onerror="this.src='https://via.placeholder.com/150?text=TST+TAEKWONDO'">
-        <h2 style="color:var(--primary); margin-bottom: 1.5rem;">HỆ THỐNG TST</h2>
-        <input type="password" id="passInput" placeholder="Mật khẩu" style="margin-bottom:1rem;">
+        <img src="CLB TST - XÓA NỀN.jpg" alt="Logo TST" onerror="this.src='https://via.placeholder.com/150?text=TST+LOGO'">
+        <h2 style="color:var(--primary)">HỆ THỐNG TST</h2>
+        <input type="password" id="passInput" placeholder="Mật khẩu" style="margin: 1rem 0;">
         <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
     </div>
 </div>
@@ -58,7 +56,7 @@
 <div class="app-container" id="mainApp">
     <div class="header">
         <div class="header-left">
-            <img src="CLB TST - XÓA NỀN.jpg" alt="TST Logo" onerror="this.parentElement.style.paddingLeft='10px'">
+            <img src="CLB TST - XÓA NỀN.jpg" alt="TST Logo" onerror="this.style.display='none'">
             <h2 style="margin:0; color:var(--primary)">CLUB TAEKWONDO TST</h2>
         </div>
         <button class="btn btn-primary" style="background:#28a745" id="exportBtn">📥 XUẤT EXCEL</button>
@@ -71,19 +69,17 @@
         <div class="stat-box" style="background: var(--info);"><h3>Võ sinh mới</h3><p id="newStudentCount">0 Bạn</p></div>
     </div>
 
-    <div class="section-title">🔍 BỘ LỌC HỆ THỐNG</div>
     <div class="grid-form">
         <input type="month" id="filterMonth">
         <select id="filterBranch">
             <option value="all">Tất cả cơ sở</option>
-            <option value="CS1">CS1: 66 Huỳnh Tấn Phát</option>
+            <option value="CS1">CS1: Huỳnh Tấn Phát</option>
             <option value="CS2">CS2: Sân vận động</option>
         </select>
         <input type="text" id="searchInput" placeholder="Tìm tên võ sinh...">
         <button class="btn btn-warning" id="showDebtBtn">LỌC DANH SÁCH NỢ</button>
     </div>
 
-    <div class="section-title">📝 NHẬP GIAO DỊCH</div>
     <form id="transactionForm" class="grid-form">
         <select id="branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
         <select id="type"><option value="Học phí">Học phí</option><option value="Võ phục">Võ phục</option><option value="Chi phí">Chi phí</option></select>
@@ -92,7 +88,7 @@
         <input type="text" id="amountDisplay" placeholder="Số tiền">
         <input type="hidden" id="amountActual">
         <input type="date" id="date" required>
-        <button type="submit" class="btn btn-primary" style="grid-column: 1 / -1; width: 200px; justify-self: center;">LƯU HỆ THỐNG</button>
+        <button type="submit" class="btn btn-primary" style="grid-column: 1 / -1; width: 220px; justify-self: center;">LƯU HỆ THỐNG</button>
     </form>
 
     <div class="table-wrapper">
@@ -108,14 +104,14 @@
 <div id="profileModal" class="modal">
     <div class="modal-content">
         <h3 id="m_name" style="color:var(--primary); margin-top:0;"></h3>
-        <div class="grid-form" style="background:none; padding:0;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <select id="m_status"><option value="active">Đang tập luyện</option><option value="quit">Nghỉ tập</option></select>
             <select id="m_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
             <input type="tel" id="m_phone" placeholder="SĐT Phụ huynh">
-            <input type="number" id="m_fee" placeholder="Mức phí mặc định">
+            <input type="number" id="m_fee" placeholder="Mức phí">
         </div>
-        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%; margin-top:15px;">LƯU THÔNG TIN</button>
-        <button class="btn" onclick="closeModal()" style="width:100%; margin-top:10px;">ĐÓNG</button>
+        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%; margin-top:15px;">CẬP NHẬT</button>
+        <button class="btn" onclick="closeModal()" style="width:100%; margin-top:5px;">ĐÓNG</button>
     </div>
 </div>
 
@@ -141,7 +137,7 @@
         if(document.getElementById('passInput').value === "Tinhts64") {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-        } else alert("Mật khẩu không đúng!");
+        } else alert("Sai mật khẩu!");
     };
 
     const amtDisp = document.getElementById('amountDisplay');
@@ -180,17 +176,16 @@
         list.innerHTML = '';
         let inc = 0, exp = 0, newCount = 0;
 
-        // Lấy danh sách võ sinh đang tập tại cơ sở
+        // 1. Lọc danh sách võ sinh đang tập đúng cơ sở
         const activeNames = Object.keys(allProfiles).filter(name => {
             const p = allProfiles[name];
             const matchBranch = (selBranch === 'all' || p.branch === selBranch);
             const isActive = (p.status === 'active');
-            // Logic: Nếu không có ngày tạo, coi như học lâu năm. Nếu có, phải tạo trước/trong tháng lọc.
             const dateValid = (!p.createdAt || p.createdAt.substring(0,7) <= selMonth);
             return isActive && matchBranch && dateValid;
         });
 
-        // Những người đã đóng học phí tháng này
+        // 2. Lấy danh sách đã đóng học phí
         const paidNames = allTransactions
             .filter(t => t.date.startsWith(selMonth) && t.type === 'Học phí')
             .map(t => t.description);
@@ -206,14 +201,13 @@
 
         if(debtMode) {
             if(debtNames.length === 0) {
-                list.innerHTML = '<tr><td colspan="6" class="empty-msg">Không có võ sinh nợ phí trong tháng này.</td></tr>';
+                list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:50px; color:#999;">Không có võ sinh nợ phí.</td></tr>';
                 return;
             }
             debtNames.forEach(name => {
                 const p = allProfiles[name];
-                const phone = p.phone || "";
-                const msg = `Thông báo từ CLB TST: Võ sinh ${name} chưa hoàn thành học phí tháng ${selMonth.split('-')[1]}. Nhờ phụ huynh kiểm tra giúp CLB nhé.`;
-                const zaloUrl = phone ? `https://zalo.me/${phone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
+                const msg = `Thông báo học phí tháng ${selMonth.split('-')[1]} của võ sinh ${name} chưa được ghi nhận. Phụ huynh vui lòng kiểm tra giúp CLB nhé.`;
+                const zaloUrl = p.phone ? `https://zalo.me/${p.phone}` : `https://zalo.me/s/search/?q=${encodeURIComponent(name)}`;
                 
                 list.innerHTML += `<tr style="background:#fff4f4">
                     <td>---</td><td>${p.branch}</td>
@@ -248,13 +242,13 @@
         document.getElementById('totalExpense').innerText = exp.toLocaleString() + " ₫";
     }
 
-    window.copyMsg = (txt) => navigator.clipboard.writeText(txt);
+    window.copyMsg = (txt) => { navigator.clipboard.writeText(txt); alert("Đã copy lời nhắc Zalo!"); };
 
     window.openProfile = (name) => {
-        const p = allProfiles[name] || {status:'active', branch:'CS1', phone:'', tuitionFee:0};
+        const p = allProfiles[name];
         document.getElementById('m_name').innerText = name;
-        document.getElementById('m_status').value = p.status;
-        document.getElementById('m_branch').value = p.branch;
+        document.getElementById('m_status').value = p.status || 'active';
+        document.getElementById('m_branch').value = p.branch || 'CS1';
         document.getElementById('m_phone').value = p.phone || '';
         document.getElementById('m_fee').value = p.tuitionFee || '';
         document.getElementById('profileModal').style.display = 'block';
@@ -296,7 +290,7 @@
         document.getElementById('date').valueAsDate = new Date();
     };
 
-    window.deleteTx = (id) => confirm("Xóa giao dịch này?") && deleteDoc(doc(db, "tst_transactions", id));
+    window.deleteTx = (id) => confirm("Xóa giao dịch?") && deleteDoc(doc(db, "tst_transactions", id));
 
     document.getElementById('showDebtBtn').onclick = function() {
         const isDebt = this.innerText.includes("NỢ");
