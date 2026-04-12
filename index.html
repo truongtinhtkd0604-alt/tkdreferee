@@ -394,14 +394,15 @@
         <img id="receiptLogo" src="logo.png" alt="Logo" style="height: 50px; width: auto; max-width: 150px; object-fit: contain; display: block;" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO+CLB'">
         <div style="text-align: center;">
             <h3 style="color: #0033A0; margin: 0; font-size: 16px;">CLUB TAEKWONDO TST QUY NHƠN</h3>
-            <p style="margin: 5px 0 0; font-size: 16px; color: #000; font-weight: 700; font-family: 'Roboto', sans-serif; letter-spacing: 0.5px;">BIÊN LAI THU TIỀN</p>
-            <p style="margin: 3px 0 0; font-size: 12px; color: #666; font-style: italic;" id="r_date_top"></p>
+            <p style="margin: 10px 0 0; font-size: 20px; color: #000; font-weight: 700; font-family: 'Roboto', sans-serif; letter-spacing: 0.5px;">BIÊN LAI THU TIỀN</p>
+            <p style="margin: 5px 0 0; font-size: 13px; font-style: italic; color: #555;" id="r_date_top"></p>
         </div>
     </div>
     <div style="font-size: 14px; line-height: 1.6;">
         <p style="margin: 5px 0;"><strong>Họ & Tên:</strong> <span id="r_name" style="color: var(--primary); font-weight: bold; font-size:16px;"></span></p>
         <p style="margin: 5px 0; display: none;" id="r_dob_wrap"><strong>Ngày sinh:</strong> <span id="r_dob"></span></p>
         <p style="margin: 5px 0;"><strong>Khoản thu:</strong> <span id="r_type"></span></p>
+        <p style="margin: 5px 0;"><strong>Cơ sở:</strong> <span id="r_branch" style="font-weight: bold;"></span></p>
         <p style="margin: 5px 0;" id="r_month_wrap"><strong>Kỳ học phí:</strong> <span id="r_month"></span></p>
     </div>
     <div style="margin-top: 20px; padding: 15px; background: #eef2f7; text-align: center; border-radius: 8px;">
@@ -414,9 +415,6 @@
 <div id="toastMessage" class="toast">✅ Thành công!</div>
 
 <script>
-    // Hàm nạp logo cực kỳ an toàn, chống 100% lỗi trình duyệt chặn file ảnh
-    const base64LogoFallback = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 150'%3E%3Crect width='500' height='150' fill='none'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='48' font-weight='900' fill='%230033A0'%3ETAEKWONDO TST%3C/text%3E%3C/svg%3E";
-
     function loadLogoForReceipt() {
         let img = new Image();
         img.crossOrigin = "Anonymous";
@@ -429,14 +427,9 @@
                 const logoEl = document.getElementById('receiptLogo');
                 logoEl.src = canvas.toDataURL("image/png"); 
                 logoEl.style.display = 'block';
-            } catch (e) { 
-                document.getElementById('receiptLogo').src = base64LogoFallback; 
-            }
+            } catch (e) { console.warn("Lỗi CORS cho Logo."); }
         };
-        img.onerror = function() { 
-            document.getElementById('receiptLogo').src = base64LogoFallback; 
-            document.getElementById('receiptLogo').style.display = 'block'; 
-        }
+        img.onerror = function() { document.getElementById('receiptLogo').style.display = 'block'; }
         img.src = "logo.png";
     }
     window.addEventListener('load', loadLogoForReceipt);
@@ -545,6 +538,7 @@
         else desc.placeholder = "Tên Đại lý / Xưởng may";
     };
 
+    // AUTOCOMPLETE HỌC PHÍ
     const descInput = document.getElementById('description');
     const autoList = document.getElementById('autocomplete-list');
     function removeVietnameseTones(str) { return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); }
@@ -574,6 +568,7 @@
         autoList.style.display = matches.length ? 'block' : 'none';
     };
 
+    // AUTOCOMPLETE KHO VÕ PHỤC
     const invDescInput = document.getElementById('inv_desc');
     const invAutoList = document.getElementById('inv-autocomplete-list');
     invDescInput.oninput = function() {
@@ -643,6 +638,7 @@
         const uiDebt = document.getElementById('debtList');
         const uiActive = document.getElementById('activeList');
         const uiQuit = document.getElementById('quitList');
+        
         const uiInvList = document.getElementById('inventoryList');
 
         uiTx.innerHTML = ''; uiUniformTx.innerHTML = ''; uiExp.innerHTML = ''; uiDebt.innerHTML = ''; uiActive.innerHTML = ''; uiQuit.innerHTML = ''; uiInvList.innerHTML = ''; 
@@ -652,6 +648,7 @@
         let exp = 0, totalDebtEst = 0;
         let studentPayments = {};
         
+        // --- QUẢN LÝ TỒN KHO ---
         let inventoryStats = {
             "Số 1 (1m1 - 1m2)": { nhap: 0, xuat: 0 },
             "Số 2 (1m2 - 1m3)": { nhap: 0, xuat: 0 },
@@ -681,6 +678,7 @@
             </tr>`;
         });
 
+        // --- QUẢN LÝ GIAO DỊCH THU CHI ---
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
             if(t.type === 'Học phí' && t.txMonth && cleanName) {
@@ -691,8 +689,6 @@
 
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
-            // Xử lý chuỗi tên để không bị gãy nút bấm nếu có dấu nháy đơn
-            const safeName = cleanName.replace(/'/g, "\\'"); 
 
             if(selMonth && !t.date.startsWith(selMonth)) return;
             if(selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
@@ -702,7 +698,7 @@
 
             if(t.type === 'Chi phí') {
                 exp += t.amount;
-                uiExp.innerHTML += `<tr><td>${formatDate(t.date)}</td><td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td><td style="font-weight:bold;">${cleanName}</td><td style="color:var(--secondary); font-weight:bold;">-${t.amount.toLocaleString()}</td><td><button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button></td></tr>`;
+                uiExp.innerHTML += `<tr><td>${formatDate(t.date)}</td><td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td><td style="font-weight:bold;">${t.description}</td><td style="color:var(--secondary); font-weight:bold;">-${t.amount.toLocaleString()}</td><td><button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button></td></tr>`;
             } 
             else if (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục') {
                 let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
@@ -711,11 +707,11 @@
                 uiUniformTx.innerHTML += `<tr>
                     <td>${formatDate(t.date)}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
-                    <td class="name-link" onclick="openProfile('${safeName}')" style="font-weight:bold;">${cleanName}</td>
+                    <td class="name-link" onclick="openProfile('${cleanName}')" style="font-weight:bold;">${cleanName}</td>
                     <td>${isInc ? 'Xuất bán' : 'Nhập kho'}</td>
                     <td style="color:${isInc ? 'var(--success)' : 'var(--secondary)'}; font-weight:bold;">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td>
                     <td style="display:flex; gap:5px;">
-                        ${isInc ? `<button class="btn btn-primary" onclick="exportReceipt('${safeName}', ${t.amount}, 'Võ phục', '${t.date}', '')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>` : ''}
+                        ${isInc ? `<button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, 'Võ phục', '${t.date}', '', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>` : ''}
                         <button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>
                     </td>
                 </tr>`;
@@ -731,21 +727,21 @@
                     <td>${formatDate(t.date)}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
                     <td><span class="badge" style="background:#e0f7fa; color:#006064">${monthLabel}</span></td>
-                    <td class="name-link" onclick="openProfile('${safeName}')" style="font-weight:bold;">${cleanName}</td>
+                    <td class="name-link" onclick="openProfile('${cleanName}')" style="font-weight:bold;">${cleanName}</td>
                     <td>${t.type}</td>
                     <td style="color:var(--success); font-weight:bold;">+${t.amount.toLocaleString()}</td>
                     <td style="display:flex; gap:5px;">
-                        <button class="btn btn-primary" onclick="exportReceipt('${safeName}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth || ''}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>
+                        <button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth || ''}', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>
                         <button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>
                     </td>
                 </tr>`;
             }
         });
 
+        // --- QUẢN LÝ VÕ SINH ---
         Object.keys(allProfiles).forEach(name => {
             const p = allProfiles[name];
             let safeBranch = p.branch || "CS1"; 
-            const safeName = name.replace(/'/g, "\\'");
 
             if(selBranch !== 'all' && safeBranch !== selBranch) return;
             if(search && !name.toLowerCase().includes(search)) return;
@@ -758,13 +754,13 @@
                 }
 
                 uiActive.innerHTML += `<tr>
-                    <td class="name-link" onclick="openProfile('${safeName}')" style="font-weight:bold;">${name}</td>
+                    <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
                     <td>${formatDate(p.dob)}</td>
                     <td><span class="badge badge-active">${lastPaidStr}</span></td>
                     <td>${p.phone || ''}</td>
                     <td>${formatDate(p.createdAt)}</td>
-                    <td><button class="btn btn-primary" onclick="openProfile('${safeName}')" style="padding: 5px 10px;">✏️ Sửa</button></td>
+                    <td><button class="btn btn-primary" onclick="openProfile('${name}')" style="padding: 5px 10px;">✏️ Sửa</button></td>
                 </tr>`;
                 
                 const paidThisMonth = studentPayments[name] && studentPayments[name].has(selMonth);
@@ -779,20 +775,21 @@
                         <td><span class="badge badge-quit">${formatMonth(selMonth)}</span></td>
                         <td>${lastPaidStr}</td>
                         <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
-                        <td class="name-link" onclick="openProfile('${safeName}')" style="font-weight:bold">${name}</td>
+                        <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold">${name}</td>
                         <td style="display:flex; gap:5px; flex-wrap:wrap;">
-                            <button class="btn btn-success" onclick="quickPay('${safeName}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>
+                            <button class="btn btn-success" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>
                             <a href="https://zalo.me/${p.phone}" target="_blank" class="btn btn-zalo">💬 Zalo</a>
-                            <button class="btn btn-zalo" style="background:#17a2b8" onclick="copyZaloMsg('${safeName}', '${selMonth}')">📋 Copy</button>
-                            <button class="btn" onclick="skipMonth('${safeName}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>
+                            <button class="btn btn-zalo" style="background:#17a2b8" onclick="copyZaloMsg('${name}', '${selMonth}')">📋 Copy</button>
+                            <button class="btn" onclick="skipMonth('${name}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>
                         </td>
                     </tr>`;
                 }
             } else {
-                uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${safeName}')" style="font-weight:bold;">${name}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td><button class="btn btn-primary" style="padding: 5px 10px;" onclick="openProfile('${safeName}')">🔄 Khôi phục</button></td></tr>`;
+                uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td><button class="btn btn-primary" style="padding: 5px 10px;" onclick="openProfile('${name}')">🔄 Khôi phục</button></td></tr>`;
             }
         });
 
+        // Cập nhật Dashboard
         let totalIncome = inc_tuition + inc_exam + inc_other + inc_uniform;
         let expenseTotal = exp + exp_uniform;
         let profit = totalIncome - expenseTotal;
@@ -817,6 +814,7 @@
         document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
     }
 
+    // FORM KHO VÕ PHỤC VÀ SỔ QUỸ
     document.getElementById('inventoryForm').onsubmit = async (e) => {
         e.preventDefault();
         const size = document.getElementById('inv_size').value;
@@ -827,11 +825,14 @@
         const date = document.getElementById('inv_date').value;
         const branch = document.getElementById('inv_branch').value;
 
+        // Lưu Vật lý vào kho
         await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
 
+        // Lưu Tài chính vào Sổ quỹ chung
         if (amount > 0) {
             let txType = type === 'Nhập kho' ? 'Chi Võ phục' : 'Thu Võ phục';
             let txDesc = type === 'Nhập kho' ? `Nhập kho ${size} từ ${desc}` : `Bán ${size} cho ${desc}`;
+            
             await addDoc(colRef, { branch, type: txType, description: txDesc, amount, date, timestamp: Date.now() });
         }
 
@@ -844,7 +845,9 @@
         const msg = `Kính gửi Phụ huynh võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận bé chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
         navigator.clipboard.writeText(msg).then(() => {
             window.showToast("✅ Đã copy tin nhắn Zalo!");
-        }).catch(err => alert("Trình duyệt không hỗ trợ copy tự động."));
+        }).catch(err => {
+            alert("Trình duyệt không hỗ trợ copy tự động.");
+        });
     };
 
     window.openProfile = (name) => {
@@ -857,8 +860,7 @@
         document.getElementById('m_dob').value = p.dob || '';
         
         const skipped = p.skippedMonths || [];
-        const safeName = name.trim().replace(/'/g, "\\'");
-        let skippedHtml = skipped.sort().map(m => `<span class="badge" style="background:#ffc107; color:#856404; margin-right:5px; margin-bottom:5px; display:inline-block;">${formatMonth(m)} <span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${safeName}', '${m}')" title="Hủy báo nghỉ">✖</span></span>`).join('');
+        let skippedHtml = skipped.sort().map(m => `<span class="badge" style="background:#ffc107; color:#856404; margin-right:5px; margin-bottom:5px; display:inline-block;">${formatMonth(m)} <span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${name}', '${m}')" title="Hủy báo nghỉ">✖</span></span>`).join('');
         document.getElementById('m_skipped').innerHTML = skippedHtml || '<span style="font-size:0.85rem; color:#666;">Chưa có dữ liệu</span>';
 
         document.getElementById('profileModal').style.display = 'flex';
@@ -1000,50 +1002,49 @@
 
     window.deleteTx = (id) => { if(confirm("Xóa giao dịch này?")) deleteDoc(doc(db, "tst_transactions", id)); };
 
-    // BẢN FIX 100% LỖI KHI ẤN NÚT "HÓA ĐƠN" KHÔNG CHẠY
-    window.exportReceipt = async (name, amount, type, date, txMonth) => {
+    window.exportReceipt = async (name, amount, type, date, txMonth, branch) => {
+        const cleanName = name.trim();
+        document.getElementById('r_name').innerText = cleanName.toUpperCase();
+        
+        const dParts = date.split('-');
+        if(dParts.length === 3) {
+            document.getElementById('r_date_top').innerText = `Ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}`;
+        } else {
+            document.getElementById('r_date_top').innerText = formatDate(date);
+        }
+
+        const p = allProfiles[cleanName];
+        const dobWrap = document.getElementById('r_dob_wrap');
+        if (p && p.dob) {
+            document.getElementById('r_dob').innerText = formatDate(p.dob);
+            dobWrap.style.display = 'block';
+        } else {
+            dobWrap.style.display = 'none'; 
+        }
+
+        document.getElementById('r_amount').innerText = amount.toLocaleString('vi-VN') + " ₫";
+        document.getElementById('r_type').innerText = type;
+        
+        let branchText = branch === 'CS1' ? 'Cơ sở 1 (Huỳnh Tấn Phát)' : (branch === 'CS2' ? 'Cơ sở 2 (Sân vận động)' : branch);
+        document.getElementById('r_branch').innerText = branchText;
+        
+        const monthWrap = document.getElementById('r_month_wrap');
+        if(type === 'Học phí' && txMonth) {
+            monthWrap.style.display = 'block';
+            document.getElementById('r_month').innerText = formatMonth(txMonth);
+        } else {
+            monthWrap.style.display = 'none';
+        }
+
+        const node = document.getElementById('receiptTemplate');
+        node.style.visibility = 'visible';
+        node.style.position = 'fixed';
+        node.style.top = '0';
+        node.style.left = '0';
+        node.style.zIndex = '-9999';
+
         try {
-            const cleanName = name.trim();
-            document.getElementById('r_name').innerText = cleanName.toUpperCase();
-            
-            const p = allProfiles[cleanName];
-            const dobWrap = document.getElementById('r_dob_wrap');
-            if (p && p.dob) {
-                document.getElementById('r_dob').innerText = formatDate(p.dob);
-                dobWrap.style.display = 'block';
-            } else {
-                dobWrap.style.display = 'none'; 
-            }
-
-            document.getElementById('r_amount').innerText = amount.toLocaleString('vi-VN') + " ₫";
-            document.getElementById('r_type').innerText = type;
-            document.getElementById('r_date').innerText = formatDate(date);
-            document.getElementById('r_date_top').innerText = formatDate(date); // Đã thêm ngày tháng ở đỉnh Hóa Đơn
-            
-            const monthWrap = document.getElementById('r_month_wrap');
-            if(type === 'Học phí' && txMonth) {
-                monthWrap.style.display = 'block';
-                document.getElementById('r_month').innerText = formatMonth(txMonth);
-            } else {
-                monthWrap.style.display = 'none';
-            }
-
-            const node = document.getElementById('receiptTemplate');
-            // Mẹo an toàn của html2canvas: Kéo bản mẫu ra ngoài nhưng phải cho nó hiển thị
-            node.style.visibility = 'visible';
-            node.style.display = 'block';
-            node.style.position = 'fixed';
-            node.style.top = '0';
-            node.style.left = '0';
-            node.style.zIndex = '-1';
-
-            const canvas = await html2canvas(node, { 
-                scale: 3, 
-                backgroundColor: '#ffffff', 
-                useCORS: true, 
-                allowTaint: true, 
-                logging: false 
-            });
+            const canvas = await html2canvas(node, { scale: 3, backgroundColor: '#ffffff', useCORS: true, allowTaint: true, logging: false });
             const imgData = canvas.toDataURL('image/png');
             document.getElementById('receiptPreviewImg').src = imgData;
             
@@ -1054,14 +1055,11 @@
                 link.href = imgData;
                 link.click();
             };
-            
             document.getElementById('receiptModal').style.display = 'flex';
         } catch (error) {
-            console.error(error);
-            alert("Đã xảy ra lỗi xuất hóa đơn. Đảm bảo bạn chạy trên môi trường có internet và file logo.png hợp lệ.");
+            console.error("Lỗi xuất hóa đơn:", error);
+            alert("Lỗi xuất hóa đơn. Vui lòng đảm bảo hình logo.png không bị lỗi.");
         } finally {
-            // Trả lại nguyên trạng thái ban đầu của template
-            const node = document.getElementById('receiptTemplate');
             node.style.visibility = 'hidden';
             node.style.position = 'absolute';
             node.style.left = '-9999px';
