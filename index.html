@@ -419,12 +419,12 @@
         <p style="margin: 5px 0; display: none;" id="r_dob_wrap"><strong>Ngày sinh:</strong> <span id="r_dob"></span></p>
         <p style="margin: 5px 0;"><strong>Khoản thu:</strong> <span id="r_type"></span></p>
         <p style="margin: 5px 0;"><strong>Cơ sở:</strong> <span id="r_branch" style="font-weight: bold;"></span></p>
-        <p style="margin: 5px 0;" id="r_month_wrap"><strong>Kỳ học phí:</strong> <span id="r_month"></span></p>
+        <p style="margin: 5px 0;" id="r_month_wrap"><strong>Kỳ học phí:</strong> <span id=T"r_month"></span></p>
     </div>
     <div style="margin-top: 20px; padding: 15px; background: #eef2f7; text-align: center; border-radius: 8px;">
         <p style="margin: 0; font-size: 13px; color: #666;">SỐ TIỀN THANH TOÁN</p>
         <p style="margin: 5px 0 0; font-size: 22px; font-weight: bold; color: #C8102E;" id="r_amount">0 ₫</p>
-        <p style="margin: 5px 0 0; font-size: 12px; font-style: italic; color: #444;" id="r_amount_words"></p>
+        <p style="margin: 5px 0 0; font-size: 12px; font-style: italic; color: #555;" id="r_amount_words"></p>
     </div>
     <p style="text-align: center; font-size: 11px; margin-top: 20px; font-style: italic; color: #777;">Cảm ơn quý phụ huynh, các em võ sinh đã đồng hành cùng CLB!</p>
 </div>
@@ -1087,8 +1087,9 @@
                 dobWrap.style.display = 'none'; 
             }
 
-            // Gắn số tiền gốc và số tiền bằng chữ
+            // Gắn số tiền gốc
             document.getElementById('r_amount').innerText = amount.toLocaleString('vi-VN') + " ₫";
+            // GẮN SỐ TIỀN BẰNG CHỮ
             document.getElementById('r_amount_words').innerText = docTienVND(amount);
             
             document.getElementById('r_type').innerText = type;
