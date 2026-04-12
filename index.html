@@ -89,7 +89,6 @@
             .filters, .transaction-form { grid-template-columns: 1fr; }
             .btn { width: 100%; justify-content: center; }
             .header { flex-direction: column; align-items: flex-start; }
-            .header-left img { height: 40px; }
             .table-wrapper { padding-bottom: 10px; }
             .modal-content { padding: 15px; }
             td, th { padding: 10px; }
@@ -113,15 +112,15 @@
             <img src="logo.png" id="headerLogo" alt="TST Logo" onerror="this.src='https://via.placeholder.com/150x50?text=TST'">
             <h2>QUẢN LÝ THU CHI CÂU LẠC BỘ</h2>
         </div>
-        <button class="btn btn-success" id="exportBtn" onclick="exportToExcel()">📥 XUẤT EXCEL THÁNG</button>
+        <button class="btn btn-success" id="exportBtn" onclick="exportToExcel()">📥 XUẤT EXCEL</button>
     </div>
 
     <div class="stats-grid">
         <div class="stat-box" style="background: var(--success);">
-            <h3>Tổng thu</h3><p id="totalIncome">0 ₫</p>
+            <h3>Tổng thu chung</h3><p id="totalIncome">0 ₫</p>
         </div>
         <div class="stat-box" style="background: var(--secondary);">
-            <h3>Tổng chi</h3><p id="totalExpense">0 ₫</p>
+            <h3>Tổng chi chung</h3><p id="totalExpense">0 ₫</p>
         </div>
         <div class="stat-box" style="background: var(--primary);">
             <h3>Lợi nhuận</h3><p id="totalProfit">0 ₫</p>
@@ -136,15 +135,15 @@
         <input type="month" id="filterMonth">
         <select id="filterBranch">
             <option value="all">Tất cả cơ sở</option>
-            <option value="CS1- Huỳnh Tấn Phát">CS1: Huỳnh Tấn Phát</option>
-            <option value="CS2 - Sân vận động">CS2: Sân vận động</option>
+            <option value="CS1">CS1: Huỳnh Tấn Phát</option>
+            <option value="CS2">CS2: Sân vận động</option>
         </select>
         <input type="text" id="searchInput" placeholder="🔍 Tìm tên võ sinh, nội dung...">
     </div>
 
     <div class="tabs-nav">
-        <button class="tab-btn active" id="btn_tx" onclick="switchTab('tx')">💼 Học Phí & Khác</button>
-        <button class="tab-btn" id="btn_uniform" onclick="switchTab('uniform')">🥋 Võ Phục</button>
+        <button class="tab-btn active" id="btn_tx" onclick="switchTab('tx')">💼 Học Phí</button>
+        <button class="tab-btn" id="btn_inventory" onclick="switchTab('inventory')">📦 Kho Võ Phục</button>
         <button class="tab-btn" id="btn_expense" onclick="switchTab('expense')">💸 Mục Đã Chi</button>
         <button class="tab-btn" id="btn_debt" onclick="switchTab('debt')">⚠️ Báo Nợ</button>
         <button class="tab-btn" id="btn_active" onclick="switchTab('active')">🥋 Đang Tập (<span id="activeStudentCount">0</span>)</button>
@@ -153,22 +152,20 @@
 
     <div id="tab_tx" class="tab-content active">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-            <h4 style="margin:0; color:var(--primary)">GHI NHẬN NGUỒN THU</h4>
+            <h4 style="margin:0; color:var(--primary)">GHI NHẬN HỌC PHÍ & LỆ PHÍ THI</h4>
             <button class="btn btn-success" onclick="openAddModal()">➕ THÊM VÕ SINH MỚI</button>
         </div>
 
         <div class="revenue-summary">
             <div class="rev-item">Học phí: <span id="sum_tuition">0 ₫</span></div>
             <div class="rev-item" style="color:#d35400">Lệ phí thi: <span id="sum_exam" style="color:#d35400">0 ₫</span></div>
-            <div class="rev-item" style="color:#6f42c1">Võ phục/Dụng cụ: <span id="sum_uniform" style="color:#6f42c1">0 ₫</span></div>
             <div class="rev-item" style="color:var(--gray)">Thu khác: <span id="sum_other" style="color:var(--gray)">0 ₫</span></div>
         </div>
 
         <form id="transactionForm" class="transaction-form">
-            <select id="branch"><option value="CS1- Huỳnh Tấn Phát">CS1- Huỳnh Tấn Phát</option><option value="CS2 - Sân vận động">CS2- Sân vận động</option></select>
+            <select id="branch"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option></select>
             <select id="type" onchange="toggleMonthSelect()">
                 <option value="Học phí">Học phí</option>
-                <option value="Võ phục">Võ phục / Dụng cụ</option>
                 <option value="Lệ phí thi">Lệ phí thi lên đai</option>
                 <option value="Thu khác">Thu khác</option>
             </select>
@@ -195,9 +192,16 @@
         </div>
     </div>
 
-    <div id="tab_uniform" class="tab-content">
-        <h4 style="margin-top:0; color:var(--primary)">QUẢN LÝ TỒN KHO VÕ PHỤC</h4>
-        <form id="inventoryForm" class="transaction-form">
+    <div id="tab_inventory" class="tab-content">
+        <h4 style="margin-top:0; color:var(--purple)">QUẢN LÝ KHO & DOANH THU VÕ PHỤC</h4>
+        
+        <div class="revenue-summary" style="border-left-color: var(--purple); background: #f9f5ff;">
+            <div class="rev-item">Tổng thu bán: <span id="sum_uniform_in" style="color:var(--success)">0 ₫</span></div>
+            <div class="rev-item">Tổng chi nhập: <span id="sum_uniform_out" style="color:var(--secondary)">0 ₫</span></div>
+            <div class="rev-item">Lợi nhuận võ phục: <span id="sum_uniform_profit" style="color:var(--purple)">0 ₫</span></div>
+        </div>
+
+        <form id="inventoryForm" class="transaction-form inventory-form">
             <select id="inv_size" required>
                 <option value="">-- Chọn Size Áo --</option>
                 <option value="Số 1 (1m1 - 1m2)">Số 1 (1m1 - 1m2)</option>
@@ -208,39 +212,49 @@
                 <option value="Số 6 (1m6 - 1m7)">Số 6 (1m6 - 1m7)</option>
                 <option value="Số 7 (1m7 - 1m8)">Số 7 (1m7 - 1m8)</option>
             </select>
-            <select id="inv_type" required>
-                <option value="Nhập kho">📥 Nhập kho</option>
-                <option value="Xuất kho">📤 Xuất kho (Bán/Cấp)</option>
+            <select id="inv_type" onchange="toggleInvType()" required>
+                <option value="Xuất bán">📤 Xuất bán cho Võ sinh</option>
+                <option value="Nhập kho">📥 Nhập kho (Từ xưởng)</option>
             </select>
-            <input type="number" id="inv_qty" placeholder="Số lượng (Cái)" required min="1">
-            <button type="submit" class="btn btn-primary">CẬP NHẬT KHO</button>
+            <input type="number" id="inv_qty" placeholder="Số lượng áo (Cái)" required min="1">
+
+            <div class="autocomplete-container">
+                <input type="text" id="inv_desc" placeholder="Tên Võ sinh / Đại lý nhập" autocomplete="off" required>
+                <div id="inv-autocomplete-list" class="autocomplete-items"></div>
+            </div>
+
+            <input type="text" id="inv_amountDisplay" placeholder="Tổng Tiền (Thu/Chi)" required>
+            <input type="hidden" id="inv_amountActual">
+            <input type="date" id="inv_date" required>
+            <select id="inv_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
+            <button type="submit" class="btn btn-purple">LƯU KHO & SỔ QUỸ</button>
         </form>
 
         <div class="table-wrapper" style="margin-bottom: 20px;">
             <table id="tbl_inventory">
                 <thead>
-                    <tr><th>Size Võ Phục</th><th>Tổng Nhập</th><th>Tổng Xuất</th><th>TỒN KHO HIỆN TẠI</th></tr>
+                    <tr><th>Size Võ Phục</th><th>Tổng Nhập</th><th>Tổng Bán</th><th>TỒN KHO HIỆN TẠI</th></tr>
                 </thead>
                 <tbody id="inventoryList"></tbody>
             </table>
         </div>
 
-        <h5 style="color:var(--gray); border-bottom: 1px solid #eee; padding-bottom: 5px;">Lịch sử Xuất/Nhập kho gần đây</h5>
+        <h5 style="color:var(--gray); border-bottom: 1px solid #eee; padding-bottom: 5px;">Lịch sử Thu/Chi tiền Võ phục</h5>
         <div class="table-wrapper">
-            <table>
+            <table id="tbl_uniform_tx">
                 <thead>
-                    <tr><th>Thời gian</th><th>Loại</th><th>Size</th><th>Số lượng</th><th>Thao tác</th></tr>
+                    <tr><th>Ngày lập</th><th>Cơ sở</th><th>Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr>
                 </thead>
-                <tbody id="inventoryHistory"></tbody>
+                <tbody id="uniformTxList"></tbody>
             </table>
         </div>
     </div>
 
     <div id="tab_expense" class="tab-content">
-        <h4 style="margin-top:0; color:var(--secondary)">GHI NHẬN CHI PHÍ VẬN HÀNH</h4>
+        <h4 style="margin-top:0; color:var(--secondary)">GHI NHẬN CHI PHÍ VẬN HÀNH KHÁC</h4>
         <form id="expenseForm" class="transaction-form expense-form">
-            <select id="exp_branch"><option value="CS1- Huỳnh Tấn Phát">CS1- Huỳnh Tấn Phát</option><option value="CS2 - Sân vận động">CS2- Sân vận động</option><option value="Chung">Chung / Khác</option></select>
-            <input type="text" id="exp_desc" placeholder="Nội dung chi (Tiền điện, Trợ giảng, Nhập võ phục...)" required>
+            <select id="exp_branch"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option><option value="Chung">Chung / Khác</option></select>
+            <input type="text" id="exp_desc" placeholder="Nội dung chi (Tiền điện, Nước, Băng rôn...)" required>
             <input type="text" id="exp_amountDisplay" placeholder="Số tiền chi" required>
             <input type="hidden" id="exp_amountActual">
             <input type="date" id="exp_date" required>
@@ -258,7 +272,7 @@
     </div>
 
     <div id="tab_debt" class="tab-content">
-        <div class="table-wrapper"><table id="tbl_debt"><thead><tr><th>Kỳ nợ hiện tại</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác</th></tr></thead><tbody id="debtList"></tbody></table></div>
+        <div class="table-wrapper"><table id="tbl_debt"><thead><tr><th>Kỳ nợ</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác</th></tr></thead><tbody id="debtList"></tbody></table></div>
     </div>
     <div id="tab_active" class="tab-content">
         <div class="table-wrapper"><table><thead><tr><th>Họ và tên</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập học</th><th>Thao tác</th></tr></thead><tbody id="activeList"></tbody></table></div>
@@ -279,7 +293,7 @@
                 </div>
                 <div>
                     <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Cơ sở</label>
-                    <select id="m_branch"><option value="CS1- Huỳnh Tấn Phát">CS1- Huỳnh Tấn Phát</option><option value="CS2 - Sân vận động">CS2- Sân vận động</option></select>
+                    <select id="m_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
                 </div>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -318,7 +332,7 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                 <div>
                     <label style="font-weight:bold; font-size:0.9rem">Cơ sở tập</label>
-                    <select id="add_branch"><option value="CS1- Huỳnh Tấn Phát">CS1- Huỳnh Tấn Phát</option><option value="CS2 - Sân vận động">CS2- Sân vận động</option></select>
+                    <select id="add_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
                 </div>
                 <div>
                     <label style="font-weight:bold; font-size:0.9rem">Ngày sinh</label>
@@ -351,6 +365,7 @@
                         <label style="font-size:0.8rem; display:block; margin-bottom:4px;">Tiền Võ phục</label>
                         <input type="text" id="add_uniform_display" placeholder="Số tiền">
                         <input type="hidden" id="add_uniform_actual">
+                        <small style="color:var(--gray); display:block; margin-top:3px;">(Ghi chú: Tiền võ phục thu ở đây sẽ tự cộng vào Lợi nhuận kho Võ phục)</small>
                     </div>
                 </div>
             </div>
@@ -423,7 +438,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 🔴 FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
       authDomain: "quanly-tst.firebaseapp.com",
@@ -463,6 +477,7 @@
     
     formatCurrencyInput('amountDisplay', 'amountActual');
     formatCurrencyInput('exp_amountDisplay', 'exp_amountActual');
+    formatCurrencyInput('inv_amountDisplay', 'inv_amountActual');
     formatCurrencyInput('add_fee_display', 'add_fee_actual');
     formatCurrencyInput('add_uniform_display', 'add_uniform_actual');
 
@@ -487,7 +502,6 @@
     let allProfiles = {};
     let allInventory = [];
 
-    // REALTIME LISTENERS
     onSnapshot(profRef, (snap) => {
         allProfiles = {}; 
         snap.forEach(d => { allProfiles[d.id.trim()] = d.data(); });
@@ -516,12 +530,17 @@
         }
     };
 
-    // AUTOCOMPLETE VÀ AUTO-FILL HỌC PHÍ
+    window.toggleInvType = () => {
+        const type = document.getElementById('inv_type').value;
+        const desc = document.getElementById('inv_desc');
+        if(type === 'Xuất bán') desc.placeholder = "Tên Võ sinh";
+        else desc.placeholder = "Tên Đại lý / Xưởng may";
+    };
+
+    // AUTOCOMPLETE HỌC PHÍ
     const descInput = document.getElementById('description');
     const autoList = document.getElementById('autocomplete-list');
-    function removeVietnameseTones(str) {
-        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
-    }
+    function removeVietnameseTones(str) { return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); }
 
     descInput.oninput = function() {
         let val = this.value.toLowerCase().trim();
@@ -531,18 +550,16 @@
         let matches = Object.keys(allProfiles).filter(n => n.toLowerCase().includes(val) && allProfiles[n].status !== 'quit');
         matches.forEach(name => {
             let div = document.createElement('div');
-            let branchDisplay = allProfiles[name].branch || 'CS1- Huỳnh Tấn Phát';
+            let branchDisplay = allProfiles[name].branch || 'CS1';
             div.innerHTML = `<strong>${name}</strong> <span class="badge" style="background:#e9ecef; color:#495057;">${branchDisplay}</span>`;
             div.onclick = () => {
                 descInput.value = name;
-                document.getElementById('branch').value = allProfiles[name].branch || 'CS1- Huỳnh Tấn Phát';
+                document.getElementById('branch').value = allProfiles[name].branch || 'CS1';
                 
-                // Điền tự động học phí
                 if(document.getElementById('type').value === 'Học phí' && allProfiles[name].tuitionFee) {
                     document.getElementById('amountActual').value = allProfiles[name].tuitionFee;
                     document.getElementById('amountDisplay').value = parseInt(allProfiles[name].tuitionFee).toLocaleString('vi-VN');
                 }
-
                 autoList.style.display = 'none';
             };
             autoList.appendChild(div);
@@ -550,14 +567,40 @@
         autoList.style.display = matches.length ? 'block' : 'none';
     };
 
-    document.addEventListener('click', function(e) { if (e.target !== descInput) autoList.style.display = 'none'; });
+    // AUTOCOMPLETE KHO VÕ PHỤC
+    const invDescInput = document.getElementById('inv_desc');
+    const invAutoList = document.getElementById('inv-autocomplete-list');
+    invDescInput.oninput = function() {
+        let val = this.value.toLowerCase().trim();
+        invAutoList.innerHTML = '';
+        if(!val || document.getElementById('inv_type').value !== 'Xuất bán') { invAutoList.style.display = 'none'; return; }
+        
+        let matches = Object.keys(allProfiles).filter(n => n.toLowerCase().includes(val) && allProfiles[n].status !== 'quit');
+        matches.forEach(name => {
+            let div = document.createElement('div');
+            let branchDisplay = allProfiles[name].branch || 'CS1';
+            div.innerHTML = `<strong>${name}</strong> <span class="badge" style="background:#e9ecef; color:#495057;">${branchDisplay}</span>`;
+            div.onclick = () => {
+                invDescInput.value = name;
+                document.getElementById('inv_branch').value = allProfiles[name].branch || 'CS1';
+                invAutoList.style.display = 'none';
+            };
+            invAutoList.appendChild(div);
+        });
+        invAutoList.style.display = matches.length ? 'block' : 'none';
+    };
+
+    document.addEventListener('click', function(e) { 
+        if (e.target !== descInput) autoList.style.display = 'none'; 
+        if (e.target !== invDescInput) invAutoList.style.display = 'none'; 
+    });
 
     window.quickPay = (name, month, branch, defaultFee) => {
         switchTab('tx');
         document.getElementById('type').value = 'Học phí';
         toggleMonthSelect();
         document.getElementById('description').value = name;
-        document.getElementById('branch').value = branch || 'CS1- Huỳnh Tấn Phát';
+        document.getElementById('branch').value = branch || 'CS1';
         document.getElementById('tx_month').value = month;
         if(defaultFee) {
             document.getElementById('amountActual').value = defaultFee;
@@ -575,6 +618,8 @@
         if(!selMonth) return alert("Vui lòng chọn tháng để xuất báo cáo!");
         let wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_tx')), "NguonThu");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_uniform_tx')), "ThuChiVoPhuc");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_inventory')), "KhoVoPhuc");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_exp')), "ChiPhi");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_debt')), "NoPhi");
         XLSX.writeFile(wb, `BaoCao_CLB_Thang_${selMonth}.xlsx`);
@@ -587,20 +632,22 @@
         const search = document.getElementById('searchInput').value.toLowerCase();
 
         const uiTx = document.getElementById('txList');
+        const uiUniformTx = document.getElementById('uniformTxList');
         const uiExp = document.getElementById('expenseList');
         const uiDebt = document.getElementById('debtList');
         const uiActive = document.getElementById('activeList');
         const uiQuit = document.getElementById('quitList');
         
         const uiInvList = document.getElementById('inventoryList');
-        const uiInvHistory = document.getElementById('inventoryHistory');
 
-        uiTx.innerHTML = ''; uiExp.innerHTML = ''; uiDebt.innerHTML = ''; uiActive.innerHTML = ''; uiQuit.innerHTML = ''; uiInvList.innerHTML = ''; uiInvHistory.innerHTML = '';
+        uiTx.innerHTML = ''; uiUniformTx.innerHTML = ''; uiExp.innerHTML = ''; uiDebt.innerHTML = ''; uiActive.innerHTML = ''; uiQuit.innerHTML = ''; uiInvList.innerHTML = ''; 
         
-        let inc_tuition = 0, inc_uniform = 0, inc_exam = 0, inc_other = 0, exp = 0, totalDebtEst = 0;
+        let inc_tuition = 0, inc_exam = 0, inc_other = 0;
+        let inc_uniform = 0, exp_uniform = 0;
+        let exp = 0, totalDebtEst = 0;
         let studentPayments = {};
         
-        // Tính tồn kho
+        // --- QUẢN LÝ TỒN KHO ---
         let inventoryStats = {
             "Số 1 (1m1 - 1m2)": { nhap: 0, xuat: 0 },
             "Số 2 (1m2 - 1m3)": { nhap: 0, xuat: 0 },
@@ -616,16 +663,6 @@
                 if(inv.type === 'Nhập kho') inventoryStats[inv.size].nhap += inv.qty;
                 else inventoryStats[inv.size].xuat += inv.qty;
             }
-            if (uiInvHistory.children.length < 15) {
-                let color = inv.type === 'Nhập kho' ? 'var(--success)' : 'var(--secondary)';
-                uiInvHistory.innerHTML += `<tr>
-                    <td>${formatDate(inv.date)}</td>
-                    <td style="color:${color}; font-weight:bold;">${inv.type}</td>
-                    <td>${inv.size}</td>
-                    <td>${inv.qty}</td>
-                    <td><button class="btn btn-secondary" onclick="deleteInv('${inv.id}')" style="padding: 4px 8px;">🗑</button></td>
-                </tr>`;
-            }
         });
 
         Object.keys(inventoryStats).forEach(size => {
@@ -640,6 +677,7 @@
             </tr>`;
         });
 
+        // --- QUẢN LÝ GIAO DỊCH THU CHI ---
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
             if(t.type === 'Học phí' && t.txMonth && cleanName) {
@@ -655,14 +693,31 @@
             if(selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
-            let safeBranch = t.branch || "CS1- Huỳnh Tấn Phát";
+            let safeBranch = t.branch || "CS1";
 
             if(t.type === 'Chi phí') {
                 exp += t.amount;
                 uiExp.innerHTML += `<tr><td>${formatDate(t.date)}</td><td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td><td style="font-weight:bold;">${t.description}</td><td style="color:var(--secondary); font-weight:bold;">-${t.amount.toLocaleString()}</td><td><button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button></td></tr>`;
-            } else {
+            } 
+            else if (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục') {
+                // Gom "Võ phục" cũ thành "Thu Võ phục"
+                let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
+                if(isInc) inc_uniform += t.amount; else exp_uniform += t.amount;
+
+                uiUniformTx.innerHTML += `<tr>
+                    <td>${formatDate(t.date)}</td>
+                    <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
+                    <td class="name-link" onclick="openProfile('${cleanName}')" style="font-weight:bold;">${cleanName}</td>
+                    <td>${isInc ? 'Xuất bán' : 'Nhập kho'}</td>
+                    <td style="color:${isInc ? 'var(--success)' : 'var(--secondary)'}; font-weight:bold;">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td>
+                    <td style="display:flex; gap:5px;">
+                        ${isInc ? `<button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, 'Võ phục', '${t.date}', '')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>` : ''}
+                        <button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>
+                    </td>
+                </tr>`;
+            } 
+            else {
                 if(t.type === 'Học phí') inc_tuition += t.amount;
-                else if(t.type === 'Võ phục') inc_uniform += t.amount;
                 else if(t.type === 'Lệ phí thi') inc_exam += t.amount;
                 else inc_other += t.amount;
 
@@ -676,16 +731,17 @@
                     <td>${t.type}</td>
                     <td style="color:var(--success); font-weight:bold;">+${t.amount.toLocaleString()}</td>
                     <td style="display:flex; gap:5px;">
-                        <button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth || ''}', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾</button>
+                        <button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth || ''}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>
                         <button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>
                     </td>
                 </tr>`;
             }
         });
 
+        // --- QUẢN LÝ VÕ SINH ---
         Object.keys(allProfiles).forEach(name => {
             const p = allProfiles[name];
-            let safeBranch = p.branch || "CS1- Huỳnh Tấn Phát"; 
+            let safeBranch = p.branch || "CS1"; 
 
             if(selBranch !== 'all' && safeBranch !== selBranch) return;
             if(search && !name.toLowerCase().includes(search)) return;
@@ -733,15 +789,21 @@
             }
         });
 
-        let totalIncome = inc_tuition + inc_exam + inc_other + inc_uniform; 
-        let profit = totalIncome - exp;
+        // Cập nhật Dashboard
+        let totalIncome = inc_tuition + inc_exam + inc_other + inc_uniform; // Thu chung bao gồm bán áo
+        let expenseTotal = exp + exp_uniform; // Chi chung bao gồm nhập áo
+        let profit = totalIncome - expenseTotal;
 
         document.getElementById('sum_tuition').innerText = inc_tuition.toLocaleString() + " ₫";
-        document.getElementById('sum_uniform').innerText = inc_uniform.toLocaleString() + " ₫";
         document.getElementById('sum_exam').innerText = inc_exam.toLocaleString() + " ₫";
         document.getElementById('sum_other').innerText = inc_other.toLocaleString() + " ₫";
+        
+        document.getElementById('sum_uniform_in').innerText = inc_uniform.toLocaleString() + " ₫";
+        document.getElementById('sum_uniform_out').innerText = exp_uniform.toLocaleString() + " ₫";
+        document.getElementById('sum_uniform_profit').innerText = (inc_uniform - exp_uniform).toLocaleString() + " ₫";
+
         document.getElementById('totalIncome').innerText = totalIncome.toLocaleString() + " ₫";
-        document.getElementById('totalExpense').innerText = exp.toLocaleString() + " ₫";
+        document.getElementById('totalExpense').innerText = expenseTotal.toLocaleString() + " ₫";
         
         const profitEl = document.getElementById('totalProfit');
         profitEl.innerText = profit.toLocaleString() + " ₫";
@@ -752,19 +814,32 @@
         document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
     }
 
+    // FORM KHO VÕ PHỤC VÀ SỔ QUỸ
     document.getElementById('inventoryForm').onsubmit = async (e) => {
         e.preventDefault();
         const size = document.getElementById('inv_size').value;
         const type = document.getElementById('inv_type').value;
         const qty = Number(document.getElementById('inv_qty').value);
-        const date = new Date().toISOString().split('T')[0];
+        const desc = document.getElementById('inv_desc').value.trim();
+        const amount = Number(document.getElementById('inv_amountActual').value);
+        const date = document.getElementById('inv_date').value;
+        const branch = document.getElementById('inv_branch').value;
 
+        // Lưu Vật lý vào kho
         await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
-        e.target.reset();
-        window.showToast("✅ Đã cập nhật tồn kho!");
-    };
 
-    window.deleteInv = (id) => { if(confirm("Xóa bản ghi kho này?")) deleteDoc(doc(db, "tst_inventory", id)); };
+        // Lưu Tài chính vào Sổ quỹ chung
+        if (amount > 0) {
+            let txType = type === 'Nhập kho' ? 'Chi Võ phục' : 'Thu Võ phục';
+            let txDesc = type === 'Nhập kho' ? `Nhập kho ${size} từ ${desc}` : `Bán ${size} cho ${desc}`;
+            
+            await addDoc(colRef, { branch, type: txType, description: txDesc, amount, date, timestamp: Date.now() });
+        }
+
+        e.target.reset();
+        document.getElementById('inv_date').valueAsDate = new Date();
+        window.showToast("✅ Đã cập nhật Kho & Sổ Quỹ!");
+    };
 
     window.copyZaloMsg = (name, month) => {
         const msg = `Kính gửi Phụ huynh võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận bé chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
@@ -779,7 +854,7 @@
         const p = allProfiles[name.trim()] || {};
         document.getElementById('m_name').innerText = name.trim();
         document.getElementById('m_status').value = p.status || 'active';
-        document.getElementById('m_branch').value = p.branch || 'CS1- Huỳnh Tấn Phát';
+        document.getElementById('m_branch').value = p.branch || 'CS1';
         document.getElementById('m_phone').value = p.phone || '';
         document.getElementById('m_fee').value = p.tuitionFee || '';
         document.getElementById('m_dob').value = p.dob || '';
@@ -878,7 +953,7 @@
         await setDoc(doc(db, "tst_profiles", name), profileData);
 
         if(fee > 0) await addDoc(colRef, { branch, type: 'Học phí', description: name, amount: fee, date: joinDate, txMonth: currentMonth, timestamp: Date.now() });
-        if(uniformFee > 0) await addDoc(colRef, { branch, type: 'Võ phục', description: name, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 });
+        if(uniformFee > 0) await addDoc(colRef, { branch, type: 'Thu Võ phục', description: `Bán áo mới cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 });
 
         closeAddModal();
         window.showToast("✅ Đã thêm võ sinh & thu tiền!");
@@ -927,7 +1002,7 @@
 
     window.deleteTx = (id) => { if(confirm("Xóa giao dịch này?")) deleteDoc(doc(db, "tst_transactions", id)); };
 
-    window.exportReceipt = async (name, amount, type, date, txMonth, branch) => {
+    window.exportReceipt = async (name, amount, type, date, txMonth) => {
         const cleanName = name.trim();
         document.getElementById('r_name').innerText = cleanName.toUpperCase();
         
@@ -942,15 +1017,12 @@
 
         document.getElementById('r_amount').innerText = amount.toLocaleString('vi-VN') + " ₫";
         document.getElementById('r_type').innerText = type;
-        
-        // Đưa ngày thu lên đầu theo yêu cầu mới
-        document.getElementById('r_date_top').innerText = "Ngày: " + formatDate(date);
+        document.getElementById('r_date').innerText = formatDate(date);
         
         const monthWrap = document.getElementById('r_month_wrap');
         if(type === 'Học phí' && txMonth) {
             monthWrap.style.display = 'block';
-            let branchInfo = branch ? ` (${branch})` : '';
-            document.getElementById('r_month').innerText = formatMonth(txMonth) + branchInfo;
+            document.getElementById('r_month').innerText = formatMonth(txMonth);
         } else {
             monthWrap.style.display = 'none';
         }
@@ -993,6 +1065,7 @@
     document.getElementById('searchInput').oninput = renderApp;
     document.getElementById('date').valueAsDate = new Date();
     document.getElementById('tx_month').value = new Date().toISOString().substring(0, 7);
+    document.getElementById('inv_date').valueAsDate = new Date();
     document.getElementById('exp_date').valueAsDate = new Date();
 </script>
 </body>
