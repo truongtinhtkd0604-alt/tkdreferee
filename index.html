@@ -109,8 +109,8 @@
 <div class="app-container" id="mainApp">
     <div class="header">
         <div class="header-left">
-            <img src="logo.png" id="headerLogo" alt="TST Logo" onerror="this.src='https://via.placeholder.com/150x50?text=TST'">
-            <h2>QUẢN LÝ THU CHI CÂU LẠC BỘ</h2>
+            <img src="logo.png" id="headerLogo" alt="TST Logo" onerror="this.src='https://via.placeholder.com/250x150?text=TST'">
+            <h2> QUẢN LÝ THU CHI CÂU LẠC BỘ </h2>
         </div>
         <button class="btn btn-success" id="exportBtn" onclick="exportToExcel()">📥 XUẤT EXCEL</button>
     </div>
@@ -419,7 +419,7 @@
         <p style="margin: 5px 0; display: none;" id="r_dob_wrap"><strong>Ngày sinh:</strong> <span id="r_dob"></span></p>
         <p style="margin: 5px 0;"><strong>Khoản thu:</strong> <span id="r_type"></span></p>
         <p style="margin: 5px 0;"><strong>Cơ sở:</strong> <span id="r_branch" style="font-weight: bold;"></span></p>
-        <p style="margin: 5px 0;" id="r_month_wrap"><strong>Kỳ học phí:</strong>Tháng<span id="r_month"></span></p>
+        <p style="margin: 5px 0;" id="r_month_wrap"><strong>Kỳ học phí:</strong> <span id="r_month"></span></p>
     </div>
     <div style="margin-top: 20px; padding: 15px; background: #eef2f7; text-align: center; border-radius: 8px;">
         <p style="margin: 0; font-size: 13px; color: #666;">SỐ TIỀN THANH TOÁN</p>
@@ -818,6 +818,7 @@
                 if(!paidThisMonth && !skippedThisMonth && !joinedAfterThisMonth) {
                     if(p.tuitionFee) totalDebtEst += Number(p.tuitionFee);
 
+                    // ĐÃ GỘP NÚT ZALO & COPY VÀO THÀNH 1 NÚT DUY NHẤT: "💬 Nhắn Zalo"
                     uiDebt.innerHTML += `<tr>
                         <td><span class="badge badge-quit">${formatMonth(selMonth)}</span></td>
                         <td>${lastPaidStr}</td>
@@ -825,8 +826,7 @@
                         <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold">${name}</td>
                         <td style="display:flex; gap:5px; flex-wrap:wrap;">
                             <button class="btn btn-success" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>
-                            <a href="https://zalo.me/${p.phone}" target="_blank" class="btn btn-zalo">💬 Zalo</a>
-                            <button class="btn btn-zalo" style="background:#17a2b8" onclick="copyZaloMsg('${name}', '${selMonth}')">📋 Copy</button>
+                            <button class="btn btn-zalo" onclick="copyZaloMsg('${name}', '${selMonth}', '${p.phone || ''}')">💬 Nhắn Zalo</button>
                             <button class="btn" onclick="skipMonth('${name}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>
                         </td>
                     </tr>`;
@@ -884,12 +884,16 @@
         window.showToast("✅ Đã cập nhật Kho & Sổ Quỹ!");
     };
 
-    window.copyZaloMsg = (name, month) => {
-        const msg = `Kính gửi Phụ huynh võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận bé chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
+    // ĐÃ CHỈNH SỬA HÀM NÀY ĐỂ TỰ ĐỘNG MỞ ZALO SAU KHI COPY XONG
+    window.copyZaloMsg = (name, month, phone) => {
+        const msg = `Kính gửi Phụ huynh, võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận võ sinh ${name},\n chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
         navigator.clipboard.writeText(msg).then(() => {
-            window.showToast("✅ Đã copy tin nhắn Zalo!");
+            window.showToast("✅ Đã copy! Đang mở Zalo...");
+            // Đợi 0.5s để thông báo Toast hiện lên rồi mới chuyển hướng để không bị khựng
+            setTimeout(() => window.open(`https://zalo.me/${phone}`, '_blank'), 500);
         }).catch(err => {
-            alert("Trình duyệt không hỗ trợ copy tự động.");
+            alert("Trình duyệt không hỗ trợ copy tự động. Vui lòng dán thủ công sau khi chuyển qua Zalo.");
+            window.open(`https://zalo.me/${phone}`, '_blank');
         });
     };
 
@@ -1075,7 +1079,6 @@
                 document.getElementById('r_date_top').innerText = formatDate(date);
             }
 
-            // ĐÃ THÊM LỚP BẢO VỆ Ở ĐÂY ("|| {}") ĐỂ TRÁNH LỖI NẾU HỒ SƠ BỊ XÓA/KHÔNG TỒN TẠI
             const p = allProfiles[cleanName] || {};
             const dobWrap = document.getElementById('r_dob_wrap');
             if (p.dob) {
