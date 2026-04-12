@@ -89,6 +89,7 @@
             .filters, .transaction-form { grid-template-columns: 1fr; }
             .btn { width: 100%; justify-content: center; }
             .header { flex-direction: column; align-items: flex-start; }
+            .header-left img { height: 40px; }
             .table-wrapper { padding-bottom: 10px; }
             .modal-content { padding: 15px; }
             td, th { padding: 10px; }
@@ -350,7 +351,7 @@
                 </div>
             </div>
             <div>
-                <label style="font-weight:bold; font-size:0.9rem">Mức học phí/tháng (Mặc định)</label>
+                <label style="font-weight:bold; font-size:0.9rem">Mức học phí/tháng</label>
                 <input type="number" id="add_fee_default" placeholder="Mức phí chuẩn (Đề xuất)">
             </div>
             <div style="background: #f0f4ff; padding: 15px; border-radius: 8px; border: 1px solid #d0dfff;">
@@ -593,7 +594,10 @@
 
     const descInput = document.getElementById('description');
     const autoList = document.getElementById('autocomplete-list');
-    
+    function removeVietnameseTones(str) {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    }
+
     descInput.oninput = function() {
         let val = this.value.toLowerCase().trim();
         autoList.innerHTML = '';
@@ -818,7 +822,6 @@
                 if(!paidThisMonth && !skippedThisMonth && !joinedAfterThisMonth) {
                     if(p.tuitionFee) totalDebtEst += Number(p.tuitionFee);
 
-                    // ĐÃ GỘP NÚT ZALO & COPY VÀO THÀNH 1 NÚT DUY NHẤT: "💬 Nhắn Zalo"
                     uiDebt.innerHTML += `<tr>
                         <td><span class="badge badge-quit">${formatMonth(selMonth)}</span></td>
                         <td>${lastPaidStr}</td>
@@ -826,7 +829,7 @@
                         <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold">${name}</td>
                         <td style="display:flex; gap:5px; flex-wrap:wrap;">
                             <button class="btn btn-success" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>
-                            <button class="btn btn-zalo" onclick="copyZaloMsg('${name}', '${selMonth}', '${p.phone || ''}')">💬 Nhắn Zalo</button>
+                            <button class="btn btn-zalo" onclick="copyAndOpenZalo('${name}', '${selMonth}', '${p.phone || ''}')">💬 Nhắn Zalo</button>
                             <button class="btn" onclick="skipMonth('${name}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>
                         </td>
                     </tr>`;
@@ -884,17 +887,45 @@
         window.showToast("✅ Đã cập nhật Kho & Sổ Quỹ!");
     };
 
-    // ĐÃ CHỈNH SỬA HÀM NÀY ĐỂ TỰ ĐỘNG MỞ ZALO SAU KHI COPY XONG
-    window.copyZaloMsg = (name, month, phone) => {
-        const msg = `Kính gửi Phụ huynh, võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận võ sinh ${name},\n chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
-        navigator.clipboard.writeText(msg).then(() => {
-            window.showToast("✅ Đã copy! Đang mở Zalo...");
-            // Đợi 0.5s để thông báo Toast hiện lên rồi mới chuyển hướng để không bị khựng
-            setTimeout(() => window.open(`https://zalo.me/${phone}`, '_blank'), 500);
-        }).catch(err => {
-            alert("Trình duyệt không hỗ trợ copy tự động. Vui lòng dán thủ công sau khi chuyển qua Zalo.");
-            window.open(`https://zalo.me/${phone}`, '_blank');
-        });
+    // TỰ ĐỘNG COPY VÀ MỞ ZALO CÙNG LÚC
+    window.copyAndOpenZalo = (name, month, phone) => {
+        if (!phone) {
+            alert("Võ sinh này chưa có số điện thoại Zalo trên hệ thống. Vui lòng cập nhật hồ sơ!");
+            return;
+        }
+
+        const msg = `Kính gửi Phụ huynh, võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận võ sinh ${name} chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
+        
+        // Hàm mở Zalo
+        const openZalo = () => window.open(`https://zalo.me/${phone}`, '_blank');
+
+        // Copy và chuyển hướng
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(msg).then(() => {
+                window.showToast("✅ Đã copy tin nhắn! Đang chuyển sang Zalo...");
+                setTimeout(openZalo, 300); 
+            }).catch(err => {
+                window.showToast("Đang mở Zalo...");
+                openZalo();
+            });
+        } else {
+            // Fallback (Trường hợp không dùng https)
+            let textArea = document.createElement("textarea");
+            textArea.value = msg;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                window.showToast("✅ Đã copy! Đang mở Zalo...");
+            } catch (err) {
+                console.error('Lỗi copy:', err);
+                window.showToast("Đang mở Zalo...");
+            }
+            document.body.removeChild(textArea);
+            setTimeout(openZalo, 300);
+        }
     };
 
     window.openProfile = (name) => {
@@ -1132,7 +1163,7 @@
             document.getElementById('receiptModal').style.display = 'flex';
         } catch (error) {
             console.error("Chi tiết lỗi xuất hóa đơn:", error);
-            alert("Có lỗi tạo hóa đơn: " + error.message + "\n\n(Lưu ý: Nếu dùng hình ảnh logo, hãy chắc chắn bạn đang chạy qua Local Server như Live Server thay vì mở trực tiếp file .html)");
+            alert("Có lỗi tạo hóa đơn: " + error.message);
         } finally {
             const node = document.getElementById('receiptTemplate');
             node.style.position = 'absolute';
