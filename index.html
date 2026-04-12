@@ -424,6 +424,7 @@
     <div style="margin-top: 20px; padding: 15px; background: #eef2f7; text-align: center; border-radius: 8px;">
         <p style="margin: 0; font-size: 13px; color: #666;">SỐ TIỀN THANH TOÁN</p>
         <p style="margin: 5px 0 0; font-size: 22px; font-weight: bold; color: #C8102E;" id="r_amount">0 ₫</p>
+        <p style="margin: 5px 0 0; font-size: 12px; font-style: italic; color: #444;" id="r_amount_words"></p>
     </div>
     <p style="text-align: center; font-size: 11px; margin-top: 20px; font-style: italic; color: #777;">Cảm ơn quý phụ huynh, các em võ sinh đã đồng hành cùng CLB!</p>
 </div>
@@ -469,6 +470,44 @@
     const colRef = collection(db, "tst_transactions");
     const profRef = collection(db, "tst_profiles");
     const invRef = collection(db, "tst_inventory");
+
+    // --- HÀM CHUYỂN ĐỔI SỐ TIỀN SANG CHỮ ---
+    const docTienVND = (so) => {
+        if (so === 0) return "Không đồng";
+        const mangso = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+        const dochangchuc = (so, daydu) => {
+            let chuoi = "";
+            let chuc = Math.floor(so / 10);
+            let donvi = so % 10;
+            if (chuc > 1) { chuoi = " " + mangso[chuc] + " mươi"; if (donvi == 1) chuoi += " mốt"; }
+            else if (chuc == 1) { chuoi = " mười"; if (donvi == 1) chuoi += " một"; }
+            else if (daydu && donvi > 0) { chuoi = " lẻ"; }
+            if (donvi == 5 && chuc > 0) { chuoi += " lăm"; }
+            else if (donvi > 0 && (donvi != 1 || chuc == 0)) { chuoi += " " + mangso[donvi]; }
+            return chuoi;
+        };
+        const docblock = (so, daydu) => {
+            let chuoi = "";
+            let tram = Math.floor(so / 100);
+            so = so % 100;
+            if (daydu || tram > 0) { chuoi = " " + mangso[tram] + " trăm"; chuoi += dochangchuc(so, true); }
+            else { chuoi = dochangchuc(so, false); }
+            return chuoi;
+        };
+        const hang = ["", "nghìn", "triệu", "tỷ"];
+        let i = 0; let arr = []; let block;
+        while (so > 0) { arr.push(so % 1000); so = Math.floor(so / 1000); }
+        let kq = "";
+        for (i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] > 0 || i == 0) {
+                block = docblock(arr[i], i < arr.length - 1);
+                kq += block + " " + hang[i];
+            }
+        }
+        kq = kq.trim().replace(/\s+/g, ' ');
+        return `(${kq.charAt(0).toUpperCase() + kq.slice(1)} đồng)`;
+    };
+    // ---------------------------------------
 
     window.checkLogin = () => {
         if(document.getElementById('passInput').value === "Tinhts64") {
@@ -934,7 +973,7 @@
         document.getElementById('add_fee_default').value = '';
         document.getElementById('add_fee_display').value = '';
         document.getElementById('add_fee_actual').value = '';
-        document.getElementById('add_uniform_size').value = ''; // Reset size áo
+        document.getElementById('add_uniform_size').value = ''; 
         document.getElementById('add_uniform_display').value = '';
         document.getElementById('add_uniform_actual').value = '';
         document.getElementById('add_date').valueAsDate = new Date();
@@ -942,7 +981,6 @@
     };
     window.closeAddModal = () => document.getElementById('addModal').style.display = 'none';
 
-    // XỬ LÝ LƯU VÕ SINH MỚI & TRỪ KHO VÕ PHỤC
     window.addNewStudent = async () => {
         const name = document.getElementById('add_name').value.trim();
         const branch = document.getElementById('add_branch').value;
@@ -955,32 +993,26 @@
         const joinDate = document.getElementById('add_date').value;
         const currentMonth = joinDate.substring(0, 7);
 
-        // Validation an toàn
         if(!name) return alert("Cần nhập tên võ sinh!");
         if(allProfiles[name]) return alert("Võ sinh này đã có hồ sơ!");
         if(uniformFee > 0 && !uniformSize) {
             return alert("Vui lòng chọn Size Võ phục để hệ thống tự động trừ tồn kho (Hoặc xóa số tiền võ phục nếu không mua).");
         }
 
-        // Lưu hồ sơ
         let profileData = { 
             status: 'active', branch: branch, dob: document.getElementById('add_dob').value, 
             phone: document.getElementById('add_phone').value, tuitionFee: feeDefault, createdAt: joinDate 
         };
         await setDoc(doc(db, "tst_profiles", name), profileData);
 
-        // Thu học phí
         if(fee > 0) {
             await addDoc(colRef, { branch, type: 'Học phí', description: name, amount: fee, date: joinDate, txMonth: currentMonth, timestamp: Date.now() });
         }
         
-        // Thu tiền Võ phục VÀ tự động Trừ Kho
         if(uniformSize || uniformFee > 0) {
-            // Lưu doanh thu
             if (uniformFee > 0) {
                 await addDoc(colRef, { branch, type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 });
             }
-            // Trừ kho vật lý
             if (uniformSize) {
                 await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 });
             }
@@ -1034,49 +1066,55 @@
     window.deleteTx = (id) => { if(confirm("Xóa giao dịch này?")) deleteDoc(doc(db, "tst_transactions", id)); };
 
     window.exportReceipt = async (name, amount, type, date, txMonth, branch) => {
-        const cleanName = name.trim();
-        document.getElementById('r_name').innerText = cleanName.toUpperCase();
-        
-        const dParts = date.split('-');
-        if(dParts.length === 3) {
-            document.getElementById('r_date_top').innerText = `Ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}`;
-        } else {
-            document.getElementById('r_date_top').innerText = formatDate(date);
-        }
-
-        const p = allProfiles[cleanName];
-        const dobWrap = document.getElementById('r_dob_wrap');
-        if (p && p.dob) {
-            document.getElementById('r_dob').innerText = formatDate(p.dob);
-            dobWrap.style.display = 'block';
-        } else {
-            dobWrap.style.display = 'none'; 
-        }
-
-        document.getElementById('r_amount').innerText = amount.toLocaleString('vi-VN') + " ₫";
-        document.getElementById('r_type').innerText = type;
-        
-        let branchText = branch === 'CS1' ? 'Cơ sở 1 (Huỳnh Tấn Phát)' : (branch === 'CS2' ? 'Cơ sở 2 (Sân vận động)' : branch);
-        document.getElementById('r_branch').innerText = branchText;
-        
-        const monthWrap = document.getElementById('r_month_wrap');
-        if(type === 'Học phí' && txMonth) {
-            monthWrap.style.display = 'block';
-            document.getElementById('r_month').innerText = formatMonth(txMonth);
-        } else {
-            monthWrap.style.display = 'none';
-        }
-
-        const node = document.getElementById('receiptTemplate');
-        node.style.visibility = 'visible';
-        node.style.position = 'fixed';
-        node.style.top = '0';
-        node.style.left = '0';
-        node.style.zIndex = '-9999';
-
         try {
-            const canvas = await html2canvas(node, { scale: 3, backgroundColor: '#ffffff', useCORS: true, allowTaint: true, logging: false });
+            const node = document.getElementById('receiptTemplate');
+            const cleanName = name.trim();
+            document.getElementById('r_name').innerText = cleanName.toUpperCase();
+            
+            const dParts = date.split('-');
+            if(dParts.length === 3) {
+                document.getElementById('r_date_top').innerText = `Ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}`;
+            } else {
+                document.getElementById('r_date_top').innerText = formatDate(date);
+            }
+
+            const p = allProfiles[cleanName];
+            const dobWrap = document.getElementById('r_dob_wrap');
+            if (p && p.dob) {
+                document.getElementById('r_dob').innerText = formatDate(p.dob);
+                dobWrap.style.display = 'block';
+            } else {
+                dobWrap.style.display = 'none'; 
+            }
+
+            // Gắn số tiền gốc và số tiền bằng chữ
+            document.getElementById('r_amount').innerText = amount.toLocaleString('vi-VN') + " ₫";
+            document.getElementById('r_amount_words').innerText = docTienVND(amount);
+            
+            document.getElementById('r_type').innerText = type;
+            
+            let branchText = branch === 'CS1' ? 'Cơ sở 1 (Huỳnh Tấn Phát)' : (branch === 'CS2' ? 'Cơ sở 2 (Sân vận động)' : branch);
+            document.getElementById('r_branch').innerText = branchText;
+            
+            const monthWrap = document.getElementById('r_month_wrap');
+            if(type === 'Học phí' && txMonth) {
+                monthWrap.style.display = 'block';
+                document.getElementById('r_month').innerText = formatMonth(txMonth);
+            } else {
+                monthWrap.style.display = 'none';
+            }
+
+            node.style.position = 'absolute';
+            node.style.visibility = 'visible';
+            
+            const canvas = await html2canvas(node, { 
+                scale: 3, 
+                backgroundColor: '#ffffff',
+                useCORS: true,     
+                allowTaint: true   
+            });
             const imgData = canvas.toDataURL('image/png');
+            
             document.getElementById('receiptPreviewImg').src = imgData;
             
             const btnDl = document.getElementById('btnDownloadReceipt');
@@ -1090,15 +1128,17 @@
                 link.href = imgData;
                 link.click();
             };
+
             document.getElementById('receiptModal').style.display = 'flex';
         } catch (error) {
-            console.error("Lỗi xuất hóa đơn:", error);
-            alert("Lỗi xuất hóa đơn. Vui lòng đảm bảo bạn đang dùng file ảnh hợp lệ.");
+            console.error("Chi tiết lỗi xuất hóa đơn:", error);
+            alert("Có lỗi tạo hóa đơn: " + error.message + "\n\n(Lưu ý: Nếu dùng hình ảnh logo, hãy chắc chắn bạn đang chạy qua Local Server như Live Server thay vì mở trực tiếp file .html)");
         } finally {
-            node.style.visibility = 'hidden';
+            const node = document.getElementById('receiptTemplate');
             node.style.position = 'absolute';
             node.style.left = '-9999px';
             node.style.top = 'auto';
+            node.style.visibility = 'hidden';
             node.style.zIndex = 'auto';
         }
     };
