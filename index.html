@@ -427,6 +427,12 @@
         <p style="margin: 5px 0 0; font-size: 22px; font-weight: bold; color: #C8102E;" id="r_amount">0 ₫</p>
         <p style="margin: 5px 0 0; font-size: 12px; font-style: italic; color: #555;" id="r_amount_words"></p>
     </div>
+    
+    <div id="r_qr_wrap" style="text-align: center; margin-top: 20px; display: none;">
+        <p style="font-size: 12px; color: #555; margin-bottom: 5px; font-weight: bold;">MÃ QR THANH TOÁN TỰ ĐỘNG</p>
+        <img id="qrCodeImg" crossorigin="anonymous" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid #ccc; padding: 5px; background: white;">
+    </div>
+
     <p style="text-align: center; font-size: 11px; margin-top: 20px; font-style: italic; color: #777;">Cảm ơn quý phụ huynh, các em võ sinh đã đồng hành cùng CLB!</p>
 </div>
 
@@ -471,6 +477,28 @@
     const colRef = collection(db, "tst_transactions");
     const profRef = collection(db, "tst_profiles");
     const invRef = collection(db, "tst_inventory");
+
+    // ===== CẤU HÌNH NGÂN HÀNG CHO VIETQR =====
+    const AGRIBANK = "mbbank"; // Điền tên hoặc mã ngân hàng (VD: vietcombank, techcombank, bidv, vib...)
+    const 4300205305756 = "123456789"; // Điền số tài khoản ngân hàng của bạn
+    const TRUONG SANH TINH = "CLB TAEKWONDO TST"; // Điền tên chủ tài khoản (Viết không dấu hoặc có dấu tùy ý)
+
+    // Hàm tạo link VietQR
+    function removeVietnameseTonesForQR(str) {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    }
+
+    function generateVietQR(amount, studentName, detailDesc) {
+        // Loại bỏ dấu và thay khoảng trắng bằng %20 để đẩy lên URL API
+        const cleanName = removeVietnameseTonesForQR(studentName).replace(/\s+/g, '%20');
+        const cleanDesc = removeVietnameseTonesForQR(detailDesc).replace(/\s+/g, '%20').replace(/\//g, '-');
+        
+        const DESCRIPTION = `${cleanName}%20${cleanDesc}`;
+        const accName = ACCOUNT_NAME.replace(/\s+/g, '%20');
+        
+        return `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.jpg?amount=${amount}&addInfo=${DESCRIPTION}&accountName=${accName}`;
+    }
+    // ===========================================
 
     const docTienVND = (so) => {
         if (so === 0) return "Không đồng";
@@ -887,7 +915,6 @@
         window.showToast("✅ Đã cập nhật Kho & Sổ Quỹ!");
     };
 
-    // TỰ ĐỘNG COPY VÀ MỞ ZALO CÙNG LÚC
     window.copyAndOpenZalo = (name, month, phone) => {
         if (!phone) {
             alert("Võ sinh này chưa có số điện thoại Zalo trên hệ thống. Vui lòng cập nhật hồ sơ!");
@@ -896,10 +923,8 @@
 
         const msg = `Kính gửi Phụ huynh, võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận võ sinh ${name} chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
         
-        // Hàm mở Zalo
         const openZalo = () => window.open(`https://zalo.me/${phone}`, '_blank');
 
-        // Copy và chuyển hướng
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(msg).then(() => {
                 window.showToast("✅ Đã copy tin nhắn! Đang chuyển sang Zalo...");
@@ -909,7 +934,6 @@
                 openZalo();
             });
         } else {
-            // Fallback (Trường hợp không dùng https)
             let textArea = document.createElement("textarea");
             textArea.value = msg;
             textArea.style.position = "fixed";
@@ -1128,12 +1152,39 @@
             document.getElementById('r_branch').innerText = branchText;
             
             const monthWrap = document.getElementById('r_month_wrap');
+            let descMonthForQR = type;
+
             if(type === 'Học phí' && txMonth) {
                 monthWrap.style.display = 'block';
                 document.getElementById('r_month').innerText = formatMonth(txMonth);
+                descMonthForQR = `Hoc phi Thang ${formatMonth(txMonth)}`;
             } else {
                 monthWrap.style.display = 'none';
             }
+
+            // ===== XỬ LÝ ẢNH MÃ QR =====
+            const qrWrap = document.getElementById('r_qr_wrap');
+            const qrImgEl = document.getElementById('qrCodeImg');
+            
+            // Nếu có thu tiền thật thì mới in mã QR
+            if (amount > 0) {
+                // Tạo URL QR
+                const qrUrl = generateVietQR(amount, cleanName, descMonthForQR);
+                qrImgEl.src = qrUrl;
+                qrWrap.style.display = 'block';
+
+                // BẮT BUỘC ĐỢI ẢNH QR TẢI XONG ĐỂ HTML2CANVAS CÓ THỂ CHỤP
+                await new Promise((resolve) => {
+                    qrImgEl.onload = resolve;
+                    qrImgEl.onerror = () => {
+                        console.warn("Không tải được ảnh QR từ VietQR API.");
+                        resolve(); // Lỗi vẫn cho chạy tiếp để xuất hóa đơn không có hình
+                    };
+                });
+            } else {
+                qrWrap.style.display = 'none';
+            }
+            // ============================
 
             node.style.position = 'absolute';
             node.style.visibility = 'visible';
