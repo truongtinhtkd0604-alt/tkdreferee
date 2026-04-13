@@ -3,48 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quản Lý CLB TST - Bản Nâng Cấp Tối Ưu</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+    <title>Quản Lý CLB TST</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <style>
-        :root { 
-            --primary: #0033A0; --secondary: #C8102E; --success: #28a745; 
-            --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; 
-            --light: #f8f9fa; --gray: #6c757d; --purple: #6f42c1;
-            --danger-bg: #fff5f5;
-        }
-        
-        /* Giữ nguyên các style bạn đã thiết kế */
+        :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; --gray: #6c757d; --purple: #6f42c1; }
         body { font-family: 'Inter', sans-serif; background: #eef2f7; margin: 0; padding: 10px; font-size: 16px; }
+        
+        /* Đăng nhập */
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-card { background: white; padding: 2rem; border-radius: 1rem; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .login-card input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        
-        .header { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        
-        /* Style mới cho cảnh báo nợ phí */
-        .debt-alert { background: var(--danger-bg) !important; border-left: 5px solid var(--secondary) !important; }
-        .badge-belt { padding: 2px 8px; border-radius: 4px; color: white; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-left: 5px; }
+        .login-card { background: white; padding: 2rem; border-radius: 1rem; width: 90%; max-width: 350px; text-align: center; box-sizing: border-box; }
+        .login-card img { width: 100%; max-width: 200px; height: auto; margin-bottom: 1rem; object-fit: contain; }
 
-        .btn { padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .app-container { max-width: 1200px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: none; box-sizing: border-box;}
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-left img { height: 45px; width: auto; object-fit: contain; }
+        .header h2 { margin: 0; color: var(--primary); font-size: 1.3rem; font-weight: 800;}
+
+        /* Dashboard */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .stat-box { padding: 15px; border-radius: 12px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center;}
+        .stat-box h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; opacity: 0.9; }
+        .stat-box p { margin: 5px 0 0; font-size: 1.3rem; font-weight: 800; word-break: break-word; }
+        .stat-sub { font-size: 0.75rem; opacity: 0.8; margin-top: 5px; }
+
+        /* Forms & Filters */
+        .filters, .transaction-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: var(--light); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; }
+        .transaction-form { border: 1px dashed var(--primary); background: #fff; }
+        .expense-form { border-color: var(--secondary); background: #fffafa; }
+        .inventory-form { border-color: var(--purple); background: #fdfbff; }
+        input, select { border: 1px solid #ddd; padding: 10px 12px; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; font-size: 15px; background: white;}
+        input:focus, select:focus { border-color: var(--primary); }
+
+        /* Tabs */
+        .tabs-nav { display: flex; gap: 8px; border-bottom: 2px solid #eee; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .tab-btn { padding: 10px 15px; font-size: 0.9rem; font-weight: 600; color: var(--gray); background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; transition: 0.3s; white-space: nowrap; flex-shrink: 0; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Buttons */
+        .btn { padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; font-size: 0.9rem; text-align: center; }
+        .btn:hover { opacity: 0.9; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--secondary); color: white; }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-purple { background: var(--purple); color: white; }
+        .btn-zalo { background: #0068ff; color: white; padding: 6px 10px; font-size: 0.8rem; text-decoration: none; border-radius: 6px; }
         
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 10px; }
-        .modal-content { background: white; border-radius: 15px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
+        /* Tables */
+        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; background: white; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background: #f8f9fa; color: #495057; font-size: 0.8rem; padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; text-transform: uppercase; white-space: nowrap;}
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; vertical-align: middle; }
+        .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
+        .badge-active { background: #d4edda; color: #155724; }
+        .badge-quit { background: #f8d7da; color: #721c24; }
         
-        /* Layout hóa đơn ảnh (Giữ nguyên template của bạn) */
-        #receiptTemplate {
-            width: 400px; padding: 30px; background: white; border: 10px solid var(--primary);
-            position: absolute; left: -9999px; top: 0; visibility: hidden;
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box;}
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+        
+        /* Autocomplete */
+        .autocomplete-container { position: relative; width: 100%; }
+        .autocomplete-items { position: absolute; border: 1px solid #ddd; z-index: 99; top: 100%; left: 0; right: 0; background: #fff; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 0 0 8px 8px;}
+        .autocomplete-items div { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 0.9rem;}
+        .autocomplete-items div:hover { background-color: #f0f4ff; }
+        
+        .toast { visibility: hidden; min-width: 200px; background-color: var(--success); color: #fff; text-align: center; border-radius: 8px; padding: 12px 16px; position: fixed; z-index: 10001; right: 20px; bottom: 20px; transform: translateY(100px); transition: 0.3s; font-size: 0.9rem;}
+        .toast.show { visibility: visible; transform: translateY(0); }
+        #receiptTemplate { position: absolute; left: -9999px; visibility: hidden; width: 380px; background: white; padding: 25px; border-radius: 10px; font-family: 'Inter', sans-serif; color: #333; border: 2px solid #0033A0; box-sizing: border-box;}
+        .revenue-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; padding: 15px; background: #f0f4ff; border-radius: 8px; border-left: 4px solid var(--primary); }
+        .rev-item { font-size: 0.85rem; }
+        .rev-item span { font-weight: bold; font-size: 1.1rem; color: var(--primary); display: block; margin-top: 5px;}
+
+        @media (max-width: 768px) {
+            .app-container { padding: 15px 10px; border-radius: 0; }
+            .filters, .transaction-form { grid-template-columns: 1fr; }
+            .btn { width: 100%; justify-content: center; }
+            .header { flex-direction: column; align-items: flex-start; }
+            .header-left img { height: 40px; }
+            .table-wrapper { padding-bottom: 10px; }
+            .modal-content { padding: 15px; }
+            td, th { padding: 10px; }
         }
     </style>
 </head>
@@ -52,385 +99,1125 @@
 
 <div id="loginOverlay">
     <div class="login-card">
-        <h2 style="color:var(--primary); margin-bottom: 5px;">CLB TAEKWONDO TST</h2>
-        <p style="color:var(--gray); font-size: 0.9rem; margin-bottom: 20px;">Hệ thống quản lý chuyên nghiệp</p>
-        <input type="email" id="emailInput" placeholder="Email quản trị">
-        <input type="password" id="passInput" placeholder="Mật khẩu">
-        <button class="btn btn-primary" style="width:100%; margin-top: 10px;" onclick="handleLogin()">ĐĂNG NHẬP</button>
-        <p id="loginError" style="color:var(--secondary); font-size: 0.8rem; margin-top: 10px; display: none;"></p>
+        <img src="logo.png" id="loginLogo" alt="Logo TST" onerror="this.src='https://via.placeholder.com/240x80?text=LOGO+TST'">
+        <h2 style="color:var(--primary); font-size: 1.5rem;">QUẢN LÝ CLB TAEKWONDO TST</h2>
+        <input type="password" id="passInput" placeholder="Mật khẩu bảo mật" style="margin: 1rem 0; text-align: center;">
+        <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
     </div>
 </div>
 
-<div id="mainApp" style="display:none">
+<div class="app-container" id="mainApp">
     <div class="header">
-        <div>
-            <h4 style="margin:0; color:var(--primary)">TST Management</h4>
-            <small id="currentUserEmail" style="color:var(--gray)"></small>
+        <div class="header-left">
+            <img src="logo.png" id="headerLogo" alt="TST Logo" onerror="this.src='https://via.placeholder.com/350x200?text=TST'">
+            <h2> QUẢN LÝ THU CHI CÂU LẠC BỘ </h2>
         </div>
-        <button class="btn" style="background:#eee" onclick="handleLogout()">Thoát</button>
+        <button class="btn btn-success" id="exportBtn" onclick="exportToExcel()">📥 XUẤT EXCEL</button>
     </div>
 
-    <div class="card" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div style="text-align:center; padding: 10px; background: var(--light); border-radius: 10px;">
-            <div style="font-size: 0.8rem; color: var(--gray)">Tổng Võ Sinh</div>
-            <b id="totalStudents" style="font-size: 1.3rem;">0</b>
+    <div class="stats-grid">
+        <div class="stat-box" style="background: var(--success);">
+            <h3>Tổng thu chung</h3><p id="totalIncome">0 ₫</p>
         </div>
-        <div style="text-align:center; padding: 10px; background: var(--danger-bg); border-radius: 10px;">
-            <div style="font-size: 0.8rem; color: var(--secondary)">Nợ Học Phí</div>
-            <b id="totalDebt" style="font-size: 1.3rem; color: var(--secondary)">0</b>
+        <div class="stat-box" style="background: var(--secondary);">
+            <h3>Tổng chi chung</h3><p id="totalExpense">0 ₫</p>
+        </div>
+        <div class="stat-box" style="background: var(--primary);">
+            <h3>Lợi nhuận</h3><p id="totalProfit">0 ₫</p>
+        </div>
+        <div class="stat-box" style="background: var(--warning); color:#856404;">
+            <h3>Võ sinh nợ phí</h3><p id="debtCount">0 Bạn</p>
+            <div class="stat-sub" id="debtEst">Dự thu: 0 ₫</div>
         </div>
     </div>
 
-    <div class="card">
-        <input type="text" id="searchInput" placeholder="Tìm tên võ sinh..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; box-sizing: border-box;">
-        <div style="display:flex; gap:10px">
-            <select id="filterBranch" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;">
-                <option value="Tất cả">Tất cả chi nhánh</option>
-                <option value="Cơ sở 1">Cơ sở 1</option>
-                <option value="Cơ sở 2">Cơ sở 2</option>
+    <div class="filters">
+        <input type="month" id="filterMonth">
+        <select id="filterBranch">
+            <option value="all">Tất cả cơ sở</option>
+            <option value="CS1">CS1: Huỳnh Tấn Phát</option>
+            <option value="CS2">CS2: Sân vận động</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="🔍 Tìm tên võ sinh, nội dung...">
+    </div>
+
+    <div class="tabs-nav">
+        <button class="tab-btn active" id="btn_tx" onclick="switchTab('tx')">💼 Học Phí</button>
+        <button class="tab-btn" id="btn_inventory" onclick="switchTab('inventory')">📦 Kho Võ Phục</button>
+        <button class="tab-btn" id="btn_expense" onclick="switchTab('expense')">💸 Mục Đã Chi</button>
+        <button class="tab-btn" id="btn_debt" onclick="switchTab('debt')">⚠️ Báo Nợ</button>
+        <button class="tab-btn" id="btn_active" onclick="switchTab('active')">🥋 Đang Tập (<span id="activeStudentCount">0</span>)</button>
+        <button class="tab-btn" id="btn_quit" onclick="switchTab('quit')">🛑 Đã Nghỉ</button>
+    </div>
+
+    <div id="tab_tx" class="tab-content active">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+            <h4 style="margin:0; color:var(--primary)">GHI NHẬN HỌC PHÍ & LỆ PHÍ THI</h4>
+            <button class="btn btn-success" onclick="openAddModal()">➕ THÊM VÕ SINH MỚI</button>
+        </div>
+
+        <div class="revenue-summary">
+            <div class="rev-item">Học phí: <span id="sum_tuition">0 ₫</span></div>
+            <div class="rev-item" style="color:#d35400">Lệ phí thi: <span id="sum_exam" style="color:#d35400">0 ₫</span></div>
+            <div class="rev-item" style="color:var(--gray)">Thu khác: <span id="sum_other" style="color:var(--gray)">0 ₫</span></div>
+        </div>
+
+        <form id="transactionForm" class="transaction-form">
+            <select id="branch"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option></select>
+            <select id="type" onchange="toggleMonthSelect()">
+                <option value="Học phí">Học phí</option>
+                <option value="Lệ phí thi">Lệ phí thi lên đai</option>
+                <option value="Thu khác">Thu khác</option>
             </select>
-            <input type="month" id="filterMonth" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;">
+            
+            <div class="autocomplete-container">
+                <input type="text" id="description" placeholder="Tên võ sinh / Nội dung" autocomplete="off" required>
+                <div id="autocomplete-list" class="autocomplete-items"></div>
+            </div>
+
+            <input type="month" id="tx_month" title="Tháng thu học phí" required>
+            <input type="text" id="amountDisplay" placeholder="Số tiền thu" required>
+            <input type="hidden" id="amountActual">
+            <input type="date" id="date" required>
+            <button type="submit" class="btn btn-primary">LƯU KHOẢN THU</button>
+        </form>
+
+        <div class="table-wrapper">
+            <table id="tbl_tx">
+                <thead>
+                    <tr><th>Ngày lập</th><th>Cơ sở</th><th>Kỳ thu</th><th>Võ sinh / Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody id="txList"></tbody>
+            </table>
         </div>
     </div>
 
-    <div class="card">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h5 style="margin:0">Quản lý lớp học</h5>
-            <button class="btn btn-success" onclick="openStudentModal()">+ Thêm Mới</button>
+    <div id="tab_inventory" class="tab-content">
+        <h4 style="margin-top:0; color:var(--purple)">QUẢN LÝ KHO & DOANH THU VÕ PHỤC</h4>
+        <div class="revenue-summary" style="border-left-color: var(--purple); background: #f9f5ff;">
+            <div class="rev-item">Tổng thu bán: <span id="sum_uniform_in" style="color:var(--success)">0 ₫</span></div>
+            <div class="rev-item">Tổng chi nhập: <span id="sum_uniform_out" style="color:var(--secondary)">0 ₫</span></div>
+            <div class="rev-item">Lợi nhuận võ phục: <span id="sum_uniform_profit" style="color:var(--purple)">0 ₫</span></div>
         </div>
-        <div id="studentList">
+
+        <form id="inventoryForm" class="transaction-form inventory-form">
+            <select id="inv_size" required>
+                <option value="">-- Chọn Size Võ phục --</option>
+                <option value="Số 1 (1m1 - 1m2)">Số 1 (1m1 - 1m2)</option>
+                <option value="Số 2 (1m2 - 1m3)">Số 2 (1m2 - 1m3)</option>
+                <option value="Số 3 (1m3 - 1m4)">Số 3 (1m3 - 1m4)</option>
+                <option value="Số 4 (1m4 - 1m5)">Số 4 (1m4 - 1m5)</option>
+                <option value="Số 5 (1m5 - 1m6)">Số 5 (1m5 - 1m6)</option>
+                <option value="Số 6 (1m6 - 1m7)">Số 6 (1m6 - 1m7)</option>
+                <option value="Số 7 (1m7 - 1m8)">Số 7 (1m7 - 1m8)</option>
+            </select>
+            <select id="inv_type" onchange="toggleInvType()" required>
+                <option value="Xuất bán">📤 Xuất bán cho Võ sinh</option>
+                <option value="Nhập kho">📥 Nhập kho (Từ xưởng)</option>
+            </select>
+            <input type="number" id="inv_qty" placeholder="Số lượng áo (Cái)" required min="1">
+
+            <div class="autocomplete-container">
+                <input type="text" id="inv_desc" placeholder="Tên Võ sinh / Đại lý nhập" autocomplete="off" required>
+                <div id="inv-autocomplete-list" class="autocomplete-items"></div>
             </div>
+
+            <input type="text" id="inv_amountDisplay" placeholder="Tổng Tiền (Thu/Chi)" required>
+            <input type="hidden" id="inv_amountActual">
+            <input type="date" id="inv_date" required>
+            <select id="inv_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
+            <button type="submit" class="btn btn-purple">LƯU KHO & SỔ QUỸ</button>
+        </form>
+
+        <div class="table-wrapper" style="margin-bottom: 20px;">
+            <table id="tbl_inventory">
+                <thead><tr><th>Size Võ Phục</th><th>Tổng Nhập</th><th>Tổng Bán</th><th>TỒN KHO HIỆN TẠI</th></tr></thead>
+                <tbody id="inventoryList"></tbody>
+            </table>
+        </div>
+
+        <h5 style="color:var(--gray); border-bottom: 1px solid #eee; padding-bottom: 5px;">Lịch sử Thu/Chi tiền Võ phục</h5>
+        <div class="table-wrapper">
+            <table id="tbl_uniform_tx">
+                <thead><tr><th>Ngày lập</th><th>Cơ sở</th><th>Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
+                <tbody id="uniformTxList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tab_expense" class="tab-content">
+        <h4 style="margin-top:0; color:var(--secondary)">GHI NHẬN CHI PHÍ VẬN HÀNH KHÁC</h4>
+        <form id="expenseForm" class="transaction-form expense-form">
+            <select id="exp_branch"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option><option value="Chung">Chung / Khác</option></select>
+            <input type="text" id="exp_desc" placeholder="Nội dung chi (Tiền điện, Nước, Băng rôn...)" required>
+            <input type="text" id="exp_amountDisplay" placeholder="Số tiền chi" required>
+            <input type="hidden" id="exp_amountActual">
+            <input type="date" id="exp_date" required>
+            <button type="submit" class="btn btn-secondary">LƯU KHOẢN CHI</button>
+        </form>
+
+        <div class="table-wrapper">
+            <table id="tbl_exp">
+                <thead><tr><th>Ngày chi</th><th>Cơ sở</th><th>Nội dung chi</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
+                <tbody id="expenseList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tab_debt" class="tab-content">
+        <div class="table-wrapper"><table id="tbl_debt"><thead><tr><th>Kỳ nợ</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác</th></tr></thead><tbody id="debtList"></tbody></table></div>
+    </div>
+    <div id="tab_active" class="tab-content">
+        <div class="table-wrapper"><table><thead><tr><th>Họ và tên</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập học</th><th>Thao tác</th></tr></thead><tbody id="activeList"></tbody></table></div>
+    </div>
+    <div id="tab_quit" class="tab-content">
+        <div class="table-wrapper"><table><thead><tr><th>Võ sinh</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
     </div>
 </div>
 
-<div id="studentModal" class="modal">
+<div id="profileModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalTitle">Hồ sơ võ sinh</h3>
-        <input type="hidden" id="editId">
-        
-        <label>Họ và tên</label>
-        <input type="text" id="s_name" class="login-card input" placeholder="Nguyễn Văn A">
-        
-        <div style="display:flex; gap:10px">
-            <div style="flex:1">
-                <label>Chi nhánh</label>
-                <select id="s_branch" class="login-card input">
-                    <option value="Cơ sở 1">Cơ sở 1</option>
-                    <option value="Cơ sở 2">Cơ sở 2</option>
-                </select>
+        <h2 id="m_name" style="color:var(--primary); margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px;"></h2>
+        <div style="display:grid; grid-template-columns: 1fr; gap:10px; margin-top: 15px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>
+                    <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Trạng thái</label>
+                    <select id="m_status"><option value="active">Đang tập luyện</option><option value="quit">Nghỉ tập</option></select>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Cơ sở</label>
+                    <select id="m_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
+                </div>
             </div>
-            <div style="flex:1">
-                <label>Cấp đai</label>
-                <select id="s_belt" class="login-card input">
-                    <option value="Trắng">Trắng</option>
-                    <option value="Vàng">Vàng</option>
-                    <option value="Xanh lá">Xanh lá</option>
-                    <option value="Xanh dương">Xanh dương</option>
-                    <option value="Đỏ">Đỏ</option>
-                    <option value="Đen">Đen</option>
-                </select>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>
+                    <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Số điện thoại Zalo</label>
+                    <input type="tel" id="m_phone" placeholder="Nhập SĐT">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Ngày sinh</label>
+                    <input type="date" id="m_dob">
+                </div>
+            </div>
+            <div>
+                <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Mức học phí/tháng (Sẽ tự điền khi thu)</label>
+                <input type="number" id="m_fee" placeholder="Mức phí chuẩn (Đề xuất)">
+            </div>
+            <div style="background: #fff8e1; padding: 10px; border-radius: 8px; border: 1px dashed #ffc107;">
+                <label style="font-size: 0.8rem; color:#856404; font-weight:bold; display:block; margin-bottom:5px;">⏸ Các tháng đã báo nghỉ (Miễn đóng phí):</label>
+                <div id="m_skipped"></div>
             </div>
         </div>
-
-        <label>Học phí mỗi tháng (VNĐ)</label>
-        <input type="number" id="s_fee" class="login-card input" value="400000">
-
-        <div style="display:flex; gap:10px; margin-top: 20px;">
-            <button class="btn btn-primary" style="flex:1" onclick="saveStudent()">Lưu hồ sơ</button>
-            <button class="btn" style="flex:1; background:#eee" onclick="closeModal('studentModal')">Đóng</button>
-        </div>
+        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%; margin-top:15px;">💾 CẬP NHẬT DỮ LIỆU</button>
+        <button class="btn btn-danger" onclick="deleteProfile()" style="width:100%; margin-top:10px;">🗑 XÓA HỒ SƠ VĨNH VIỄN</button>
+        <button class="btn" onclick="closeModal()" style="width:100%; margin-top:10px; background:#e0e0e0; color:#333;">ĐÓNG</button>
     </div>
 </div>
 
-<div id="paymentModal" class="modal">
-    <div class="modal-content" style="text-align:center">
-        <h3 style="color:var(--primary)">Thông Tin Thanh Toán</h3>
-        <div id="paymentDetails" style="background:var(--light); padding:15px; border-radius:10px; margin-bottom:15px; text-align:left"></div>
-        
-        <p style="font-size: 0.9rem; margin-bottom: 10px;">Quét mã QR để thanh toán qua Ngân hàng:</p>
-        <img id="vietQrImg" src="" style="width:250px; border: 1px solid #eee; padding:5px; border-radius:10px;">
-        
-        <div id="qrMemo" style="font-weight:bold; color:var(--secondary); margin-top:10px; background:#fff3cd; padding:5px;"></div>
-
-        <div style="display:grid; grid-template-columns: 1fr; gap:10px; margin-top:20px">
-            <button class="btn btn-success" onclick="confirmAndGenerateReceipt()">Xác nhận ĐÃ THU & Xuất Hóa Đơn</button>
-            <button class="btn" style="background:#eee" onclick="closeModal('paymentModal')">Bỏ qua</button>
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color:var(--primary); margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px;">THÊM VÕ SINH MỚI</h2>
+        <div style="display:grid; grid-template-columns: 1fr; gap:12px; margin-top: 15px;">
+            <div>
+                <label style="font-weight:bold; font-size:0.9rem">Họ và tên võ sinh *</label>
+                <input type="text" id="add_name" placeholder="VD: Nguyễn Văn A" required>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                    <label style="font-weight:bold; font-size:0.9rem">Cơ sở tập</label>
+                    <select id="add_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
+                </div>
+                <div>
+                    <label style="font-weight:bold; font-size:0.9rem">Ngày sinh</label>
+                    <input type="date" id="add_dob">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                    <label style="font-weight:bold; font-size:0.9rem">SĐT Phụ huynh</label>
+                    <input type="tel" id="add_phone" placeholder="Nhập SĐT Zalo">
+                </div>
+                <div>
+                    <label style="font-weight:bold; font-size:0.9rem">Ngày nhập học</label>
+                    <input type="date" id="add_date">
+                </div>
+            </div>
+            <div>
+                <label style="font-weight:bold; font-size:0.9rem">Mức học phí/tháng</label>
+                <input type="number" id="add_fee_default" placeholder="Mức phí chuẩn (Đề xuất)">
+            </div>
+            <div style="background: #f0f4ff; padding: 15px; border-radius: 8px; border: 1px solid #d0dfff;">
+                <label style="font-weight:bold; color: var(--primary); display:block; margin-bottom: 10px;">💰 THU TIỀN KHI NHẬP HỌC (Nếu có)</label>
+                <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
+                    <div>
+                        <label style="font-size:0.8rem; display:block; margin-bottom:4px;">Học phí tháng này</label>
+                        <input type="text" id="add_fee_display" placeholder="Số tiền">
+                        <input type="hidden" id="add_fee_actual">
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div>
+                            <label style="font-size:0.8rem; display:block; margin-bottom:4px;">Size Võ phục</label>
+                            <select id="add_uniform_size">
+                                <option value="">-- Không mua --</option>
+                                <option value="Số 1 (1m1 - 1m2)">Số 1 (1m1 - 1m2)</option>
+                                <option value="Số 2 (1m2 - 1m3)">Số 2 (1m2 - 1m3)</option>
+                                <option value="Số 3 (1m3 - 1m4)">Số 3 (1m3 - 1m4)</option>
+                                <option value="Số 4 (1m4 - 1m5)">Số 4 (1m4 - 1m5)</option>
+                                <option value="Số 5 (1m5 - 1m6)">Số 5 (1m5 - 1m6)</option>
+                                <option value="Số 6 (1m6 - 1m7)">Số 6 (1m6 - 1m7)</option>
+                                <option value="Số 7 (1m7 - 1m8)">Số 7 (1m7 - 1m8)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; display:block; margin-bottom:4px;">Tiền Võ phục</label>
+                            <input type="text" id="add_uniform_display" placeholder="Số tiền">
+                            <input type="hidden" id="add_uniform_actual">
+                        </div>
+                    </div>
+                    <small style="color:var(--gray); display:block; margin-top:2px;">(Lưu ý: Nếu chọn Size, hệ thống tự động trừ 1 áo trong Kho)</small>
+                </div>
+            </div>
         </div>
+        <button class="btn btn-primary" onclick="addNewStudent()" style="width:100%; margin-top:20px;">💾 LƯU HỒ SƠ & GHI SỔ</button>
+        <button class="btn" onclick="closeAddModal()" style="width:100%; margin-top:10px; background:#e0e0e0;">HỦY BỎ</button>
     </div>
 </div>
 
 <div id="receiptModal" class="modal">
-    <div class="modal-content" style="text-align:center">
-        <h4>Hóa Đơn Ảnh</h4>
-        <img id="receiptPreviewImg" style="width:100%; max-width:350px; border:1px solid #ddd; margin:10px 0;">
-        <div style="display:flex; gap:10px">
-            <button id="btnDownloadReceipt" class="btn btn-primary" style="flex:1">Tải ảnh về</button>
-            <button class="btn" style="background:#eee; flex:1" onclick="closeModal('receiptModal')">Đóng</button>
+    <div class="modal-content" style="text-align:center; max-width: 400px; padding: 15px;">
+        <h3 style="color:var(--primary); margin-top:0;">XUẤT HÓA ĐƠN</h3>
+        <p style="font-size:0.85rem; color:var(--gray); margin-bottom:10px;">📸 <strong>Mẹo Zalo:</strong> Nhấn giữ vào ảnh rồi dán thẳng vào Zalo phụ huynh.</p>
+        <div id="receiptContainer" style="display:inline-block; background:white; width: 100%;">
+            <img id="receiptPreviewImg" style="width:100%; border-radius:8px; border: 1px solid #eee; box-shadow:0 4px 12px rgba(0,0,0,0.1); margin-bottom:15px;">
         </div>
+        <button class="btn btn-primary" id="btnDownloadReceipt" style="width:100%; margin-bottom:10px;">⬇️ TẢI ẢNH VỀ MÁY</button>
+        <button class="btn" onclick="document.getElementById('receiptModal').style.display='none'" style="width:100%; background:#e0e0e0; color:#333;">ĐÓNG</button>
     </div>
 </div>
 
 <div id="receiptTemplate">
-    <div style="text-align:center; margin-bottom:20px">
-        <h2 style="color:var(--primary); margin:0">CLB TAEKWONDO TST</h2>
-        <p style="font-size:12px; margin:5px 0">Biên Lai Thu Học Phí</p>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 15px; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;">
+        <img id="receiptLogo" src="logo.png" alt="Logo" style="height: 50px; width: auto; max-width: 150px; object-fit: contain; display: block;" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO+CLB'">
+        <div style="text-align: center;">
+            <h3 style="color: #0033A0; margin: 0; font-size: 16px;">CLUB TAEKWONDO TST QUY NHƠN</h3>
+            <p style="margin: 10px 0 0; font-size: 20px; color: #000; font-weight: 700; font-family: 'Roboto', sans-serif; letter-spacing: 0.5px;">BIÊN LAI THU TIỀN</p>
+            <p style="margin: 5px 0 0; font-size: 13px; font-style: italic; color: #555;" id="r_date_top"></p>
+        </div>
     </div>
-    <hr>
-    <div style="margin:20px 0; line-height: 1.8">
-        <div><b>Võ sinh:</b> <span id="rec_name">...</span></div>
-        <div><b>Cấp đai:</b> <span id="rec_belt">...</span></div>
-        <div><b>Nội dung:</b> <span id="rec_content">...</span></div>
-        <div><b>Số tiền:</b> <span id="rec_amount">...</span></div>
-        <div><b>Ngày thu:</b> <span id="rec_date">...</span></div>
+    <div style="font-size: 14px; line-height: 1.6;">
+        <p style="margin: 5px 0;"><strong>Họ & Tên:</strong> <span id="r_name" style="color: var(--primary); font-weight: bold; font-size:16px;"></span></p>
+        <p style="margin: 5px 0; display: none;" id="r_dob_wrap"><strong>Ngày sinh:</strong> <span id="r_dob"></span></p>
+        <p style="margin: 5px 0;"><strong>Khoản thu:</strong> <span id="r_type"></span></p>
+        <p style="margin: 5px 0;"><strong>Cơ sở:</strong> <span id="r_branch" style="font-weight: bold;"></span></p>
+        <p style="margin: 5px 0;" id="r_month_wrap"><strong>Kỳ học phí:</strong> <span id="r_month"></span></p>
     </div>
-    <hr>
-    <div style="text-align:center; margin-top:20px">
-        <p style="font-style:italic; font-size:13px">Cảm ơn quý phụ huynh đã đồng hành!</p>
-        <div style="font-weight:bold; color:var(--primary)">HÀNH TRÌNH VÕ ĐẠO - KẾT NỐI ĐAM MÊ</div>
+    <div style="margin-top: 20px; padding: 15px; background: #eef2f7; text-align: center; border-radius: 8px;">
+        <p style="margin: 0; font-size: 13px; color: #666;">SỐ TIỀN THANH TOÁN</p>
+        <p style="margin: 5px 0 0; font-size: 22px; font-weight: bold; color: #C8102E;" id="r_amount">0 ₫</p>
+        <p style="margin: 5px 0 0; font-size: 12px; font-style: italic; color: #555;" id="r_amount_words"></p>
     </div>
+    
+    <div id="r_qr_wrap" style="text-align: center; margin-top: 20px; display: none;">
+        <p style="font-size: 12px; color: #555; margin-bottom: 5px; font-weight: bold;">MÃ QR THANH TOÁN TỰ ĐỘNG</p>
+        <img id="qrCodeImg" crossorigin="anonymous" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid #ccc; padding: 5px; background: white;">
+    </div>
+
+    <p style="text-align: center; font-size: 11px; margin-top: 20px; font-style: italic; color: #777;">Cảm ơn quý phụ huynh, các em võ sinh đã đồng hành cùng CLB!</p>
 </div>
 
+<div id="toastMessage" class="toast">✅ Thành công!</div>
+
 <script>
-    // --- 1. CẤU HÌNH FIREBASE ---
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "...",
-        appId: "..."
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-
-    // --- 2. CẤU HÌNH NGÂN HÀNG (VIETQR) ---
-    const BANK_CONFIG = {
-        id: "mbbank", // ví dụ: mbbank, vcb, tcb...
-        accountNo: "0987654321", // SỐ TÀI KHOẢN CỦA BẠN
-        accountName: "CLUB TAEKWONDO TST"
-    };
-
-    let currentStudent = null;
-    let selectedMonth = new Date().toISOString().substring(0, 7);
-
-    // --- 3. LOGIC AUTH ---
-    function handleLogin() {
-        const email = document.getElementById('emailInput').value;
+    // Hàm xử lý đăng nhập chạy độc lập, không phụ thuộc Firebase
+    function checkLogin() {
         const pass = document.getElementById('passInput').value;
-        const err = document.getElementById('loginError');
-
-        auth.signInWithEmailAndPassword(email, pass).catch(e => {
-            err.innerText = "Lỗi đăng nhập: " + e.message;
-            err.style.display = 'block';
-        });
-    }
-
-    function handleLogout() {
-        auth.signOut();
-    }
-
-    auth.onAuthStateChanged(user => {
-        if (user) {
+        if(pass === "Tinhts64") {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('currentUserEmail').innerText = user.email;
-            renderApp();
+            document.getElementById('passInput').value = ''; 
         } else {
-            document.getElementById('loginOverlay').style.display = 'flex';
-            document.getElementById('mainApp').style.display = 'none';
+            alert("Sai mật khẩu!");
+        }
+    }
+
+    // Gắn sự kiện phím Enter ngay khi tải trang
+    window.addEventListener('DOMContentLoaded', () => {
+        const passInp = document.getElementById('passInput');
+        if(passInp) {
+            passInp.addEventListener("keypress", function(event) {
+                if (event.key === "Enter") { 
+                    event.preventDefault(); 
+                    checkLogin(); 
+                }
+            });
         }
     });
 
-    // --- 4. QUẢN LÝ VÕ SINH & CẤP ĐAI ---
-    function openStudentModal(id = null) {
-        if(id) {
-            db.collection('students').doc(id).get().then(doc => {
-                const data = doc.data();
-                document.getElementById('editId').value = id;
-                document.getElementById('s_name').value = data.name;
-                document.getElementById('s_branch').value = data.branch;
-                document.getElementById('s_belt').value = data.belt || "Trắng";
-                document.getElementById('s_fee').value = data.fee;
-                document.getElementById('studentModal').style.display = 'flex';
-            });
-        } else {
-            document.getElementById('editId').value = '';
-            document.getElementById('s_name').value = '';
-            document.getElementById('studentModal').style.display = 'flex';
-        }
+    function loadLogoForReceipt() {
+        let img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = function(){
+            let canvas = document.createElement("canvas");
+            canvas.width = img.width; canvas.height = img.height;
+            let ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            try { 
+                const logoEl = document.getElementById('receiptLogo');
+                logoEl.src = canvas.toDataURL("image/png"); 
+                logoEl.style.display = 'block';
+            } catch (e) { console.warn("Lỗi CORS cho Logo."); }
+        };
+        img.onerror = function() { document.getElementById('receiptLogo').style.display = 'block'; }
+        img.src = "logo.png";
+    }
+    window.addEventListener('load', loadLogoForReceipt);
+
+    window.switchTab = (tabId) => {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab_' + tabId).classList.add('active');
+        document.getElementById('btn_' + tabId).classList.add('active');
+    };
+
+    window.showToast = (msg) => {
+        const toast = document.getElementById("toastMessage");
+        toast.innerText = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+    };
+    
+    window.closeModal = () => document.getElementById('profileModal').style.display = 'none';
+    window.closeAddModal = () => document.getElementById('addModal').style.display = 'none';
+</script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
+      authDomain: "quanly-tst.firebaseapp.com",
+      projectId: "quanly-tst",
+      storageBucket: "quanly-tst.firebasestorage.app",
+      messagingSenderId: "981970279440",
+      appId: "1:981970279440:web:8ac137ec4f72a39faa7e95"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, "tst_transactions");
+    const profRef = collection(db, "tst_profiles");
+    const invRef = collection(db, "tst_inventory");
+
+    // ===== CẤU HÌNH NGÂN HÀNG CHO VIETQR =====
+    const BANK_ID = "AGRIBANK"; 
+    const ACCOUNT_NO = "4300205305756"; 
+    const ACCOUNT_NAME = "TRUONG SANH TINH - CLB TAEKWONDO TST"; 
+
+    function removeVietnameseTonesForQR(str) {
+        if (!str) return ""; // Bảo vệ chống lỗi nếu rỗng
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
     }
 
-    function saveStudent() {
-        const id = document.getElementById('editId').value;
-        const data = {
-            name: document.getElementById('s_name').value,
-            branch: document.getElementById('s_branch').value,
-            belt: document.getElementById('s_belt').value,
-            fee: Number(document.getElementById('s_fee').value),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    function generateVietQR(amount, studentName, detailDesc) {
+        const cleanName = removeVietnameseTonesForQR(studentName).replace(/\s+/g, '%20');
+        const cleanDesc = removeVietnameseTonesForQR(detailDesc).replace(/\s+/g, '%20').replace(/\//g, '-');
+        const DESCRIPTION = `${cleanName}%20${cleanDesc}`;
+        const accName = removeVietnameseTonesForQR(ACCOUNT_NAME).replace(/\s+/g, '%20');
+        return `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.jpg?amount=${amount}&addInfo=${DESCRIPTION}&accountName=${accName}`;
+    }
+    // ===========================================
+
+    const docTienVND = (so) => {
+        if (so === 0) return "Không đồng";
+        const mangso = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+        const dochangchuc = (so, daydu) => {
+            let chuoi = "";
+            let chuc = Math.floor(so / 10);
+            let donvi = so % 10;
+            if (chuc > 1) { chuoi = " " + mangso[chuc] + " mươi"; if (donvi == 1) chuoi += " mốt"; }
+            else if (chuc == 1) { chuoi = " mười"; if (donvi == 1) chuoi += " một"; }
+            else if (daydu && donvi > 0) { chuoi = " lẻ"; }
+            if (donvi == 5 && chuc > 0) { chuoi += " lăm"; }
+            else if (donvi > 0 && (donvi != 1 || chuc == 0)) { chuoi += " " + mangso[donvi]; }
+            return chuoi;
+        };
+        const docblock = (so, daydu) => {
+            let chuoi = "";
+            let tram = Math.floor(so / 100);
+            so = so % 100;
+            if (daydu || tram > 0) { chuoi = " " + mangso[tram] + " trăm"; chuoi += dochangchuc(so, true); }
+            else { chuoi = dochangchuc(so, false); }
+            return chuoi;
+        };
+        const hang = ["", "nghìn", "triệu", "tỷ"];
+        let i = 0; let arr = []; let block;
+        while (so > 0) { arr.push(so % 1000); so = Math.floor(so / 1000); }
+        let kq = "";
+        for (i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] > 0 || i == 0) {
+                block = docblock(arr[i], i < arr.length - 1);
+                kq += block + " " + hang[i];
+            }
+        }
+        kq = kq.trim().replace(/\s+/g, ' ');
+        return `(${kq.charAt(0).toUpperCase() + kq.slice(1)} đồng)`;
+    };
+
+    const formatCurrencyInput = (dispId, actId) => {
+        const d = document.getElementById(dispId);
+        const a = document.getElementById(actId);
+        if(!d || !a) return;
+        d.oninput = (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            a.value = v;
+            e.target.value = v ? parseInt(v).toLocaleString('vi-VN') : '';
+        };
+    };
+    
+    formatCurrencyInput('amountDisplay', 'amountActual');
+    formatCurrencyInput('exp_amountDisplay', 'exp_amountActual');
+    formatCurrencyInput('inv_amountDisplay', 'inv_amountActual');
+    formatCurrencyInput('add_fee_display', 'add_fee_actual');
+    formatCurrencyInput('add_uniform_display', 'add_uniform_actual');
+
+    function formatDate(dateStr) { return dateStr ? dateStr.split('-').reverse().join('/') : ""; }
+    function formatMonth(monthStr) { return monthStr ? monthStr.split('-').reverse().join('/') : ""; }
+
+    let allTransactions = [];
+    let allProfiles = {};
+    let allInventory = [];
+
+    onSnapshot(profRef, (snap) => {
+        allProfiles = {}; 
+        snap.forEach(d => { allProfiles[d.id.trim()] = d.data(); });
+        renderApp();
+    });
+
+    onSnapshot(query(colRef, orderBy("date", "desc")), (snap) => {
+        allTransactions = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderApp();
+    });
+
+    onSnapshot(query(invRef, orderBy("timestamp", "desc")), (snap) => {
+        allInventory = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderApp();
+    });
+
+    window.toggleMonthSelect = () => {
+        const type = document.getElementById('type').value;
+        const monthInput = document.getElementById('tx_month');
+        if(type === 'Học phí') {
+            monthInput.style.display = 'block';
+            monthInput.required = true;
+        } else {
+            monthInput.style.display = 'none';
+            monthInput.required = false;
+        }
+    };
+
+    window.toggleInvType = () => {
+        const type = document.getElementById('inv_type').value;
+        const desc = document.getElementById('inv_desc');
+        if(type === 'Xuất bán') desc.placeholder = "Tên Võ sinh";
+        else desc.placeholder = "Tên Đại lý / Xưởng may";
+    };
+
+    const descInput = document.getElementById('description');
+    const autoList = document.getElementById('autocomplete-list');
+
+    descInput.oninput = function() {
+        let val = this.value.toLowerCase().trim();
+        autoList.innerHTML = '';
+        if(!val) { autoList.style.display = 'none'; return; }
+        
+        let matches = Object.keys(allProfiles).filter(n => n.toLowerCase().includes(val) && allProfiles[n].status !== 'quit');
+        matches.forEach(name => {
+            let div = document.createElement('div');
+            let branchDisplay = allProfiles[name].branch || 'CS1';
+            div.innerHTML = `<strong>${name}</strong> <span class="badge" style="background:#e9ecef; color:#495057;">${branchDisplay}</span>`;
+            div.onclick = () => {
+                descInput.value = name;
+                document.getElementById('branch').value = allProfiles[name].branch || 'CS1';
+                
+                if(document.getElementById('type').value === 'Học phí' && allProfiles[name].tuitionFee) {
+                    document.getElementById('amountActual').value = allProfiles[name].tuitionFee;
+                    document.getElementById('amountDisplay').value = parseInt(allProfiles[name].tuitionFee).toLocaleString('vi-VN');
+                }
+                autoList.style.display = 'none';
+            };
+            autoList.appendChild(div);
+        });
+        autoList.style.display = matches.length ? 'block' : 'none';
+    };
+
+    const invDescInput = document.getElementById('inv_desc');
+    const invAutoList = document.getElementById('inv-autocomplete-list');
+    invDescInput.oninput = function() {
+        let val = this.value.toLowerCase().trim();
+        invAutoList.innerHTML = '';
+        if(!val || document.getElementById('inv_type').value !== 'Xuất bán') { invAutoList.style.display = 'none'; return; }
+        
+        let matches = Object.keys(allProfiles).filter(n => n.toLowerCase().includes(val) && allProfiles[n].status !== 'quit');
+        matches.forEach(name => {
+            let div = document.createElement('div');
+            let branchDisplay = allProfiles[name].branch || 'CS1';
+            div.innerHTML = `<strong>${name}</strong> <span class="badge" style="background:#e9ecef; color:#495057;">${branchDisplay}</span>`;
+            div.onclick = () => {
+                invDescInput.value = name;
+                document.getElementById('inv_branch').value = allProfiles[name].branch || 'CS1';
+                invAutoList.style.display = 'none';
+            };
+            invAutoList.appendChild(div);
+        });
+        invAutoList.style.display = matches.length ? 'block' : 'none';
+    };
+
+    document.addEventListener('click', function(e) { 
+        if (e.target !== descInput) autoList.style.display = 'none'; 
+        if (e.target !== invDescInput) invAutoList.style.display = 'none'; 
+    });
+
+    window.quickPay = (name, month, branch, defaultFee) => {
+        window.switchTab('tx');
+        document.getElementById('type').value = 'Học phí';
+        window.toggleMonthSelect();
+        document.getElementById('description').value = name;
+        document.getElementById('branch').value = branch || 'CS1';
+        document.getElementById('tx_month').value = month;
+        if(defaultFee) {
+            document.getElementById('amountActual').value = defaultFee;
+            document.getElementById('amountDisplay').value = parseInt(defaultFee).toLocaleString('vi-VN');
+        } else {
+            document.getElementById('amountActual').value = '';
+            document.getElementById('amountDisplay').value = '';
+        }
+        document.getElementById('amountDisplay').focus();
+        window.scrollTo(0, 0);
+    };
+
+    window.exportToExcel = () => {
+        const selMonth = document.getElementById('filterMonth').value;
+        if(!selMonth) return alert("Vui lòng chọn tháng để xuất báo cáo!");
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_tx')), "NguonThu");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_uniform_tx')), "ThuChiVoPhuc");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_inventory')), "KhoVoPhuc");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_exp')), "ChiPhi");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_debt')), "NoPhi");
+        XLSX.writeFile(wb, `BaoCao_CLB_Thang_${selMonth}.xlsx`);
+        window.showToast("✅ Đã tải báo cáo Excel!");
+    };
+
+    function renderApp() {
+        const selMonth = document.getElementById('filterMonth').value; 
+        const selBranch = document.getElementById('filterBranch').value; 
+        const search = document.getElementById('searchInput').value.toLowerCase();
+
+        const uiTx = document.getElementById('txList');
+        const uiUniformTx = document.getElementById('uniformTxList');
+        const uiExp = document.getElementById('expenseList');
+        const uiDebt = document.getElementById('debtList');
+        const uiActive = document.getElementById('activeList');
+        const uiQuit = document.getElementById('quitList');
+        const uiInvList = document.getElementById('inventoryList');
+
+        uiTx.innerHTML = ''; uiUniformTx.innerHTML = ''; uiExp.innerHTML = ''; uiDebt.innerHTML = ''; uiActive.innerHTML = ''; uiQuit.innerHTML = ''; uiInvList.innerHTML = ''; 
+        
+        let inc_tuition = 0, inc_exam = 0, inc_other = 0;
+        let inc_uniform = 0, exp_uniform = 0;
+        let exp = 0, totalDebtEst = 0;
+        let studentPayments = {};
+        
+        let inventoryStats = {
+            "Số 1 (1m1 - 1m2)": { nhap: 0, xuat: 0 },
+            "Số 2 (1m2 - 1m3)": { nhap: 0, xuat: 0 },
+            "Số 3 (1m3 - 1m4)": { nhap: 0, xuat: 0 },
+            "Số 4 (1m4 - 1m5)": { nhap: 0, xuat: 0 },
+            "Số 5 (1m5 - 1m6)": { nhap: 0, xuat: 0 },
+            "Số 6 (1m6 - 1m7)": { nhap: 0, xuat: 0 },
+            "Số 7 (1m7 - 1m8)": { nhap: 0, xuat: 0 }
         };
 
-        if(id) {
-            db.collection('students').doc(id).update(data);
-        } else {
-            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-            db.collection('students').add(data);
+        allInventory.forEach(inv => {
+            if(inventoryStats[inv.size]) {
+                if(inv.type === 'Nhập kho') inventoryStats[inv.size].nhap += inv.qty;
+                else inventoryStats[inv.size].xuat += inv.qty;
+            }
+        });
+
+        Object.keys(inventoryStats).forEach(size => {
+            let s = inventoryStats[size];
+            let ton = s.nhap - s.xuat;
+            let color = ton < 3 ? 'var(--secondary)' : 'var(--success)';
+            uiInvList.innerHTML += `<tr>
+                <td style="font-weight:bold;">${size}</td>
+                <td style="color:var(--success)">+${s.nhap}</td>
+                <td style="color:var(--secondary)">-${s.xuat}</td>
+                <td style="color:${color}; font-weight:900; font-size:1.1rem;">${ton}</td>
+            </tr>`;
+        });
+
+        allTransactions.forEach(t => {
+            const cleanName = t.description ? t.description.trim() : "";
+            if(t.type === 'Học phí' && t.txMonth && cleanName) {
+                if(!studentPayments[cleanName]) studentPayments[cleanName] = new Set();
+                studentPayments[cleanName].add(t.txMonth);
+            }
+        });
+
+        allTransactions.forEach(t => {
+            const cleanName = t.description ? t.description.trim() : "";
+            if(selMonth && !t.date.startsWith(selMonth)) return;
+            if(selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
+            if(search && !cleanName.toLowerCase().includes(search)) return;
+
+            let safeBranch = t.branch || "CS1";
+
+            if(t.type === 'Chi phí') {
+                exp += t.amount;
+                uiExp.innerHTML += `<tr><td>${formatDate(t.date)}</td><td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td><td style="font-weight:bold;">${t.description}</td><td style="color:var(--secondary); font-weight:bold;">-${t.amount.toLocaleString()}</td><td><button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button></td></tr>`;
+            } 
+            else if (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục') {
+                let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
+                if(isInc) inc_uniform += t.amount; else exp_uniform += t.amount;
+
+                uiUniformTx.innerHTML += `<tr>
+                    <td>${formatDate(t.date)}</td>
+                    <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
+                    <td class="name-link" onclick="openProfile('${cleanName}')" style="font-weight:bold;">${cleanName}</td>
+                    <td>${isInc ? 'Xuất bán' : 'Nhập kho'}</td>
+                    <td style="color:${isInc ? 'var(--success)' : 'var(--secondary)'}; font-weight:bold;">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td>
+                    <td style="display:flex; gap:5px;">
+                        ${isInc ? `<button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, 'Võ phục', '${t.date}', '', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>` : ''}
+                        <button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>
+                    </td>
+                </tr>`;
+            } 
+            else {
+                if(t.type === 'Học phí') inc_tuition += t.amount;
+                else if(t.type === 'Lệ phí thi') inc_exam += t.amount;
+                else inc_other += t.amount;
+
+                let monthLabel = t.txMonth ? formatMonth(t.txMonth) : "-";
+                
+                uiTx.innerHTML += `<tr>
+                    <td>${formatDate(t.date)}</td>
+                    <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
+                    <td><span class="badge" style="background:#e0f7fa; color:#006064">${monthLabel}</span></td>
+                    <td class="name-link" onclick="openProfile('${cleanName}')" style="font-weight:bold;">${cleanName}</td>
+                    <td>${t.type}</td>
+                    <td style="color:var(--success); font-weight:bold;">+${t.amount.toLocaleString()}</td>
+                    <td style="display:flex; gap:5px;">
+                        <button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth || ''}', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>
+                        <button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>
+                    </td>
+                </tr>`;
+            }
+        });
+
+        Object.keys(allProfiles).forEach(name => {
+            const p = allProfiles[name];
+            let safeBranch = p.branch || "CS1"; 
+
+            if(selBranch !== 'all' && safeBranch !== selBranch) return;
+            if(search && !name.toLowerCase().includes(search)) return;
+
+            if(p.status === 'active') {
+                let lastPaidStr = "Chưa có";
+                if(studentPayments[name] && studentPayments[name].size > 0) {
+                    const sorted = Array.from(studentPayments[name]).sort();
+                    lastPaidStr = formatMonth(sorted[sorted.length - 1]);
+                }
+
+                uiActive.innerHTML += `<tr>
+                    <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td>
+                    <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
+                    <td>${formatDate(p.dob)}</td>
+                    <td><span class="badge badge-active">${lastPaidStr}</span></td>
+                    <td>${p.phone || ''}</td>
+                    <td>${formatDate(p.createdAt)}</td>
+                    <td><button class="btn btn-primary" onclick="openProfile('${name}')" style="padding: 5px 10px;">✏️ Sửa</button></td>
+                </tr>`;
+                
+                const paidThisMonth = studentPayments[name] && studentPayments[name].has(selMonth);
+                const skippedThisMonth = p.skippedMonths && p.skippedMonths.includes(selMonth);
+                const joinedDate = p.createdAt ? p.createdAt.substring(0, 7) : "2000-01";
+                const joinedAfterThisMonth = joinedDate > selMonth;
+
+                if(!paidThisMonth && !skippedThisMonth && !joinedAfterThisMonth) {
+                    if(p.tuitionFee) totalDebtEst += Number(p.tuitionFee);
+
+                    uiDebt.innerHTML += `<tr>
+                        <td><span class="badge badge-quit">${formatMonth(selMonth)}</span></td>
+                        <td>${lastPaidStr}</td>
+                        <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
+                        <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold">${name}</td>
+                        <td style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <button class="btn btn-success" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>
+                            <button class="btn btn-zalo" onclick="copyAndOpenZalo('${name}', '${selMonth}', '${p.phone || ''}')">💬 Nhắn Zalo</button>
+                            <button class="btn" onclick="skipMonth('${name}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>
+                        </td>
+                    </tr>`;
+                }
+            } else {
+                uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td><button class="btn btn-primary" style="padding: 5px 10px;" onclick="openProfile('${name}')">🔄 Khôi phục</button></td></tr>`;
+            }
+        });
+
+        let totalIncome = inc_tuition + inc_exam + inc_other + inc_uniform;
+        let expenseTotal = exp + exp_uniform;
+        let profit = totalIncome - expenseTotal;
+
+        document.getElementById('sum_tuition').innerText = inc_tuition.toLocaleString() + " ₫";
+        document.getElementById('sum_exam').innerText = inc_exam.toLocaleString() + " ₫";
+        document.getElementById('sum_other').innerText = inc_other.toLocaleString() + " ₫";
+        
+        document.getElementById('sum_uniform_in').innerText = inc_uniform.toLocaleString() + " ₫";
+        document.getElementById('sum_uniform_out').innerText = exp_uniform.toLocaleString() + " ₫";
+        document.getElementById('sum_uniform_profit').innerText = (inc_uniform - exp_uniform).toLocaleString() + " ₫";
+
+        document.getElementById('totalIncome').innerText = totalIncome.toLocaleString() + " ₫";
+        document.getElementById('totalExpense').innerText = expenseTotal.toLocaleString() + " ₫";
+        
+        const profitEl = document.getElementById('totalProfit');
+        profitEl.innerText = profit.toLocaleString() + " ₫";
+        profitEl.style.color = profit < 0 ? "#ffcccc" : "white";
+
+        document.getElementById('activeStudentCount').innerText = Object.values(allProfiles).filter(p => p.status === 'active').length;
+        document.getElementById('debtCount').innerText = uiDebt.children.length + " Bạn";
+        document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
+    }
+
+    document.getElementById('inventoryForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const size = document.getElementById('inv_size').value;
+        const type = document.getElementById('inv_type').value;
+        const qty = Number(document.getElementById('inv_qty').value);
+        const desc = document.getElementById('inv_desc').value.trim();
+        const amount = Number(document.getElementById('inv_amountActual').value);
+        const date = document.getElementById('inv_date').value;
+        const branch = document.getElementById('inv_branch').value;
+
+        await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
+
+        if (amount > 0) {
+            let txType = type === 'Nhập kho' ? 'Chi Võ phục' : 'Thu Võ phục';
+            let txDesc = type === 'Nhập kho' ? `Nhập kho ${size} từ ${desc}` : `Bán ${size} cho ${desc}`;
+            await addDoc(colRef, { branch, type: txType, description: txDesc, amount, date, timestamp: Date.now() });
         }
-        closeModal('studentModal');
-    }
 
-    // --- 5. LOGIC VIETQR & THU PHÍ 2 BƯỚC ---
-    function initiatePayment(id, name, fee, belt) {
-        currentStudent = { id, name, fee, belt };
-        const monthLabel = document.getElementById('filterMonth').value.split('-')[1];
-        
-        // Chuyển tên không dấu để làm nội dung QR
-        const cleanName = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '').toUpperCase();
-        const memo = `TST ${cleanName} T${monthLabel}`;
+        e.target.reset();
+        document.getElementById('inv_date').valueAsDate = new Date();
+        window.showToast("✅ Đã cập nhật Kho & Sổ Quỹ!");
+    };
 
-        document.getElementById('paymentDetails').innerHTML = `
-            <b>Võ sinh:</b> ${name}<br>
-            <b>Tháng đóng:</b> ${document.getElementById('filterMonth').value}<br>
-            <b>Số tiền:</b> ${fee.toLocaleString()} VNĐ
-        `;
-        
-        // Tạo link VietQR động
-        const qrUrl = `https://img.vietqr.io/image/${BANK_CONFIG.id}-${BANK_CONFIG.accountNo}-compact2.jpg?amount=${fee}&addInfo=${encodeURIComponent(memo)}&accountName=${encodeURIComponent(BANK_CONFIG.accountName)}`;
-        
-        document.getElementById('vietQrImg').src = qrUrl;
-        document.getElementById('qrMemo').innerText = "Nội dung: " + memo;
-        document.getElementById('paymentModal').style.display = 'flex';
-    }
+    window.copyAndOpenZalo = (name, month, phone) => {
+        if (!phone) {
+            alert("Võ sinh này chưa có số điện thoại Zalo trên hệ thống. Vui lòng cập nhật hồ sơ!");
+            return;
+        }
 
-    async function confirmAndGenerateReceipt() {
-        if(!currentStudent) return;
-        
-        const month = document.getElementById('filterMonth').value;
-        
-        try {
-            // Lưu giao dịch vào Firestore
-            await db.collection('transactions').add({
-                studentId: currentStudent.id,
-                studentName: currentStudent.name,
-                amount: currentStudent.fee,
-                month: month,
-                type: 'Học phí',
-                date: new Date().toLocaleDateString('vi-VN'),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        const msg = `Kính gửi Phụ huynh, võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận võ sinh ${name} chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
+        const openZalo = () => window.open(`https://zalo.me/${phone}`, '_blank');
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(msg).then(() => {
+                window.showToast("✅ Đã copy tin nhắn! Đang chuyển sang Zalo...");
+                setTimeout(openZalo, 300); 
+            }).catch(err => {
+                window.showToast("Đang mở Zalo...");
+                openZalo();
             });
-
-            // Sau khi lưu thành công -> Chụp ảnh hóa đơn (Giữ tính năng cũ của bạn)
-            generateImageReceipt(currentStudent, month);
-            closeModal('paymentModal');
-            alert("Đã ghi nhận thanh toán thành công!");
-        } catch (e) {
-            alert("Lỗi khi lưu giao dịch: " + e.message);
+        } else {
+            let textArea = document.createElement("textarea");
+            textArea.value = msg;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                window.showToast("✅ Đã copy! Đang mở Zalo...");
+            } catch (err) {
+                console.error('Lỗi copy:', err);
+                window.showToast("Đang mở Zalo...");
+            }
+            document.body.removeChild(textArea);
+            setTimeout(openZalo, 300);
         }
-    }
+    };
 
-    // --- 6. XUẤT HÓA ĐƠN ẢNH (CHỤP TEMPLATE) ---
-    async function generateImageReceipt(student, month) {
-        const node = document.getElementById('receiptTemplate');
-        document.getElementById('rec_name').innerText = student.name;
-        document.getElementById('rec_belt').innerText = student.belt;
-        document.getElementById('rec_content').innerText = "Học phí tháng " + month;
-        document.getElementById('rec_amount').innerText = student.fee.toLocaleString() + " VNĐ";
-        document.getElementById('rec_date').innerText = new Date().toLocaleDateString('vi-VN');
+    window.openProfile = (name) => {
+        const p = allProfiles[name.trim()] || {};
+        document.getElementById('m_name').innerText = name.trim();
+        document.getElementById('m_status').value = p.status || 'active';
+        document.getElementById('m_branch').value = p.branch || 'CS1';
+        document.getElementById('m_phone').value = p.phone || '';
+        document.getElementById('m_fee').value = p.tuitionFee || '';
+        document.getElementById('m_dob').value = p.dob || '';
+        
+        const skipped = p.skippedMonths || [];
+        let skippedHtml = skipped.sort().map(m => `<span class="badge" style="background:#ffc107; color:#856404; margin-right:5px; margin-bottom:5px; display:inline-block;">${formatMonth(m)} <span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${name}', '${m}')" title="Hủy báo nghỉ">✖</span></span>`).join('');
+        document.getElementById('m_skipped').innerHTML = skippedHtml || '<span style="font-size:0.85rem; color:#666;">Chưa có dữ liệu</span>';
 
-        node.style.visibility = 'visible';
-        node.style.position = 'static';
+        document.getElementById('profileModal').style.display = 'flex';
+    };
 
-        html2canvas(node).then(canvas => {
+    window.updateProfile = async () => {
+        const name = document.getElementById('m_name').innerText.trim();
+        const newStatus = document.getElementById('m_status').value;
+        const currentProfile = allProfiles[name] || {};
+        
+        let updateData = {
+            status: newStatus,
+            branch: document.getElementById('m_branch').value,
+            phone: document.getElementById('m_phone').value,
+            tuitionFee: document.getElementById('m_fee').value,
+            dob: document.getElementById('m_dob').value
+        };
+
+        if (newStatus === 'quit' && currentProfile.status !== 'quit') {
+            updateData.quitDate = new Date().toISOString().split('T')[0]; 
+        } else if (newStatus === 'active') {
+            updateData.quitDate = null; 
+        }
+
+        await setDoc(doc(db, "tst_profiles", name), updateData, { merge: true });
+        window.closeModal();
+        window.showToast("✅ Đã cập nhật hồ sơ!");
+    };
+
+    window.deleteProfile = async () => {
+        const name = document.getElementById('m_name').innerText.trim();
+        if(confirm(`⚠️ CẢNH BÁO: Xóa vĩnh viễn hồ sơ võ sinh "${name}"? Các giao dịch thu chi của bạn này vẫn được giữ lại trong Sổ Thu.`)) {
+            await deleteDoc(doc(db, "tst_profiles", name));
+            window.closeModal();
+            window.showToast(`✅ Đã xóa hồ sơ ${name}!`);
+        }
+    };
+
+    window.skipMonth = async (name, month) => {
+        if(confirm(`Xác nhận võ sinh ${name} ĐƯỢC MIỄN/ NGHỈ TẬP tháng ${formatMonth(month)}?`)) {
+            await setDoc(doc(db, "tst_profiles", name.trim()), {
+                skippedMonths: arrayUnion(month)
+            }, { merge: true });
+            window.showToast(`✅ Đã báo nghỉ tháng ${formatMonth(month)}!`);
+        }
+    };
+
+    window.removeSkip = async (name, month) => {
+        if(confirm(`Hủy báo nghỉ tháng ${formatMonth(month)} cho ${name}?`)) {
+            await setDoc(doc(db, "tst_profiles", name.trim()), {
+                skippedMonths: arrayRemove(month)
+            }, { merge: true });
+            window.closeModal();
+            window.showToast(`✅ Đã khôi phục nợ phí!`);
+        }
+    };
+
+    window.openAddModal = () => {
+        document.getElementById('add_name').value = '';
+        document.getElementById('add_dob').value = '';
+        document.getElementById('add_phone').value = '';
+        document.getElementById('add_fee_default').value = '';
+        document.getElementById('add_fee_display').value = '';
+        document.getElementById('add_fee_actual').value = '';
+        document.getElementById('add_uniform_size').value = ''; 
+        document.getElementById('add_uniform_display').value = '';
+        document.getElementById('add_uniform_actual').value = '';
+        document.getElementById('add_date').valueAsDate = new Date();
+        document.getElementById('addModal').style.display = 'flex';
+    };
+
+    window.addNewStudent = async () => {
+        const name = document.getElementById('add_name').value.trim();
+        const branch = document.getElementById('add_branch').value;
+        const feeDefault = document.getElementById('add_fee_default').value;
+        const fee = Number(document.getElementById('add_fee_actual').value);
+        
+        const uniformSize = document.getElementById('add_uniform_size').value;
+        const uniformFee = Number(document.getElementById('add_uniform_actual').value);
+        
+        const joinDate = document.getElementById('add_date').value;
+        const currentMonth = joinDate.substring(0, 7);
+
+        if(!name) return alert("Cần nhập tên võ sinh!");
+        if(allProfiles[name]) return alert("Võ sinh này đã có hồ sơ!");
+        if(uniformFee > 0 && !uniformSize) {
+            return alert("Vui lòng chọn Size Võ phục để hệ thống tự động trừ tồn kho.");
+        }
+
+        let profileData = { 
+            status: 'active', branch: branch, dob: document.getElementById('add_dob').value, 
+            phone: document.getElementById('add_phone').value, tuitionFee: feeDefault, createdAt: joinDate 
+        };
+        await setDoc(doc(db, "tst_profiles", name), profileData);
+
+        if(fee > 0) {
+            await addDoc(colRef, { branch, type: 'Học phí', description: name, amount: fee, date: joinDate, txMonth: currentMonth, timestamp: Date.now() });
+        }
+        
+        if(uniformSize || uniformFee > 0) {
+            if (uniformFee > 0) {
+                await addDoc(colRef, { branch, type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 });
+            }
+            if (uniformSize) {
+                await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 });
+            }
+        }
+
+        window.closeAddModal();
+        window.showToast("✅ Đã thêm võ sinh, lưu doanh thu & trừ kho!");
+    };
+
+    document.getElementById('transactionForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const type = document.getElementById('type').value;
+        const name = document.getElementById('description').value.trim();
+        const amount = Number(document.getElementById('amountActual').value);
+        const branch = document.getElementById('branch').value;
+        const date = document.getElementById('date').value;
+        const txMonth = document.getElementById('tx_month').value;
+
+        if(!name) return;
+
+        let txData = { branch, type, description: name, amount, date, timestamp: Date.now() };
+        if(type === 'Học phí') txData.txMonth = txMonth;
+
+        await addDoc(colRef, txData);
+
+        if(!allProfiles[name] || allProfiles[name].status === 'quit') {
+            await setDoc(doc(db, "tst_profiles", name), { status: 'active', branch }, { merge: true });
+        }
+
+        e.target.reset();
+        document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('tx_month').value = new Date().toISOString().substring(0, 7);
+        window.toggleMonthSelect();
+        window.showToast("✅ Đã lưu khoản thu!");
+    };
+
+    document.getElementById('expenseForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const desc = document.getElementById('exp_desc').value.trim();
+        const amount = Number(document.getElementById('exp_amountActual').value);
+        const branch = document.getElementById('exp_branch').value;
+        const date = document.getElementById('exp_date').value;
+
+        await addDoc(colRef, { branch, type: 'Chi phí', description: desc, amount, date, timestamp: Date.now() });
+
+        e.target.reset();
+        document.getElementById('exp_date').valueAsDate = new Date();
+        window.showToast("✅ Đã lưu khoản chi!");
+    };
+
+    window.deleteTx = (id) => { if(confirm("Xóa giao dịch này?")) deleteDoc(doc(db, "tst_transactions", id)); };
+
+    window.exportReceipt = async (name, amount, type, date, txMonth, branch) => {
+        try {
+            const node = document.getElementById('receiptTemplate');
+            const cleanName = name.trim();
+            document.getElementById('r_name').innerText = cleanName.toUpperCase();
+            
+            const dParts = date.split('-');
+            if(dParts.length === 3) {
+                document.getElementById('r_date_top').innerText = `Ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}`;
+            } else {
+                document.getElementById('r_date_top').innerText = formatDate(date);
+            }
+
+            const p = allProfiles[cleanName] || {};
+            const dobWrap = document.getElementById('r_dob_wrap');
+            if (p.dob) {
+                document.getElementById('r_dob').innerText = formatDate(p.dob);
+                dobWrap.style.display = 'block';
+            } else {
+                dobWrap.style.display = 'none'; 
+            }
+
+            document.getElementById('r_amount').innerText = amount.toLocaleString('vi-VN') + " ₫";
+            document.getElementById('r_amount_words').innerText = docTienVND(amount);
+            
+            document.getElementById('r_type').innerText = type;
+            
+            let branchText = branch === 'CS1' ? 'Cơ sở 1 (Huỳnh Tấn Phát)' : (branch === 'CS2' ? 'Cơ sở 2 (Sân vận động)' : branch);
+            document.getElementById('r_branch').innerText = branchText;
+            
+            const monthWrap = document.getElementById('r_month_wrap');
+            let descMonthForQR = type;
+
+            if(type === 'Học phí' && txMonth) {
+                monthWrap.style.display = 'block';
+                document.getElementById('r_month').innerText = formatMonth(txMonth);
+                descMonthForQR = `Hoc Phi Thang ${formatMonth(txMonth)}`;
+            } else {
+                monthWrap.style.display = 'none';
+            }
+
+            // ===== XỬ LÝ ẢNH MÃ QR =====
+            const qrWrap = document.getElementById('r_qr_wrap');
+            const qrImgEl = document.getElementById('qrCodeImg');
+            
+            if (amount > 0) {
+                const qrUrl = generateVietQR(amount, cleanName, descMonthForQR);
+                qrImgEl.src = qrUrl;
+                qrWrap.style.display = 'block';
+                
+                await new Promise((resolve) => {
+                    qrImgEl.onload = resolve;
+                    qrImgEl.onerror = () => { console.warn("Lỗi tải QR"); resolve(); };
+                });
+            } else {
+                qrWrap.style.display = 'none';
+            }
+            // ============================
+
+            node.style.position = 'absolute';
+            node.style.visibility = 'visible';
+            
+            const canvas = await html2canvas(node, { 
+                scale: 3, 
+                backgroundColor: '#ffffff',
+                useCORS: true,     
+                allowTaint: true   
+            });
             const imgData = canvas.toDataURL('image/png');
+            
             document.getElementById('receiptPreviewImg').src = imgData;
             
             const btnDl = document.getElementById('btnDownloadReceipt');
             btnDl.onclick = () => {
                 const link = document.createElement('a');
-                link.download = `BienLai_${student.name.replace(/\s/g, '_')}.png`;
+                let fileName = 'Khach_Hang';
+                if (typeof cleanName !== 'undefined' && cleanName) fileName = cleanName;
+                link.download = `Hoa_Don_${String(fileName).replace(/\s/g, '_')}.png`;
                 link.href = imgData;
                 link.click();
             };
-            
-            node.style.visibility = 'hidden';
-            node.style.position = 'absolute';
+
             document.getElementById('receiptModal').style.display = 'flex';
-        });
-    }
+        } catch (error) {
+            console.error(error);
+            alert("Có lỗi tạo hóa đơn: " + error.message);
+        } finally {
+            const node = document.getElementById('receiptTemplate');
+            node.style.position = 'absolute';
+            node.style.left = '-9999px';
+            node.style.top = 'auto';
+            node.style.visibility = 'hidden';
+            node.style.zIndex = 'auto';
+        }
+    };
 
-    // --- 7. RENDER DANH SÁCH & CẢNH BÁO NỢ ---
-    function renderApp() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const branch = document.getElementById('filterBranch').value;
-        const month = document.getElementById('filterMonth').value;
-
-        // 1. Lấy danh sách giao dịch của tháng này trước
-        db.collection('transactions').where('month', '==', month).onSnapshot(snapTrans => {
-            const paidIds = snapTrans.docs.map(d => d.data().studentId);
-
-            // 2. Lấy danh sách võ sinh
-            db.collection('students').onSnapshot(snapStudents => {
-                const listDiv = document.getElementById('studentList');
-                listDiv.innerHTML = '';
-                
-                let countTotal = 0;
-                let countDebt = 0;
-
-                snapStudents.docs.forEach(doc => {
-                    const s = doc.data();
-                    const id = doc.id;
-
-                    if (branch !== "Tất cả" && s.branch !== branch) return;
-                    if (!s.name.toLowerCase().includes(search)) return;
-
-                    const isPaid = paidIds.includes(id);
-                    countTotal++;
-                    if(!isPaid) countDebt++;
-
-                    // Áp dụng lớp debt-alert nếu chưa đóng tiền
-                    const alertClass = !isPaid ? 'debt-alert' : '';
-                    const beltColor = getBeltColor(s.belt);
-
-                    listDiv.innerHTML += `
-                        <div class="list-item ${alertClass}">
-                            <div style="flex:1">
-                                <span style="font-weight:600">${s.name}</span>
-                                <span class="badge-belt" style="background:${beltColor}">${s.belt}</span>
-                                <br>
-                                <small style="color:var(--gray)">${s.branch} | Phí: ${s.fee.toLocaleString()}</small>
-                            </div>
-                            <div style="display:flex; gap:5px">
-                                ${isPaid ? 
-                                    `<span style="color:var(--success); font-weight:bold; padding:8px">Đã đóng</span>` : 
-                                    `<button class="btn btn-primary" onclick="initiatePayment('${id}', '${s.name}', ${s.fee}, '${s.belt}')">Thu phí</button>`
-                                }
-                                <button class="btn" style="background:#eee" onclick="openStudentModal('${id}')">⚙️</button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('totalStudents').innerText = countTotal;
-                document.getElementById('totalDebt').innerText = countDebt;
-            });
-        });
-    }
-
-    function getBeltColor(belt) {
-        const colors = { "Trắng": "#ccc", "Vàng": "#ffd700", "Xanh lá": "#28a745", "Xanh dương": "#0033A0", "Đỏ": "#C8102E", "Đen": "#000" };
-        return colors[belt] || "#6c757d";
-    }
-
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    
-    // Khởi tạo các giá trị lọc mặc định
-    document.getElementById('filterMonth').value = selectedMonth;
+    document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
     document.getElementById('filterMonth').onchange = renderApp;
     document.getElementById('filterBranch').onchange = renderApp;
     document.getElementById('searchInput').oninput = renderApp;
-
+    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('tx_month').value = new Date().toISOString().substring(0, 7);
+    document.getElementById('inv_date').valueAsDate = new Date();
+    document.getElementById('exp_date').valueAsDate = new Date();
 </script>
 </body>
 </html>
