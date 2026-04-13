@@ -386,7 +386,7 @@
 
 <div id="receiptModal" class="modal">
     <div class="modal-content" style="text-align:center; max-width: 400px; padding: 15px;">
-        <h3 style="color:var(--primary); margin-top:0;">XUẤT MÃ QR & YÊU CẦU THU</h3>
+        <h3 style="color:var(--primary); margin-top:0;">XUẤT MÃ QR & YÊU CẦU THU / HÓA ĐƠN</h3>
         <p style="font-size:0.85rem; color:var(--gray); margin-bottom:10px;">📸 <strong>Mẹo Zalo:</strong> Nhấn giữ vào ảnh rồi dán thẳng vào Zalo phụ huynh.</p>
         <div id="receiptContainer" style="display:inline-block; background:white; width: 100%;">
             <img id="receiptPreviewImg" style="width:100%; border-radius:8px; border: 1px solid #eee; box-shadow:0 4px 12px rgba(0,0,0,0.1); margin-bottom:15px;">
@@ -697,7 +697,7 @@
         window.scrollTo(0, 0);
     };
 
-    // Hàm MỚI: Tạo Yêu Cầu Thanh Toán (Phiếu Báo) mà không lưu vào DB
+    // Hàm Tạo Yêu Cầu Thanh Toán (Phiếu Báo) mà không lưu vào DB
     window.generatePaymentRequest = (name, month, branch, feeStr) => {
         let amount = feeStr ? Number(feeStr) : 0;
         if (!amount || amount <= 0) {
@@ -1180,7 +1180,8 @@
             const qrWrap = document.getElementById('r_qr_wrap');
             const qrImgEl = document.getElementById('qrCodeImg');
             
-            if (amount > 0) {
+            // CẬP NHẬT: Chỉ hiện mã QR nếu là PHIẾU BÁO HỌC PHÍ
+            if (amount > 0 && receiptTitle === 'PHIẾU BÁO HỌC PHÍ') {
                 const qrUrl = generateVietQR(amount, cleanName, descMonthForQR);
                 qrImgEl.src = qrUrl;
                 qrWrap.style.display = 'block';
