@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; --gray: #6c757d; --purple: #6f42c1; }
+        :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; --gray: #6c757d; --purple: #6f42c1; --belt-yellow: #f1c40f; --belt-green: #2ecc71; --belt-blue: #3498db; --belt-red: #e74c3c; --belt-black: #2c3e50; }
         body { font-family: 'Inter', sans-serif; background: #eef2f7; margin: 0; padding: 10px; font-size: 16px; }
         
         /* Đăng nhập */
@@ -17,13 +17,12 @@
 
         .app-container { max-width: 1200px; margin: auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: none; box-sizing: border-box;}
         
-        /* Header */
+        /* Header & Stats */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .header-left { display: flex; align-items: center; gap: 10px; }
         .header-left img { height: 45px; width: auto; object-fit: contain; }
         .header h2 { margin: 0; color: var(--primary); font-size: 1.3rem; font-weight: 800;}
 
-        /* Dashboard */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .stat-box { padding: 15px; border-radius: 12px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center;}
         .stat-box h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; opacity: 0.9; white-space: nowrap; }
@@ -35,8 +34,8 @@
         .transaction-form { border: 1px dashed var(--primary); background: #fff; }
         .expense-form { border-color: var(--secondary); background: #fffafa; }
         .inventory-form { border-color: var(--purple); background: #fdfbff; }
-        input, select { border: 1px solid #ddd; padding: 10px 12px; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; font-size: 15px; background: white;}
-        input:focus, select:focus { border-color: var(--primary); }
+        input, select, textarea { border: 1px solid #ddd; padding: 10px 12px; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; font-size: 15px; background: white; font-family: inherit;}
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
         input:disabled, select:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; }
 
         /* Tabs */
@@ -64,13 +63,13 @@
         th { background: #f8f9fa; color: #495057; font-size: 0.8rem; padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; text-transform: uppercase; white-space: nowrap;}
         td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; vertical-align: middle; }
         .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; display: inline-block; }
         .badge-active { background: #d4edda; color: #155724; }
         .badge-quit { background: #f8d7da; color: #721c24; }
         
         /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box;}
-        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+        .modal-content { background: white; width: 100%; max-width: 550px; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
         
         /* Autocomplete */
         .autocomplete-container { position: relative; width: 100%; }
@@ -80,6 +79,7 @@
         
         .toast { visibility: hidden; min-width: 200px; background-color: var(--success); color: #fff; text-align: center; border-radius: 8px; padding: 12px 16px; position: fixed; z-index: 10001; right: 20px; bottom: 20px; transform: translateY(100px); transition: 0.3s; font-size: 0.9rem;}
         .toast.show { visibility: visible; transform: translateY(0); }
+        
         #receiptTemplate { position: absolute; left: -9999px; visibility: hidden; width: 380px; background: white; padding: 25px; border-radius: 10px; font-family: 'Inter', sans-serif; color: #333; border: 2px solid #0033A0; box-sizing: border-box;}
         .revenue-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; padding: 15px; background: #f0f4ff; border-radius: 8px; border-left: 4px solid var(--primary); }
         .rev-item { font-size: 0.85rem; }
@@ -271,10 +271,10 @@
         <div class="table-wrapper"><table id="tbl_debt"><thead><tr><th>Kỳ nợ</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác</th></tr></thead><tbody id="debtList"></tbody></table></div>
     </div>
     <div id="tab_active" class="tab-content">
-        <div class="table-wrapper"><table><thead><tr><th>Họ và tên</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập học</th><th>Thao tác</th></tr></thead><tbody id="activeList"></tbody></table></div>
+        <div class="table-wrapper"><table><thead><tr><th>Họ và tên</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập học</th><th>Thao tác</th></tr></thead><tbody id="activeList"></tbody></table></div>
     </div>
     <div id="tab_quit" class="tab-content">
-        <div class="table-wrapper"><table><thead><tr><th>Võ sinh</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
+        <div class="table-wrapper"><table><thead><tr><th>Võ sinh</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
     </div>
     
     <div id="tab_report" class="tab-content">
@@ -314,17 +314,34 @@
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div>
-                    <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Số điện thoại Zalo</label>
-                    <input type="tel" id="m_phone" placeholder="Nhập SĐT">
+                    <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Cấp đai hiện tại</label>
+                    <select id="m_belt">
+                        <option value="Trắng">Đai Trắng</option>
+                        <option value="Vàng">Đai Vàng</option>
+                        <option value="Xanh lá">Đai Xanh lá</option>
+                        <option value="Xanh dương">Đai Xanh dương</option>
+                        <option value="Đỏ">Đai Đỏ</option>
+                        <option value="Đen">Đai Đen</option>
+                    </select>
                 </div>
                 <div>
                     <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Ngày sinh</label>
                     <input type="date" id="m_dob">
                 </div>
             </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>
+                    <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Số điện thoại Zalo</label>
+                    <input type="tel" id="m_phone" placeholder="Nhập SĐT">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Mức học phí chuẩn</label>
+                    <input type="number" id="m_fee" placeholder="Mức phí chuẩn">
+                </div>
+            </div>
             <div>
-                <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Mức học phí/tháng (Sẽ tự điền khi thu)</label>
-                <input type="number" id="m_fee" placeholder="Mức phí chuẩn (Đề xuất)">
+                <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Ghi chú (Sức khỏe, lưu ý...)</label>
+                <textarea id="m_notes" rows="2" placeholder="Ghi chú đặc biệt về võ sinh..."></textarea>
             </div>
             <div style="background: #fff8e1; padding: 10px; border-radius: 8px; border: 1px dashed #ffc107;">
                 <label style="font-size: 0.8rem; color:#856404; font-weight:bold; display:block; margin-bottom:5px;">⏸ Các tháng đã báo nghỉ (Miễn đóng phí):</label>
@@ -351,8 +368,15 @@
                     <select id="add_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
                 </div>
                 <div>
-                    <label style="font-weight:bold; font-size:0.9rem">Ngày sinh</label>
-                    <input type="date" id="add_dob">
+                    <label style="font-weight:bold; font-size:0.9rem">Cấp đai nhập học</label>
+                    <select id="add_belt">
+                        <option value="Trắng">Đai Trắng</option>
+                        <option value="Vàng">Đai Vàng</option>
+                        <option value="Xanh lá">Đai Xanh lá</option>
+                        <option value="Xanh dương">Đai Xanh dương</option>
+                        <option value="Đỏ">Đai Đỏ</option>
+                        <option value="Đen">Đai Đen</option>
+                    </select>
                 </div>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
@@ -361,13 +385,23 @@
                     <input type="tel" id="add_phone" placeholder="Nhập SĐT Zalo">
                 </div>
                 <div>
+                    <label style="font-weight:bold; font-size:0.9rem">Ngày sinh</label>
+                    <input type="date" id="add_dob">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                    <label style="font-weight:bold; font-size:0.9rem">Mức học phí/tháng</label>
+                    <input type="number" id="add_fee_default" placeholder="VD: 300000">
+                </div>
+                <div>
                     <label style="font-weight:bold; font-size:0.9rem">Ngày nhập học</label>
                     <input type="date" id="add_date">
                 </div>
             </div>
             <div>
-                <label style="font-weight:bold; font-size:0.9rem">Mức học phí/tháng</label>
-                <input type="number" id="add_fee_default" placeholder="Mức phí chuẩn (Đề xuất)">
+                <label style="font-weight:bold; font-size:0.9rem">Ghi chú sức khỏe</label>
+                <textarea id="add_notes" rows="2" placeholder="Ghi chú nếu có..."></textarea>
             </div>
             <div style="background: #f0f4ff; padding: 15px; border-radius: 8px; border: 1px solid #d0dfff;">
                 <label style="font-weight:bold; color: var(--primary); display:block; margin-bottom: 10px;">💰 THU TIỀN KHI NHẬP HỌC (Nếu có)</label>
@@ -429,9 +463,10 @@
     </div>
     <div style="font-size: 14px; line-height: 1.6;">
         <p style="margin: 5px 0;"><strong>Họ & Tên:</strong> <span id="r_name" style="color: var(--primary); font-weight: bold; font-size:16px;"></span></p>
+        <p style="margin: 5px 0;"><strong>Cấp đai:</strong> <span id="r_belt" style="font-weight: bold;"></span></p>
         <p style="margin: 5px 0; display: none;" id="r_dob_wrap"><strong>Ngày sinh:</strong> <span id="r_dob"></span></p>
         <p style="margin: 5px 0;"><strong>Khoản thu:</strong> <span id="r_type"></span></p>
-        <p style="margin: 5px 0;"><strong>Cơ sở:</strong> <span id="r_branch" style="font-weight;"></span></p>
+        <p style="margin: 5px 0;"><strong>Cơ sở:</strong> <span id="r_branch"></span></p>
         <p style="margin: 5px 0;" id="r_month_wrap"><strong>Kỳ học phí:</strong> <span id="r_month"></span></p>
     </div>
     <div style="margin-top: 20px; padding: 15px; background: #eef2f7; text-align: center; border-radius: 8px;">
@@ -463,7 +498,6 @@
         } else if (pass === "Tuyet1992") {
             window.userRole = 'viewer';
             applyLoginSuccess();
-            // Ẩn các Form nhập liệu và Nút Thêm mới đối với Guest
             document.getElementById('transactionForm').style.display = 'none';
             document.getElementById('inventoryForm').style.display = 'none';
             document.getElementById('expenseForm').style.display = 'none';
@@ -548,7 +582,6 @@
     const profRef = collection(db, "tst_profiles");
     const invRef = collection(db, "tst_inventory");
 
-    // Cho phép truy cập hàm render từ bên ngoài module
     window.forceRender = renderApp;
 
     // ===== CẤU HÌNH NGÂN HÀNG CHO VIETQR =====
@@ -573,9 +606,7 @@
         if (so === 0) return "Không đồng";
         const mangso = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
         const dochangchuc = (so, daydu) => {
-            let chuoi = "";
-            let chuc = Math.floor(so / 10);
-            let donvi = so % 10;
+            let chuoi = ""; let chuc = Math.floor(so / 10); let donvi = so % 10;
             if (chuc > 1) { chuoi = " " + mangso[chuc] + " mươi"; if (donvi == 1) chuoi += " mốt"; }
             else if (chuc == 1) { chuoi = " mười"; if (donvi == 1) chuoi += " một"; }
             else if (daydu && donvi > 0) { chuoi = " lẻ"; }
@@ -584,9 +615,7 @@
             return chuoi;
         };
         const docblock = (so, daydu) => {
-            let chuoi = "";
-            let tram = Math.floor(so / 100);
-            so = so % 100;
+            let chuoi = ""; let tram = Math.floor(so / 100); so = so % 100;
             if (daydu || tram > 0) { chuoi = " " + mangso[tram] + " trăm"; chuoi += dochangchuc(so, true); }
             else { chuoi = dochangchuc(so, false); }
             return chuoi;
@@ -596,10 +625,7 @@
         while (so > 0) { arr.push(so % 1000); so = Math.floor(so / 1000); }
         let kq = "";
         for (i = arr.length - 1; i >= 0; i--) {
-            if (arr[i] > 0 || i == 0) {
-                block = docblock(arr[i], i < arr.length - 1);
-                kq += block + " " + hang[i];
-            }
+            if (arr[i] > 0 || i == 0) { block = docblock(arr[i], i < arr.length - 1); kq += block + " " + hang[i]; }
         }
         kq = kq.trim().replace(/\s+/g, ' ');
         return `(${kq.charAt(0).toUpperCase() + kq.slice(1)} đồng)`;
@@ -764,6 +790,17 @@
         window.showToast("✅ Đã tải báo cáo Excel!");
     };
 
+    function getBeltBadge(belt) {
+        if(!belt) belt = 'Trắng';
+        let bg = '#fff'; let col = '#333'; let border = '1px solid #ccc';
+        if(belt === 'Vàng') { bg = 'var(--belt-yellow)'; border = 'none'; }
+        else if(belt === 'Xanh lá') { bg = 'var(--belt-green)'; col = '#fff'; border = 'none'; }
+        else if(belt === 'Xanh dương') { bg = 'var(--belt-blue)'; col = '#fff'; border = 'none'; }
+        else if(belt === 'Đỏ') { bg = 'var(--belt-red)'; col = '#fff'; border = 'none'; }
+        else if(belt === 'Đen') { bg = 'var(--belt-black)'; col = '#fff'; border = 'none'; }
+        return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 60px; text-align:center;">${belt}</span>`;
+    }
+
     function renderApp() {
         const selMonth = document.getElementById('filterMonth').value; 
         const selBranch = document.getElementById('filterBranch').value; 
@@ -776,7 +813,7 @@
         const uiActive = document.getElementById('activeList');
         const uiQuit = document.getElementById('quitList');
         const uiInvList = document.getElementById('inventoryList');
-        const uiReport = document.getElementById('reportList'); // Mới: Thêm bảng báo cáo
+        const uiReport = document.getElementById('reportList');
 
         uiTx.innerHTML = ''; uiUniformTx.innerHTML = ''; uiExp.innerHTML = ''; uiDebt.innerHTML = ''; uiActive.innerHTML = ''; uiQuit.innerHTML = ''; uiInvList.innerHTML = ''; uiReport.innerHTML = '';
         
@@ -879,7 +916,9 @@
             let safeBranch = p.branch || "CS1"; 
 
             if(selBranch !== 'all' && safeBranch !== selBranch) return;
-            if(search && !name.toLowerCase().includes(search)) return;
+            if(search && !name.toLowerCase().includes(search) && !(p.notes && p.notes.toLowerCase().includes(search))) return;
+
+            let beltHTML = getBeltBadge(p.belt);
 
             if(p.status === 'active') {
                 let lastPaidStr = "Chưa có";
@@ -889,7 +928,11 @@
                 }
 
                 uiActive.innerHTML += `<tr>
-                    <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td>
+                    <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">
+                        ${name}
+                        ${p.notes ? '<span title="'+p.notes+'" style="color:var(--warning); cursor:help;"> 📝</span>' : ''}
+                    </td>
+                    <td>${beltHTML}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
                     <td>${formatDate(p.dob)}</td>
                     <td><span class="badge badge-active">${lastPaidStr}</span></td>
@@ -910,7 +953,7 @@
                     const btnBaoNghiHTML = window.userRole === 'admin' ? `<button class="btn" onclick="skipMonth('${name}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>` : '';
 
                     uiDebt.innerHTML += `<tr>
-                        <td><span class="badge badge-quit">${formatMonth(selMonth)}</span></td>
+                        <td><span class="badge badge-quit" style="font-size:0.85rem">${formatMonth(selMonth)}</span></td>
                         <td>${lastPaidStr}</td>
                         <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
                         <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold">${name}</td>
@@ -924,15 +967,13 @@
                 }
             } else {
                 const btnRestore = window.userRole === 'admin' ? `<button class="btn btn-primary" style="padding: 5px 10px;" onclick="openProfile('${name}')">🔄 Khôi phục</button>` : '';
-                uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td>${btnRestore}</td></tr>`;
+                uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${beltHTML}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td>${btnRestore}</td></tr>`;
             }
         });
 
-        // ===== XỬ LÝ BÁO CÁO THÁNG =====
+        // Báo cáo tháng
         let monthsSet = new Set();
-        allTransactions.forEach(t => {
-            if(t.date) monthsSet.add(t.date.substring(0, 7));
-        });
+        allTransactions.forEach(t => { if(t.date) monthsSet.add(t.date.substring(0, 7)); });
         Object.values(allProfiles).forEach(p => {
             if(p.createdAt) monthsSet.add(p.createdAt.substring(0, 7));
             if(p.quitDate) monthsSet.add(p.quitDate.substring(0, 7));
@@ -947,16 +988,11 @@
             Object.values(allProfiles).forEach(p => {
                 const joinM = p.createdAt ? p.createdAt.substring(0, 7) : "2000-01";
                 const quitM = p.quitDate ? p.quitDate.substring(0, 7) : null;
-
                 if (joinM === m) m_new++;
                 if (quitM === m) m_quit++;
-
-                // Tính số đang tập thực tế của tháng đó: Đã nhập học (<=m) và (chưa nghỉ hoặc nghỉ từ tháng m trở đi)
                 if (joinM <= m && (!quitM || quitM >= m)) {
                     m_active_theoretical++;
-                    if (p.skippedMonths && p.skippedMonths.includes(m)) {
-                        m_skipped++;
-                    }
+                    if (p.skippedMonths && p.skippedMonths.includes(m)) m_skipped++;
                 }
             });
 
@@ -965,11 +1001,8 @@
             allTransactions.forEach(t => {
                 const txM = t.date ? t.date.substring(0, 7) : null;
                 if (txM === m) {
-                    if (['Học phí', 'Lệ phí thi', 'Thu khác', 'Thu Võ phục', 'Võ phục'].includes(t.type)) {
-                        m_income += t.amount;
-                    } else if (['Chi phí', 'Chi Võ phục'].includes(t.type)) {
-                        m_expense += t.amount;
-                    }
+                    if (['Học phí', 'Lệ phí thi', 'Thu khác', 'Thu Võ phục', 'Võ phục'].includes(t.type)) m_income += t.amount;
+                    else if (['Chi phí', 'Chi Võ phục'].includes(t.type)) m_expense += t.amount;
                 }
             });
 
@@ -986,7 +1019,6 @@
                 <td style="color:${profitColor}; font-weight:bold;">${m_profit.toLocaleString()} ₫</td>
             </tr>`;
         });
-        // ===============================
 
         let totalIncome = inc_tuition + inc_exam + inc_other + inc_uniform;
         let expenseTotal = exp + exp_uniform;
@@ -1049,10 +1081,7 @@
             navigator.clipboard.writeText(msg).then(() => {
                 window.showToast("✅ Đã copy tin nhắn! Đang chuyển sang Zalo...");
                 setTimeout(openZalo, 300); 
-            }).catch(err => {
-                window.showToast("Đang mở Zalo...");
-                openZalo();
-            });
+            }).catch(err => { openZalo(); });
         } else {
             let textArea = document.createElement("textarea");
             textArea.value = msg;
@@ -1060,51 +1089,41 @@
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            try {
-                document.execCommand('copy');
-                window.showToast("✅ Đã copy! Đang mở Zalo...");
-            } catch (err) {
-                console.error('Lỗi copy:', err);
-                window.showToast("Đang mở Zalo...");
-            }
+            try { document.execCommand('copy'); window.showToast("✅ Đã copy! Đang mở Zalo..."); } catch (err) { }
             document.body.removeChild(textArea);
             setTimeout(openZalo, 300);
         }
     };
 
     window.openProfile = (name) => {
-        const p = allProfiles[name.trim()] || {};
-        document.getElementById('m_name').innerText = name.trim();
+        const cleanName = name.trim();
+        const p = allProfiles[cleanName];
+        if(!p) return alert("Hồ sơ võ sinh này không tồn tại hoặc đã bị xóa vĩnh viễn!");
+
+        document.getElementById('m_name').innerText = cleanName;
         document.getElementById('m_status').value = p.status || 'active';
         document.getElementById('m_branch').value = p.branch || 'CS1';
+        document.getElementById('m_belt').value = p.belt || 'Trắng'; // Cấp đai
         document.getElementById('m_phone').value = p.phone || '';
         document.getElementById('m_fee').value = p.tuitionFee || '';
         document.getElementById('m_dob').value = p.dob || '';
+        document.getElementById('m_notes').value = p.notes || ''; // Ghi chú
         
         const skipped = p.skippedMonths || [];
         let skippedHtml = skipped.sort().map(m => {
-            const skipRemoveIcon = window.userRole === 'admin' ? `<span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${name}', '${m}')" title="Hủy báo nghỉ">✖</span>` : '';
+            const skipRemoveIcon = window.userRole === 'admin' ? `<span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${cleanName}', '${m}')" title="Hủy báo nghỉ">✖</span>` : '';
             return `<span class="badge" style="background:#ffc107; color:#856404; margin-right:5px; margin-bottom:5px; display:inline-block;">${formatMonth(m)} ${skipRemoveIcon}</span>`;
         }).join('');
         document.getElementById('m_skipped').innerHTML = skippedHtml || '<span style="font-size:0.85rem; color:#666;">Chưa có dữ liệu</span>';
 
-        // Xử lý ẩn/hiện nút và input dựa trên phân quyền
         if(window.userRole === 'viewer') {
             document.getElementById('btnUpdateProfile').style.display = 'none';
             document.getElementById('btnDeleteProfile').style.display = 'none';
-            document.getElementById('m_status').disabled = true;
-            document.getElementById('m_branch').disabled = true;
-            document.getElementById('m_phone').disabled = true;
-            document.getElementById('m_dob').disabled = true;
-            document.getElementById('m_fee').disabled = true;
+            document.querySelectorAll('#profileModal input, #profileModal select, #profileModal textarea').forEach(el => el.disabled = true);
         } else {
             document.getElementById('btnUpdateProfile').style.display = 'block';
             document.getElementById('btnDeleteProfile').style.display = 'block';
-            document.getElementById('m_status').disabled = false;
-            document.getElementById('m_branch').disabled = false;
-            document.getElementById('m_phone').disabled = false;
-            document.getElementById('m_dob').disabled = false;
-            document.getElementById('m_fee').disabled = false;
+            document.querySelectorAll('#profileModal input, #profileModal select, #profileModal textarea').forEach(el => el.disabled = false);
         }
 
         document.getElementById('profileModal').style.display = 'flex';
@@ -1119,9 +1138,11 @@
         let updateData = {
             status: newStatus,
             branch: document.getElementById('m_branch').value,
+            belt: document.getElementById('m_belt').value,
             phone: document.getElementById('m_phone').value,
             tuitionFee: document.getElementById('m_fee').value,
-            dob: document.getElementById('m_dob').value
+            dob: document.getElementById('m_dob').value,
+            notes: document.getElementById('m_notes').value
         };
 
         if (newStatus === 'quit' && currentProfile.status !== 'quit') {
@@ -1148,9 +1169,7 @@
     window.skipMonth = async (name, month) => {
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể báo nghỉ!");
         if(confirm(`Xác nhận võ sinh ${name} ĐƯỢC MIỄN/ NGHỈ TẬP tháng ${formatMonth(month)}?`)) {
-            await setDoc(doc(db, "tst_profiles", name.trim()), {
-                skippedMonths: arrayUnion(month)
-            }, { merge: true });
+            await setDoc(doc(db, "tst_profiles", name.trim()), { skippedMonths: arrayUnion(month) }, { merge: true });
             window.showToast(`✅ Đã báo nghỉ tháng ${formatMonth(month)}!`);
         }
     };
@@ -1158,9 +1177,7 @@
     window.removeSkip = async (name, month) => {
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể hủy báo nghỉ!");
         if(confirm(`Hủy báo nghỉ tháng ${formatMonth(month)} cho ${name}?`)) {
-            await setDoc(doc(db, "tst_profiles", name.trim()), {
-                skippedMonths: arrayRemove(month)
-            }, { merge: true });
+            await setDoc(doc(db, "tst_profiles", name.trim()), { skippedMonths: arrayRemove(month) }, { merge: true });
             window.closeModal();
             window.showToast(`✅ Đã khôi phục nợ phí!`);
         }
@@ -1170,7 +1187,9 @@
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thêm võ sinh!");
         document.getElementById('add_name').value = '';
         document.getElementById('add_dob').value = '';
+        document.getElementById('add_belt').value = 'Trắng'; // Mặc định Đai Trắng
         document.getElementById('add_phone').value = '';
+        document.getElementById('add_notes').value = '';
         document.getElementById('add_fee_default').value = '';
         document.getElementById('add_fee_display').value = '';
         document.getElementById('add_fee_actual').value = '';
@@ -1185,7 +1204,9 @@
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thêm võ sinh!");
         const name = document.getElementById('add_name').value.trim();
         const branch = document.getElementById('add_branch').value;
+        const belt = document.getElementById('add_belt').value;
         const feeDefault = document.getElementById('add_fee_default').value;
+        const notes = document.getElementById('add_notes').value.trim();
         const fee = Number(document.getElementById('add_fee_actual').value);
         
         const uniformSize = document.getElementById('add_uniform_size').value;
@@ -1196,13 +1217,11 @@
 
         if(!name) return alert("Cần nhập tên võ sinh!");
         if(allProfiles[name]) return alert("Võ sinh này đã có hồ sơ!");
-        if(uniformFee > 0 && !uniformSize) {
-            return alert("Vui lòng chọn Size Võ phục để hệ thống tự động trừ tồn kho.");
-        }
+        if(uniformFee > 0 && !uniformSize) return alert("Vui lòng chọn Size Võ phục để hệ thống tự động trừ tồn kho.");
 
         let profileData = { 
-            status: 'active', branch: branch, dob: document.getElementById('add_dob').value, 
-            phone: document.getElementById('add_phone').value, tuitionFee: feeDefault, createdAt: joinDate 
+            status: 'active', branch: branch, belt: belt, dob: document.getElementById('add_dob').value, 
+            phone: document.getElementById('add_phone').value, tuitionFee: feeDefault, notes: notes, createdAt: joinDate 
         };
         await setDoc(doc(db, "tst_profiles", name), profileData);
 
@@ -1211,16 +1230,12 @@
         }
         
         if(uniformSize || uniformFee > 0) {
-            if (uniformFee > 0) {
-                await addDoc(colRef, { branch, type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 });
-            }
-            if (uniformSize) {
-                await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 });
-            }
+            if (uniformFee > 0) await addDoc(colRef, { branch, type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 });
+            if (uniformSize) await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 });
         }
 
         window.closeAddModal();
-        window.showToast("✅ Đã thêm võ sinh, lưu doanh thu & trừ kho!");
+        window.showToast("✅ Đã thêm võ sinh, lưu hồ sơ!");
     };
 
     document.getElementById('transactionForm').onsubmit = async (e) => {
@@ -1277,28 +1292,22 @@
             const cleanName = name.trim();
             document.getElementById('r_name').innerText = cleanName.toUpperCase();
             
-            // Cập nhật Tiêu đề phiếu
             document.getElementById('receiptTitle').innerText = receiptTitle;
 
             const dParts = date.split('-');
-            if(dParts.length === 3) {
-                document.getElementById('r_date_top').innerText = `Ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}`;
-            } else {
-                document.getElementById('r_date_top').innerText = formatDate(date);
-            }
+            if(dParts.length === 3) document.getElementById('r_date_top').innerText = `Ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}`;
+            else document.getElementById('r_date_top').innerText = formatDate(date);
 
             const p = allProfiles[cleanName] || {};
+            
+            document.getElementById('r_belt').innerText = p.belt || 'Chưa cập nhật'; // In cấp đai lên bill
+
             const dobWrap = document.getElementById('r_dob_wrap');
-            if (p.dob) {
-                document.getElementById('r_dob').innerText = formatDate(p.dob);
-                dobWrap.style.display = 'block';
-            } else {
-                dobWrap.style.display = 'none'; 
-            }
+            if (p.dob) { document.getElementById('r_dob').innerText = formatDate(p.dob); dobWrap.style.display = 'block'; } 
+            else { dobWrap.style.display = 'none'; }
 
             document.getElementById('r_amount').innerText = amount.toLocaleString('vi-VN') + " ₫";
             document.getElementById('r_amount_words').innerText = docTienVND(amount);
-            
             document.getElementById('r_type').innerText = type;
             
             let branchText = branch === 'CS1' ? 'Cơ sở 1 (Huỳnh Tấn Phát)' : (branch === 'CS2' ? 'Cơ sở 2 (Sân vận động)' : branch);
@@ -1311,11 +1320,8 @@
                 monthWrap.style.display = 'block';
                 document.getElementById('r_month').innerText = formatMonth(txMonth);
                 descMonthForQR = `Hoc Phi Thang ${formatMonth(txMonth)}`;
-            } else {
-                monthWrap.style.display = 'none';
-            }
+            } else { monthWrap.style.display = 'none'; }
 
-            // ===== XỬ LÝ ẢNH MÃ QR =====
             const qrWrap = document.getElementById('r_qr_wrap');
             const qrImgEl = document.getElementById('qrCodeImg');
             
@@ -1323,24 +1329,13 @@
                 const qrUrl = generateVietQR(amount, cleanName, descMonthForQR);
                 qrImgEl.src = qrUrl;
                 qrWrap.style.display = 'block';
-                
-                await new Promise((resolve) => {
-                    qrImgEl.onload = resolve;
-                    qrImgEl.onerror = () => { console.warn("Lỗi tải QR"); resolve(); };
-                });
-            } else {
-                qrWrap.style.display = 'none';
-            }
+                await new Promise((resolve) => { qrImgEl.onload = resolve; qrImgEl.onerror = () => { resolve(); }; });
+            } else { qrWrap.style.display = 'none'; }
 
             node.style.position = 'absolute';
             node.style.visibility = 'visible';
             
-            const canvas = await html2canvas(node, { 
-                scale: 3, 
-                backgroundColor: '#ffffff',
-                useCORS: true,     
-                allowTaint: true   
-            });
+            const canvas = await html2canvas(node, { scale: 3, backgroundColor: '#ffffff', useCORS: true, allowTaint: true });
             const imgData = canvas.toDataURL('image/png');
             
             document.getElementById('receiptPreviewImg').src = imgData;
@@ -1348,24 +1343,17 @@
             const btnDl = document.getElementById('btnDownloadReceipt');
             btnDl.onclick = () => {
                 const link = document.createElement('a');
-                let fileName = 'Khach_Hang';
-                if (typeof cleanName !== 'undefined' && cleanName) fileName = cleanName;
+                let fileName = cleanName ? cleanName : 'Khach_Hang';
                 link.download = `Hoa_Don_${String(fileName).replace(/\s/g, '_')}.png`;
-                link.href = imgData;
-                link.click();
+                link.href = imgData; link.click();
             };
 
             document.getElementById('receiptModal').style.display = 'flex';
         } catch (error) {
-            console.error(error);
-            alert("Có lỗi tạo hóa đơn: " + error.message);
+            console.error(error); alert("Có lỗi tạo hóa đơn: " + error.message);
         } finally {
             const node = document.getElementById('receiptTemplate');
-            node.style.position = 'absolute';
-            node.style.left = '-9999px';
-            node.style.top = 'auto';
-            node.style.visibility = 'hidden';
-            node.style.zIndex = 'auto';
+            node.style.position = 'absolute'; node.style.left = '-9999px'; node.style.visibility = 'hidden';
         }
     };
 
