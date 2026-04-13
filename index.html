@@ -55,6 +55,7 @@
         .btn-danger { background: #dc3545; color: white; }
         .btn-purple { background: var(--purple); color: white; }
         .btn-info { background: var(--info); color: white; }
+        .btn-orange { background: #fd7e14; color: white; }
         .btn-zalo { background: #0068ff; color: white; padding: 6px 10px; font-size: 0.8rem; text-decoration: none; border-radius: 6px; }
         
         /* Tables */
@@ -145,6 +146,7 @@
 
     <div class="tabs-nav">
         <button class="tab-btn active" id="btn_tx" onclick="switchTab('tx')">💼 Học Phí</button>
+        <button class="tab-btn" id="btn_exam" onclick="switchTab('exam')">🏆 Thi Lên Đai</button>
         <button class="tab-btn" id="btn_inventory" onclick="switchTab('inventory')">📦 Kho Võ Phục</button>
         <button class="tab-btn" id="btn_expense" onclick="switchTab('expense')">💸 Mục Đã Chi</button>
         <button class="tab-btn" id="btn_debt" onclick="switchTab('debt')">⚠️ Báo Nợ</button>
@@ -191,6 +193,53 @@
                     <tr><th>Ngày lập</th><th>Cơ sở</th><th>Kỳ thu</th><th>Võ sinh / Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr>
                 </thead>
                 <tbody id="txList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tab_exam" class="tab-content">
+        <div style="background: #fff4e5; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ffe5d0;">
+            <h4 style="margin:0 0 10px 0; color: #d46b08;">CẬP NHẬT THĂNG ĐAI HÀNG LOẠT</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold;">1. Lọc cấp đai cũ:</label>
+                    <select id="exam_filter_belt" onchange="renderExamList()">
+                        <option value="Trắng">Đai Trắng</option>
+                        <option value="Vàng">Đai Vàng</option>
+                        <option value="Xanh lá">Đai Xanh lá</option>
+                        <option value="Xanh dương">Đai Xanh dương</option>
+                        <option value="Đỏ">Đai Đỏ</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold;">2. Lên cấp đai mới:</label>
+                    <select id="exam_new_belt">
+                        <option value="Vàng">Đai Vàng</option>
+                        <option value="Xanh lá">Đai Xanh lá</option>
+                        <option value="Xanh dương">Đai Xanh dương</option>
+                        <option value="Đỏ">Đai Đỏ</option>
+                        <option value="Đen">Đai Đen</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold;">3. Lệ phí thi (đ/bạn):</label>
+                    <input type="number" id="exam_fee_all" value="200000" placeholder="Số tiền lệ phí thi">
+                </div>
+            </div>
+            <button class="btn btn-orange" onclick="processBatchUpgrade()" style="width: 100%; margin-top: 15px; font-size: 1rem;">⚡ XÁC NHẬN THĂNG ĐAI CHO CÁC VÕ SINH ĐÃ CHỌN</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="tbl_exam_list">
+                <thead>
+                    <tr>
+                        <th width="40"><input type="checkbox" id="checkAllExam" onclick="toggleAllExam(this)"></th>
+                        <th>Võ sinh</th>
+                        <th>Cơ sở</th>
+                        <th>Cấp đai hiện tại</th>
+                    </tr>
+                </thead>
+                <tbody id="examList"></tbody>
             </table>
         </div>
     </div>
@@ -489,7 +538,6 @@
     // Phân quyền biến toàn cục
     window.userRole = 'admin';
 
-    // Hàm xử lý đăng nhập có kiểm tra phân quyền
     function checkLogin() {
         const pass = document.getElementById('passInput').value;
         if(pass === "Tinhts64") {
@@ -502,6 +550,9 @@
             document.getElementById('inventoryForm').style.display = 'none';
             document.getElementById('expenseForm').style.display = 'none';
             document.getElementById('btnAddStudent').style.display = 'none';
+            // Ẩn nút thăng đai với viewer
+            const btnBatch = document.querySelector('#tab_exam .btn-orange');
+            if(btnBatch) btnBatch.style.display = 'none';
         } else {
             alert("Sai mật khẩu!");
         }
@@ -550,6 +601,11 @@
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('tab_' + tabId).classList.add('active');
         document.getElementById('btn_' + tabId).classList.add('active');
+        
+        // Gọi hàm render thi lên đai nếu tab được chọn
+        if(tabId === 'exam' && typeof window.renderExamList === 'function') {
+            window.renderExamList();
+        }
     };
 
     window.showToast = (msg) => {
@@ -801,6 +857,72 @@
         return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 60px; text-align:center;">${belt}</span>`;
     }
 
+    // --- LOGIC: THI LÊN ĐAI HÀNG LOẠT ---
+    window.renderExamList = () => {
+        const filterBelt = document.getElementById('exam_filter_belt').value;
+        const uiExam = document.getElementById('examList');
+        if(!uiExam) return;
+        uiExam.innerHTML = '';
+        
+        Object.keys(allProfiles).forEach(name => {
+            const p = allProfiles[name];
+            if(p.status === 'active' && (p.belt || 'Trắng') === filterBelt) {
+                uiExam.innerHTML += `<tr>
+                    <td><input type="checkbox" class="exam-check" value="${name}"></td>
+                    <td style="font-weight:bold; color:var(--primary);">${name}</td>
+                    <td><span class="badge" style="background:#e9ecef; color:#333">${p.branch || 'CS1'}</span></td>
+                    <td>${getBeltBadge(p.belt)}</td>
+                </tr>`;
+            }
+        });
+    };
+
+    window.toggleAllExam = (source) => {
+        document.querySelectorAll('.exam-check').forEach(cb => cb.checked = source.checked);
+    };
+
+    window.processBatchUpgrade = async () => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thực hiện thăng đai!");
+        
+        const selected = Array.from(document.querySelectorAll('.exam-check:checked')).map(cb => cb.value);
+        if(selected.length === 0) return alert("Vui lòng chọn ít nhất 1 võ sinh trong danh sách!");
+        
+        const newBelt = document.getElementById('exam_new_belt').value;
+        const fee = Number(document.getElementById('exam_fee_all').value) || 0;
+        const today = new Date().toISOString().split('T')[0];
+        const currentMonth = today.substring(0, 7);
+
+        let confirmMsg = `Xác nhận thăng đai lên [${newBelt}] cho ${selected.length} võ sinh?`;
+        if (fee > 0) {
+            confirmMsg += `\nHệ thống sẽ tự động ghi vào Sổ Thu khoản Lệ phí thi tổng cộng: ${(selected.length * fee).toLocaleString()} ₫.`;
+        }
+
+        if(!confirm(confirmMsg)) return;
+
+        for (let name of selected) {
+            // 1. Cập nhật cấp đai mới vào hồ sơ
+            await setDoc(doc(db, "tst_profiles", name), { belt: newBelt }, { merge: true });
+            
+            // 2. Tự động ghi Sổ thu lệ phí thi
+            if(fee > 0) {
+                await addDoc(colRef, {
+                    branch: allProfiles[name].branch || 'CS1',
+                    type: 'Lệ phí thi',
+                    description: `${name} (Thi lên ${newBelt})`,
+                    amount: fee,
+                    date: today,
+                    txMonth: currentMonth,
+                    timestamp: Date.now()
+                });
+            }
+        }
+
+        window.showToast(`✅ Đã thăng đai thành công cho ${selected.length} võ sinh!`);
+        document.getElementById('checkAllExam').checked = false;
+        renderExamList(); // Cập nhật lại danh sách hiển thị
+    };
+    // ------------------------------------
+
     function renderApp() {
         const selMonth = document.getElementById('filterMonth').value; 
         const selBranch = document.getElementById('filterBranch').value; 
@@ -1042,6 +1164,11 @@
         document.getElementById('activeStudentCount').innerText = Object.values(allProfiles).filter(p => p.status === 'active').length;
         document.getElementById('debtCount').innerText = uiDebt.children.length + " Bạn";
         document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
+
+        // Gọi làm mới giao diện tab thi lên đai nếu nó đang hiển thị
+        if(document.getElementById('tab_exam') && document.getElementById('tab_exam').classList.contains('active')) {
+            if(typeof window.renderExamList === 'function') window.renderExamList();
+        }
     }
 
     document.getElementById('inventoryForm').onsubmit = async (e) => {
