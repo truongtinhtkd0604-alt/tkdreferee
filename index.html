@@ -37,6 +37,7 @@
         .inventory-form { border-color: var(--purple); background: #fdfbff; }
         input, select { border: 1px solid #ddd; padding: 10px 12px; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; font-size: 15px; background: white;}
         input:focus, select:focus { border-color: var(--primary); }
+        input:disabled, select:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; }
 
         /* Tabs */
         .tabs-nav { display: flex; gap: 8px; border-bottom: 2px solid #eee; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
@@ -104,6 +105,7 @@
         <h2 style="color:var(--primary); font-size: 1.5rem;">QUẢN LÝ CLB TAEKWONDO TST</h2>
         <input type="password" id="passInput" placeholder="Mật khẩu bảo mật" style="margin: 1rem 0; text-align: center;">
         <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
+        <p style="font-size: 0.8rem; color: #666; margin-top: 15px;">Admin: <strong>Tinhts64</strong> | Khách xem: <strong>Tuyet1992</strong></p>
     </div>
 </div>
 
@@ -154,7 +156,7 @@
     <div id="tab_tx" class="tab-content active">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
             <h4 style="margin:0; color:var(--primary)">GHI NHẬN HỌC PHÍ & LỆ PHÍ THI</h4>
-            <button class="btn btn-success" onclick="openAddModal()">➕ THÊM VÕ SINH MỚI</button>
+            <button class="btn btn-success" id="btnAddStudent" onclick="openAddModal()">➕ THÊM VÕ SINH MỚI</button>
         </div>
 
         <div class="revenue-summary">
@@ -309,8 +311,8 @@
                 <div id="m_skipped"></div>
             </div>
         </div>
-        <button class="btn btn-primary" onclick="updateProfile()" style="width:100%; margin-top:15px;">💾 CẬP NHẬT DỮ LIỆU</button>
-        <button class="btn btn-danger" onclick="deleteProfile()" style="width:100%; margin-top:10px;">🗑 XÓA HỒ SƠ VĨNH VIỄN</button>
+        <button class="btn btn-primary" id="btnUpdateProfile" onclick="updateProfile()" style="width:100%; margin-top:15px;">💾 CẬP NHẬT DỮ LIỆU</button>
+        <button class="btn btn-danger" id="btnDeleteProfile" onclick="deleteProfile()" style="width:100%; margin-top:10px;">🗑 XÓA HỒ SƠ VĨNH VIỄN</button>
         <button class="btn" onclick="closeModal()" style="width:100%; margin-top:10px; background:#e0e0e0; color:#333;">ĐÓNG</button>
     </div>
 </div>
@@ -429,19 +431,35 @@
 <div id="toastMessage" class="toast">✅ Thành công!</div>
 
 <script>
-    // Hàm xử lý đăng nhập chạy độc lập, không phụ thuộc Firebase
+    // Phân quyền biến toàn cục
+    window.userRole = 'admin';
+
+    // Hàm xử lý đăng nhập có kiểm tra phân quyền
     function checkLogin() {
         const pass = document.getElementById('passInput').value;
         if(pass === "Tinhts64") {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('passInput').value = ''; 
+            window.userRole = 'admin';
+            applyLoginSuccess();
+        } else if (pass === "XemTST64") {
+            window.userRole = 'viewer';
+            applyLoginSuccess();
+            // Ẩn các Form nhập liệu và Nút Thêm mới đối với Guest
+            document.getElementById('transactionForm').style.display = 'none';
+            document.getElementById('inventoryForm').style.display = 'none';
+            document.getElementById('expenseForm').style.display = 'none';
+            document.getElementById('btnAddStudent').style.display = 'none';
         } else {
             alert("Sai mật khẩu!");
         }
     }
 
-    // Gắn sự kiện phím Enter ngay khi tải trang
+    function applyLoginSuccess() {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('passInput').value = ''; 
+        if(typeof window.forceRender === 'function') window.forceRender();
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
         const passInp = document.getElementById('passInput');
         if(passInp) {
@@ -510,6 +528,9 @@
     const profRef = collection(db, "tst_profiles");
     const invRef = collection(db, "tst_inventory");
 
+    // Cho phép truy cập hàm render từ bên ngoài module
+    window.forceRender = renderApp;
+
     // ===== CẤU HÌNH NGÂN HÀNG CHO VIETQR =====
     const BANK_ID = "AGRIBANK"; 
     const ACCOUNT_NO = "4300205305756"; 
@@ -527,7 +548,6 @@
         const accName = removeVietnameseTonesForQR(ACCOUNT_NAME).replace(/\s+/g, '%20');
         return `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.jpg?amount=${amount}&addInfo=${DESCRIPTION}&accountName=${accName}`;
     }
-    // ===========================================
 
     const docTienVND = (so) => {
         if (so === 0) return "Không đồng";
@@ -680,6 +700,7 @@
     });
 
     window.quickPay = (name, month, branch, defaultFee) => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thu tiền!");
         window.switchTab('tx');
         document.getElementById('type').value = 'Học phí';
         window.toggleMonthSelect();
@@ -701,7 +722,7 @@
         let amount = feeStr ? Number(feeStr) : 0;
         if (!amount || amount <= 0) {
             let inputAmount = prompt(`Nhập số tiền học phí dự kiến thu của võ sinh ${name}:`, "");
-            if (!inputAmount) return; // Hủy
+            if (!inputAmount) return; 
             amount = Number(inputAmount.replace(/\D/g, ''));
         }
         
@@ -786,10 +807,12 @@
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
             let safeBranch = t.branch || "CS1";
+            
+            const btnDeleteHTML = window.userRole === 'admin' ? `<button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>` : '';
 
             if(t.type === 'Chi phí') {
                 exp += t.amount;
-                uiExp.innerHTML += `<tr><td>${formatDate(t.date)}</td><td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td><td style="font-weight:bold;">${t.description}</td><td style="color:var(--secondary); font-weight:bold;">-${t.amount.toLocaleString()}</td><td><button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button></td></tr>`;
+                uiExp.innerHTML += `<tr><td>${formatDate(t.date)}</td><td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td><td style="font-weight:bold;">${t.description}</td><td style="color:var(--secondary); font-weight:bold;">-${t.amount.toLocaleString()}</td><td>${btnDeleteHTML}</td></tr>`;
             } 
             else if (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục') {
                 let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
@@ -803,7 +826,7 @@
                     <td style="color:${isInc ? 'var(--success)' : 'var(--secondary)'}; font-weight:bold;">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td>
                     <td style="display:flex; gap:5px;">
                         ${isInc ? `<button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, 'Võ phục', '${t.date}', '', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>` : ''}
-                        <button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>
+                        ${btnDeleteHTML}
                     </td>
                 </tr>`;
             } 
@@ -823,7 +846,7 @@
                     <td style="color:var(--success); font-weight:bold;">+${t.amount.toLocaleString()}</td>
                     <td style="display:flex; gap:5px;">
                         <button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth || ''}', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>
-                        <button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>
+                        ${btnDeleteHTML}
                     </td>
                 </tr>`;
             }
@@ -850,7 +873,7 @@
                     <td><span class="badge badge-active">${lastPaidStr}</span></td>
                     <td>${p.phone || ''}</td>
                     <td>${formatDate(p.createdAt)}</td>
-                    <td><button class="btn btn-primary" onclick="openProfile('${name}')" style="padding: 5px 10px;">✏️ Sửa</button></td>
+                    <td><button class="btn btn-primary" onclick="openProfile('${name}')" style="padding: 5px 10px;">${window.userRole === 'admin' ? '✏️ Sửa' : '👁 Xem'}</button></td>
                 </tr>`;
                 
                 const paidThisMonth = studentPayments[name] && studentPayments[name].has(selMonth);
@@ -861,6 +884,9 @@
                 if(!paidThisMonth && !skippedThisMonth && !joinedAfterThisMonth) {
                     if(p.tuitionFee) totalDebtEst += Number(p.tuitionFee);
 
+                    const btnThuHTML = window.userRole === 'admin' ? `<button class="btn btn-success" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>` : '';
+                    const btnBaoNghiHTML = window.userRole === 'admin' ? `<button class="btn" onclick="skipMonth('${name}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>` : '';
+
                     uiDebt.innerHTML += `<tr>
                         <td><span class="badge badge-quit">${formatMonth(selMonth)}</span></td>
                         <td>${lastPaidStr}</td>
@@ -868,14 +894,15 @@
                         <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold">${name}</td>
                         <td style="display:flex; gap:5px; flex-wrap:wrap;">
                             <button class="btn btn-info" onclick="generatePaymentRequest('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">🧾 Mã QR</button>
-                            <button class="btn btn-success" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>
+                            ${btnThuHTML}
                             <button class="btn btn-zalo" onclick="copyAndOpenZalo('${name}', '${selMonth}', '${p.phone || ''}')">💬 Zalo</button>
-                            <button class="btn" onclick="skipMonth('${name}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>
+                            ${btnBaoNghiHTML}
                         </td>
                     </tr>`;
                 }
             } else {
-                uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td><button class="btn btn-primary" style="padding: 5px 10px;" onclick="openProfile('${name}')">🔄 Khôi phục</button></td></tr>`;
+                const btnRestore = window.userRole === 'admin' ? `<button class="btn btn-primary" style="padding: 5px 10px;" onclick="openProfile('${name}')">🔄 Khôi phục</button>` : '';
+                uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td>${btnRestore}</td></tr>`;
             }
         });
 
@@ -905,6 +932,7 @@
 
     document.getElementById('inventoryForm').onsubmit = async (e) => {
         e.preventDefault();
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể nhập xuất kho!");
         const size = document.getElementById('inv_size').value;
         const type = document.getElementById('inv_type').value;
         const qty = Number(document.getElementById('inv_qty').value);
@@ -972,13 +1000,34 @@
         document.getElementById('m_dob').value = p.dob || '';
         
         const skipped = p.skippedMonths || [];
-        let skippedHtml = skipped.sort().map(m => `<span class="badge" style="background:#ffc107; color:#856404; margin-right:5px; margin-bottom:5px; display:inline-block;">${formatMonth(m)} <span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${name}', '${m}')" title="Hủy báo nghỉ">✖</span></span>`).join('');
+        const skipRemoveIcon = window.userRole === 'admin' ? `<span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${name}', '${m}')" title="Hủy báo nghỉ">✖</span>` : '';
+        let skippedHtml = skipped.sort().map(m => `<span class="badge" style="background:#ffc107; color:#856404; margin-right:5px; margin-bottom:5px; display:inline-block;">${formatMonth(m)} ${skipRemoveIcon}</span>`).join('');
         document.getElementById('m_skipped').innerHTML = skippedHtml || '<span style="font-size:0.85rem; color:#666;">Chưa có dữ liệu</span>';
+
+        // Xử lý ẩn/hiện nút và input dựa trên phân quyền
+        if(window.userRole === 'viewer') {
+            document.getElementById('btnUpdateProfile').style.display = 'none';
+            document.getElementById('btnDeleteProfile').style.display = 'none';
+            document.getElementById('m_status').disabled = true;
+            document.getElementById('m_branch').disabled = true;
+            document.getElementById('m_phone').disabled = true;
+            document.getElementById('m_dob').disabled = true;
+            document.getElementById('m_fee').disabled = true;
+        } else {
+            document.getElementById('btnUpdateProfile').style.display = 'block';
+            document.getElementById('btnDeleteProfile').style.display = 'block';
+            document.getElementById('m_status').disabled = false;
+            document.getElementById('m_branch').disabled = false;
+            document.getElementById('m_phone').disabled = false;
+            document.getElementById('m_dob').disabled = false;
+            document.getElementById('m_fee').disabled = false;
+        }
 
         document.getElementById('profileModal').style.display = 'flex';
     };
 
     window.updateProfile = async () => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể cập nhật!");
         const name = document.getElementById('m_name').innerText.trim();
         const newStatus = document.getElementById('m_status').value;
         const currentProfile = allProfiles[name] || {};
@@ -1003,6 +1052,7 @@
     };
 
     window.deleteProfile = async () => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể xóa hồ sơ!");
         const name = document.getElementById('m_name').innerText.trim();
         if(confirm(`⚠️ CẢNH BÁO: Xóa vĩnh viễn hồ sơ võ sinh "${name}"? Các giao dịch thu chi của bạn này vẫn được giữ lại trong Sổ Thu.`)) {
             await deleteDoc(doc(db, "tst_profiles", name));
@@ -1012,6 +1062,7 @@
     };
 
     window.skipMonth = async (name, month) => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể báo nghỉ!");
         if(confirm(`Xác nhận võ sinh ${name} ĐƯỢC MIỄN/ NGHỈ TẬP tháng ${formatMonth(month)}?`)) {
             await setDoc(doc(db, "tst_profiles", name.trim()), {
                 skippedMonths: arrayUnion(month)
@@ -1021,6 +1072,7 @@
     };
 
     window.removeSkip = async (name, month) => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể hủy báo nghỉ!");
         if(confirm(`Hủy báo nghỉ tháng ${formatMonth(month)} cho ${name}?`)) {
             await setDoc(doc(db, "tst_profiles", name.trim()), {
                 skippedMonths: arrayRemove(month)
@@ -1031,6 +1083,7 @@
     };
 
     window.openAddModal = () => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thêm võ sinh!");
         document.getElementById('add_name').value = '';
         document.getElementById('add_dob').value = '';
         document.getElementById('add_phone').value = '';
@@ -1045,6 +1098,7 @@
     };
 
     window.addNewStudent = async () => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thêm võ sinh!");
         const name = document.getElementById('add_name').value.trim();
         const branch = document.getElementById('add_branch').value;
         const feeDefault = document.getElementById('add_fee_default').value;
@@ -1087,6 +1141,7 @@
 
     document.getElementById('transactionForm').onsubmit = async (e) => {
         e.preventDefault();
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể lưu giao dịch!");
         const type = document.getElementById('type').value;
         const name = document.getElementById('description').value.trim();
         const amount = Number(document.getElementById('amountActual').value);
@@ -1114,6 +1169,7 @@
 
     document.getElementById('expenseForm').onsubmit = async (e) => {
         e.preventDefault();
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể lưu khoản chi!");
         const desc = document.getElementById('exp_desc').value.trim();
         const amount = Number(document.getElementById('exp_amountActual').value);
         const branch = document.getElementById('exp_branch').value;
@@ -1126,7 +1182,10 @@
         window.showToast("✅ Đã lưu khoản chi!");
     };
 
-    window.deleteTx = (id) => { if(confirm("Xóa giao dịch này?")) deleteDoc(doc(db, "tst_transactions", id)); };
+    window.deleteTx = (id) => { 
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể xóa giao dịch!");
+        if(confirm("Xóa giao dịch này?")) deleteDoc(doc(db, "tst_transactions", id)); 
+    };
 
     window.exportReceipt = async (name, amount, type, date, txMonth, branch, receiptTitle = 'BIÊN LAI THU TIỀN') => {
         try {
