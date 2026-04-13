@@ -401,15 +401,15 @@
         <img id="receiptLogo" src="logo.png" alt="Logo" style="height: 50px; width: auto; max-width: 170px; object-fit: contain; display: block;" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO+CLB'">
         <div style="text-align: center;">
             <h3 style="color: #0033A0; margin: 0; font-size: 15px;">CLUB TAEKWONDO TST QUY NHƠN</h3>
-            <p id="receiptTitle" style="margin: 10px 0 0>; font-size: 20px;<strong> color: #000; font-weight: 250; font-family: 'Roboto', sans-serif;<strong> letter-spacing: 0.5px;">BIÊN LAI THU TIỀN</p>
-            <p style="margin: 5px 0 0; font-size: 13px; font-style: italic; color: #555;"id=,"r_date_top"></p>
+            <p id="receiptTitle" style="margin: 10px 0 0; font-size: 20px; color: #000; font-weight: bold; font-family: 'Roboto', sans-serif; letter-spacing: 0.5px;">BIÊN LAI THU TIỀN</p>
+            <p id="r_date_top" style="margin: 5px 0 0; font-size: 13px; font-style: italic; color: #555;"></p>
         </div>
     </div>
     <div style="font-size: 14px; line-height: 1.6;">
         <p style="margin: 5px 0;"><strong>Họ & Tên:</strong> <span id="r_name" style="color: var(--primary); font-weight: bold; font-size:16px;"></span></p>
         <p style="margin: 5px 0; display: none;" id="r_dob_wrap"><strong>Ngày sinh:</strong> <span id="r_dob"></span></p>
         <p style="margin: 5px 0;"><strong>Khoản thu:</strong> <span id="r_type"></span></p>
-        <p style="margin: 5px 0;"><strong>Cơ sở: <span id="r_branch" style="font-weight;"></span></p>
+        <p style="margin: 5px 0;"><strong>Cơ sở:</strong> <span id="r_branch"></span></p>
         <p style="margin: 5px 0;" id="r_month_wrap">Kỳ học phí: Tháng <span id="r_month"></span></p>
     </div>
     <div style="margin-top: 20px; padding: 15px; background: #eef2f7; text-align: center; border-radius: 8px;">
@@ -1143,9 +1143,9 @@
 
             const dParts = date.split('-');
             if(dParts.length === 3) {
-                document.getElementById('r_date_top').innerText = `Ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}`;
+                document.getElementById('r_date_top').innerText = `Quy Nhơn, ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}`;
             } else {
-                document.getElementById('r_date_top').innerText = formatDate(date);
+                document.getElementById('r_date_top').innerText = `Quy Nhơn, ${formatDate(date)}`;
             }
 
             const p = allProfiles[cleanName] || {};
