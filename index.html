@@ -157,21 +157,19 @@
 
     <div id="tab_tx" class="tab-content active">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-            <h4 style="margin:0; color:var(--primary)">GHI NHẬN HỌC PHÍ & LỆ PHÍ THI</h4>
+            <h4 style="margin:0; color:var(--primary)">GHI NHẬN HỌC PHÍ</h4>
             <button class="btn btn-success" id="btnAddStudent" onclick="openAddModal()">➕ THÊM VÕ SINH MỚI</button>
         </div>
 
         <div class="revenue-summary">
-            <div class="rev-item">Học phí: <span id="sum_tuition">0 ₫</span></div>
-            <div class="rev-item" style="color:#d35400">Lệ phí thi: <span id="sum_exam" style="color:#d35400">0 ₫</span></div>
-            <div class="rev-item" style="color:var(--gray)">Thu khác: <span id="sum_other" style="color:var(--gray)">0 ₫</span></div>
+            <div class="rev-item">Tổng Học phí: <span id="sum_tuition">0 ₫</span></div>
+            <div class="rev-item" style="color:var(--gray)">Khoản thu khác: <span id="sum_other" style="color:var(--gray)">0 ₫</span></div>
         </div>
 
         <form id="transactionForm" class="transaction-form">
             <select id="branch"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option></select>
             <select id="type" onchange="toggleMonthSelect()">
                 <option value="Học phí">Học phí</option>
-                <option value="Lệ phí thi">Lệ phí thi lên đai</option>
                 <option value="Thu khác">Thu khác</option>
             </select>
             
@@ -198,7 +196,13 @@
     </div>
 
     <div id="tab_exam" class="tab-content">
-        <div style="background: #fff4e5; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ffe5d0;">
+        <h4 style="margin-top:0; color: #d35400;">QUẢN LÝ LỆ PHÍ THI & THĂNG ĐAI</h4>
+        
+        <div class="revenue-summary" style="border-left-color: #d35400; background: #fff4e5;">
+            <div class="rev-item">Tổng lệ phí thi thu kỳ này: <span id="sum_exam_tab" style="color:#d35400; font-size: 1.3rem;">0 ₫</span></div>
+        </div>
+
+        <div style="background: #fffafa; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ffe5d0;">
             <h4 style="margin:0 0 10px 0; color: #d46b08;">CẬP NHẬT THĂNG ĐAI HÀNG LOẠT</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
                 <div>
@@ -234,11 +238,11 @@
                     </select>
                 </div>
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: bold;">3. Lệ phí thi (đ/bạn):</label>
+                    <label style="font-size: 0.8rem; font-weight: bold;">3. Lệ phí thi mặc định (đ/bạn):</label>
                     <input type="number" id="exam_fee_all" value="200000" placeholder="Số tiền lệ phí thi">
                 </div>
             </div>
-            <button class="btn btn-orange" onclick="processBatchUpgrade()" style="width: 100%; margin-top: 15px; font-size: 1rem;">⚡ XÁC NHẬN THĂNG ĐAI BẰNG BATCH</button>
+            <button class="btn btn-orange" onclick="processBatchUpgrade()" style="width: 100%; margin-top: 15px; font-size: 1rem;">⚡ XÁC NHẬN THĂNG ĐAI BẰNG BATCH (Tự động bỏ qua các bạn đã nộp phí)</button>
         </div>
 
         <div class="table-wrapper">
@@ -249,6 +253,8 @@
                         <th>Võ sinh</th>
                         <th>Cơ sở</th>
                         <th>Cấp đai hiện tại</th>
+                        <th>Trạng thái nộp phí</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="examList"></tbody>
@@ -561,7 +567,6 @@
 <script>
     window.userRole = 'admin';
 
-    // Fix đồng bộ giờ local tránh lỗi lịch khi sang ngày mới lúc 0h-7h
     function getLocalToday() {
         const d = new Date();
         d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -646,7 +651,6 @@
 </script>
 
 <script type="module">
-    // CẬP NHẬT IMPORT BỔ SUNG writeBatch (Quản lý Sync Nguyên Khối)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, arrayUnion, arrayRemove, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -667,7 +671,6 @@
 
     window.forceRender = renderApp;
 
-    // CẤU HÌNH NGÂN HÀNG
     const BANK_ID = "AGRIBANK"; 
     const ACCOUNT_NO = "4300205305756"; 
     const ACCOUNT_NAME = "TRUONG SANH TINH - CLB TAEKWONDO TST"; 
@@ -719,7 +722,7 @@
         const a = document.getElementById(actId);
         if(!d || !a) return;
         d.oninput = (e) => {
-            let v = e.target.value.replace(/\D/g, ''); // Fix NaN Error
+            let v = e.target.value.replace(/\D/g, ''); 
             a.value = v;
             e.target.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : '';
         };
@@ -841,6 +844,31 @@
         window.scrollTo(0, 0);
     };
 
+    // THU LỆ PHÍ THI NHANH Ở TAB THI LÊN ĐAI
+    window.quickCollectExam = async (name, branch) => {
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thu tiền!");
+        let defaultFee = document.getElementById('exam_fee_all').value || 200000;
+        let inputAmount = prompt(`Nhập số tiền lệ phí thi thu của võ sinh ${name}:`, defaultFee);
+        if (!inputAmount) return; 
+        let amount = Number(inputAmount.replace(/\D/g, ''));
+        if (amount <= 0) return;
+
+        const today = getLocalToday();
+        const currentMonth = document.getElementById('filterMonth').value || today.substring(0, 7);
+        const newBelt = document.getElementById('exam_new_belt').value;
+
+        await addDoc(colRef, {
+            branch: branch || 'CS1',
+            type: 'Lệ phí thi',
+            description: `${name} (Thi lên ${newBelt})`,
+            amount: amount,
+            date: today,
+            txMonth: currentMonth,
+            timestamp: Date.now()
+        });
+        window.showToast(`✅ Đã thu lệ phí thi cho ${name}!`);
+    };
+
     window.generatePaymentRequest = (name, month, branch, feeStr) => {
         let amount = feeStr ? Number(feeStr) : 0;
         if (!amount || amount <= 0) {
@@ -880,20 +908,43 @@
         return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 80px; text-align:center; white-space: normal;">${belt}</span>`;
     }
 
+    // UPDATE LẠI LIST THI ĐỂ HIỂN THỊ TÌNH TRẠNG ĐÓNG PHÍ
     window.renderExamList = () => {
         const filterBelt = document.getElementById('exam_filter_belt').value;
         const uiExam = document.getElementById('examList');
         if(!uiExam) return;
         uiExam.innerHTML = '';
         
+        const selMonth = document.getElementById('filterMonth').value;
+        let paidStudents = {};
+        
+        // Kiểm tra xem ai đã nộp lệ phí thi trong tháng đang lọc
+        allTransactions.forEach(t => {
+            if (t.type === 'Lệ phí thi' && (t.txMonth === selMonth || (t.date && t.date.startsWith(selMonth)))) {
+                Object.keys(allProfiles).forEach(n => {
+                    // Tên võ sinh có thể nằm trong description dạng: "Nguyễn Văn A (Thi lên...)"
+                    if (t.description.includes(n)) paidStudents[n] = t;
+                });
+            }
+        });
+
         Object.keys(allProfiles).forEach(name => {
             const p = allProfiles[name];
             if(p.status === 'active' && (p.belt || 'Đai trắng - Cấp 10') === filterBelt) {
+                let isPaid = paidStudents[name];
+                
+                let statusBadge = isPaid ? `<span class="badge badge-active">Đã nộp (${isPaid.amount.toLocaleString()} ₫)</span>` : `<span class="badge badge-quit" style="background:#ffe8e8; color:#d35400;">Chưa nộp</span>`;
+                let actionBtn = isPaid ? 
+                    (window.userRole === 'admin' ? `<button class="btn btn-secondary" onclick="deleteTx('${isPaid.id}')" style="padding: 4px 8px; font-size: 0.8rem; background:#6c757d;">Xóa</button>` : '') :
+                    (window.userRole === 'admin' ? `<button class="btn btn-orange" onclick="quickCollectExam('${name}', '${p.branch || 'CS1'}')" style="padding: 4px 8px; font-size: 0.8rem;">💰 Thu phí</button>` : '');
+
                 uiExam.innerHTML += `<tr>
                     <td><input type="checkbox" class="exam-check" value="${name}"></td>
-                    <td style="font-weight:bold; color:var(--primary);">${name}</td>
+                    <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold; color:var(--primary);">${name}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${p.branch || 'CS1'}</span></td>
                     <td>${getBeltBadge(p.belt)}</td>
+                    <td>${statusBadge}</td>
+                    <td>${actionBtn}</td>
                 </tr>`;
             }
         });
@@ -903,7 +954,7 @@
         document.querySelectorAll('.exam-check').forEach(cb => cb.checked = source.checked);
     };
 
-    // FIX ĐỒNG BỘ: DÙNG BATCH WRITE CHO THĂNG ĐAI HÀNG LOẠT
+    // BATCH UPDATE: BỎ QUA NGƯỜI ĐÃ NỘP PHÍ LẺ
     window.processBatchUpgrade = async () => {
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thực hiện thăng đai!");
         
@@ -913,21 +964,35 @@
         const newBelt = document.getElementById('exam_new_belt').value;
         const fee = Number(document.getElementById('exam_fee_all').value) || 0;
         const today = getLocalToday();
-        const currentMonth = today.substring(0, 7);
+        const currentMonth = document.getElementById('filterMonth').value || today.substring(0, 7);
+
+        // Phát hiện người đã nộp lệ phí thi
+        let paidStudents = {};
+        allTransactions.forEach(t => {
+            if (t.type === 'Lệ phí thi' && (t.txMonth === currentMonth || (t.date && t.date.startsWith(currentMonth)))) {
+                selected.forEach(n => { if (t.description.includes(n)) paidStudents[n] = true; });
+            }
+        });
+
+        let studentsToCharge = selected.filter(n => !paidStudents[n]);
+        let chargeAmount = studentsToCharge.length * fee;
 
         let confirmMsg = `Xác nhận thăng đai lên [${newBelt}] cho ${selected.length} võ sinh?`;
-        if (fee > 0) confirmMsg += `\nHệ thống sẽ tự động ghi vào Sổ Thu khoản Lệ phí thi tổng cộng: ${(selected.length * fee).toLocaleString()} ₫.`;
+        if (fee > 0 && studentsToCharge.length > 0) {
+            confirmMsg += `\nHệ thống sẽ tự động THU PHÍ THÊM cho ${studentsToCharge.length} bạn CHƯA NỘP (Tổng cộng: ${chargeAmount.toLocaleString()} ₫). Các bạn đã nộp sẽ tự động được bỏ qua.`;
+        }
 
         if(!confirm(confirmMsg)) return;
 
-        const batch = writeBatch(db); // Khởi tạo Batch
+        const batch = writeBatch(db); 
 
         for (let name of selected) {
             if(!allProfiles[name]) continue; 
             const pRef = doc(db, "tst_profiles", name);
             batch.set(pRef, { belt: newBelt }, { merge: true });
             
-            if(fee > 0) {
+            // Chỉ thu phí những ai chưa đóng trước đó ở Tab
+            if(fee > 0 && !paidStudents[name]) {
                 const txRef = doc(collection(db, "tst_transactions"));
                 batch.set(txRef, {
                     branch: allProfiles[name].branch || 'CS1',
@@ -936,12 +1001,11 @@
                     amount: fee,
                     date: today,
                     txMonth: currentMonth,
-                    timestamp: Date.now() + Math.random() // Chống trùng timestamp
+                    timestamp: Date.now() + Math.random() 
                 });
             }
         }
         
-        // Execute Batch
         await batch.commit();
 
         window.showToast(`✅ Đã thăng đai thành công cho ${selected.length} võ sinh!`);
@@ -970,7 +1034,6 @@
         let exp = 0, totalDebtEst = 0;
         let studentPayments = {};
         
-        // FIX ĐỒNG BỘ: Dynamic Inventory Data
         let inventoryStats = {
             "Số 1 (1m1 - 1m2)": { nhap: 0, xuat: 0 }, "Số 2 (1m2 - 1m3)": { nhap: 0, xuat: 0 },
             "Số 3 (1m3 - 1m4)": { nhap: 0, xuat: 0 }, "Số 4 (1m4 - 1m5)": { nhap: 0, xuat: 0 },
@@ -988,7 +1051,6 @@
         Object.keys(inventoryStats).forEach(size => {
             let s = inventoryStats[size];
             let ton = s.nhap - s.xuat;
-            // Chỉ hiển thị nếu có biến động hoặc là size mặc định
             if(s.nhap === 0 && s.xuat === 0 && !size.startsWith("Số")) return; 
             let color = ton < 3 ? 'var(--secondary)' : 'var(--success)';
             uiInvList.innerHTML += `<tr>
@@ -1009,7 +1071,7 @@
 
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
-            if(selMonth && t.date && !t.date.startsWith(selMonth)) return;
+            if(selMonth && t.date && !t.date.startsWith(selMonth) && t.txMonth !== selMonth) return;
             if(selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
@@ -1024,8 +1086,7 @@
                 let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
                 if(isInc) inc_uniform += t.amount; else exp_uniform += t.amount;
                 
-                // Trích xuất số lượng từ DB ảo (nếu có, nếu ko mặc định 1 trên bill)
-                let qtyDisp = "-"; // Trên table này ko ghi trực tiếp qty trừ khi parse description
+                let qtyDisp = "-"; 
 
                 uiUniformTx.innerHTML += `<tr>
                     <td>${formatDate(t.date)}</td>
@@ -1051,11 +1112,11 @@
                     <td>${formatDate(t.date)}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
                     <td><span class="badge" style="background:#e0f7fa; color:#006064">${monthLabel}</span></td>
-                    <td class="name-link" onclick="openProfile('${cleanName}')" style="font-weight:bold;">${cleanName}</td>
-                    <td>${t.type}</td>
+                    <td class="name-link" onclick="openProfile('${cleanName.split(' (')[0]}')" style="font-weight:bold;">${cleanName}</td>
+                    <td><span class="badge" style="${t.type === 'Lệ phí thi' ? 'background:#fff4e5; color:#d35400;' : 'background:#f0f4ff; color:var(--primary);'}">${t.type}</span></td>
                     <td style="color:var(--success); font-weight:bold;">+${t.amount.toLocaleString()}</td>
                     <td style="display:flex; gap:5px;">
-                        <button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth || ''}', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>
+                        <button class="btn btn-primary" onclick="exportReceipt('${cleanName.split(' (')[0]}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth || ''}', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>
                         ${btnDeleteHTML}
                     </td>
                 </tr>`;
@@ -1122,7 +1183,6 @@
             }
         });
 
-        // Báo cáo tháng
         let monthsSet = new Set();
         allTransactions.forEach(t => { if(t.date) monthsSet.add(t.date.substring(0, 7)); });
         Object.values(allProfiles).forEach(p => {
@@ -1176,8 +1236,11 @@
         let profit = totalIncome - expenseTotal;
 
         document.getElementById('sum_tuition').innerText = inc_tuition.toLocaleString() + " ₫";
-        document.getElementById('sum_exam').innerText = inc_exam.toLocaleString() + " ₫";
         document.getElementById('sum_other').innerText = inc_other.toLocaleString() + " ₫";
+        
+        // Update tổng thu thi lên đai ở tab Exam
+        const elSumExam = document.getElementById('sum_exam_tab');
+        if(elSumExam) elSumExam.innerText = inc_exam.toLocaleString() + " ₫";
         
         document.getElementById('sum_uniform_in').innerText = inc_uniform.toLocaleString() + " ₫";
         document.getElementById('sum_uniform_out').innerText = exp_uniform.toLocaleString() + " ₫";
@@ -1219,7 +1282,7 @@
         }
 
         e.target.reset();
-        document.getElementById('inv_date').value = getLocalToday(); // FIX ĐỒNG BỘ NGÀY
+        document.getElementById('inv_date').value = getLocalToday(); 
         window.showToast("✅ Đã cập nhật Kho & Sổ Quỹ!");
     };
 
@@ -1410,7 +1473,6 @@
 
         await addDoc(colRef, txData);
 
-        // FIX ĐỒNG BỘ: Tự động khởi tạo chuẩn khi gõ tên học sinh ngoài hệ thống
         if(!allProfiles[name] || allProfiles[name].status === 'quit') {
             const currentProfile = allProfiles[name] || {};
             await setDoc(doc(db, "tst_profiles", name), { 
@@ -1422,7 +1484,7 @@
         }
 
         e.target.reset();
-        document.getElementById('date').value = getLocalToday(); // FIX ĐỒNG BỘ NGÀY
+        document.getElementById('date').value = getLocalToday(); 
         document.getElementById('tx_month').value = getLocalToday().substring(0, 7);
         window.toggleMonthSelect();
         window.showToast("✅ Đã lưu khoản thu!");
@@ -1439,7 +1501,7 @@
         await addDoc(colRef, { branch, type: 'Chi phí', description: desc, amount, date, timestamp: Date.now() });
 
         e.target.reset();
-        document.getElementById('exp_date').value = getLocalToday(); // FIX ĐỒNG BỘ NGÀY
+        document.getElementById('exp_date').value = getLocalToday(); 
         window.showToast("✅ Đã lưu khoản chi!");
     };
 
@@ -1518,7 +1580,6 @@
         }
     };
 
-    // Khởi tạo ngày mặc định khi vừa vào App
     const localTodayStr = getLocalToday();
     const localMonthStr = localTodayStr.substring(0, 7);
 
