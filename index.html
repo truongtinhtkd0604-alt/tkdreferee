@@ -1000,8 +1000,10 @@
         document.getElementById('m_dob').value = p.dob || '';
         
         const skipped = p.skippedMonths || [];
-        const skipRemoveIcon = window.userRole === 'admin' ? `<span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${name}', '${m}')" title="Hủy báo nghỉ">✖</span>` : '';
-        let skippedHtml = skipped.sort().map(m => `<span class="badge" style="background:#ffc107; color:#856404; margin-right:5px; margin-bottom:5px; display:inline-block;">${formatMonth(m)} ${skipRemoveIcon}</span>`).join('');
+        let skippedHtml = skipped.sort().map(m => {
+            const skipRemoveIcon = window.userRole === 'admin' ? `<span style="cursor:pointer; color:red; margin-left:3px; padding:0 3px;" onclick="removeSkip('${name}', '${m}')" title="Hủy báo nghỉ">✖</span>` : '';
+            return `<span class="badge" style="background:#ffc107; color:#856404; margin-right:5px; margin-bottom:5px; display:inline-block;">${formatMonth(m)} ${skipRemoveIcon}</span>`;
+        }).join('');
         document.getElementById('m_skipped').innerHTML = skippedHtml || '<span style="font-size:0.85rem; color:#666;">Chưa có dữ liệu</span>';
 
         // Xử lý ẩn/hiện nút và input dựa trên phân quyền
