@@ -844,7 +844,6 @@
         window.scrollTo(0, 0);
     };
 
-    // THU LỆ PHÍ THI NHANH Ở TAB THI LÊN ĐAI
     window.quickCollectExam = async (name, branch) => {
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thu tiền!");
         let defaultFee = document.getElementById('exam_fee_all').value || 200000;
@@ -908,7 +907,6 @@
         return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 80px; text-align:center; white-space: normal;">${belt}</span>`;
     }
 
-    // UPDATE LẠI LIST THI ĐỂ HIỂN THỊ TÌNH TRẠNG ĐÓNG PHÍ
     window.renderExamList = () => {
         const filterBelt = document.getElementById('exam_filter_belt').value;
         const uiExam = document.getElementById('examList');
@@ -918,12 +916,11 @@
         const selMonth = document.getElementById('filterMonth').value;
         let paidStudents = {};
         
-        // Kiểm tra xem ai đã nộp lệ phí thi trong tháng đang lọc
         allTransactions.forEach(t => {
             if (t.type === 'Lệ phí thi' && (t.txMonth === selMonth || (t.date && t.date.startsWith(selMonth)))) {
                 Object.keys(allProfiles).forEach(n => {
-                    // Tên võ sinh có thể nằm trong description dạng: "Nguyễn Văn A (Thi lên...)"
-                    if (t.description.includes(n)) paidStudents[n] = t;
+                    // FIX BUG NHẬN DIỆN: Sử dụng startsWith thay vì includes để tránh nhầm A với Anh
+                    if (t.description.startsWith(n + " (Thi lên")) paidStudents[n] = t;
                 });
             }
         });
@@ -954,7 +951,6 @@
         document.querySelectorAll('.exam-check').forEach(cb => cb.checked = source.checked);
     };
 
-    // BATCH UPDATE: BỎ QUA NGƯỜI ĐÃ NỘP PHÍ LẺ
     window.processBatchUpgrade = async () => {
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thực hiện thăng đai!");
         
@@ -966,11 +962,11 @@
         const today = getLocalToday();
         const currentMonth = document.getElementById('filterMonth').value || today.substring(0, 7);
 
-        // Phát hiện người đã nộp lệ phí thi
         let paidStudents = {};
         allTransactions.forEach(t => {
             if (t.type === 'Lệ phí thi' && (t.txMonth === currentMonth || (t.date && t.date.startsWith(currentMonth)))) {
-                selected.forEach(n => { if (t.description.includes(n)) paidStudents[n] = true; });
+                // FIX BUG NHẬN DIỆN: Dùng startsWith
+                selected.forEach(n => { if (t.description.startsWith(n + " (Thi lên")) paidStudents[n] = true; });
             }
         });
 
@@ -991,7 +987,6 @@
             const pRef = doc(db, "tst_profiles", name);
             batch.set(pRef, { belt: newBelt }, { merge: true });
             
-            // Chỉ thu phí những ai chưa đóng trước đó ở Tab
             if(fee > 0 && !paidStudents[name]) {
                 const txRef = doc(collection(db, "tst_transactions"));
                 batch.set(txRef, {
@@ -1076,7 +1071,8 @@
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
             let safeBranch = t.branch || "CS1";
-            const btnDeleteHTML = window.userRole === 'admin' ? `<button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>` : '';
+            // FIX LỖI 1: Gắn relatedInvId vào nút Xóa để thu hồi tồn kho
+            const btnDeleteHTML = window.userRole === 'admin' ? `<button class="btn btn-secondary" onclick="deleteTx('${t.id}', '${t.relatedInvId || ''}')" style="padding: 5px 10px;">🗑</button>` : '';
 
             if(t.type === 'Chi phí') {
                 exp += t.amount;
@@ -1238,7 +1234,6 @@
         document.getElementById('sum_tuition').innerText = inc_tuition.toLocaleString() + " ₫";
         document.getElementById('sum_other').innerText = inc_other.toLocaleString() + " ₫";
         
-        // Update tổng thu thi lên đai ở tab Exam
         const elSumExam = document.getElementById('sum_exam_tab');
         if(elSumExam) elSumExam.innerText = inc_exam.toLocaleString() + " ₫";
         
@@ -1262,6 +1257,7 @@
         }
     }
 
+    // FIX LỖI 1: Khi lưu Võ Phục, lưu ID của file Inventory vào Giao dịch tài chính
     document.getElementById('inventoryForm').onsubmit = async (e) => {
         e.preventDefault();
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể nhập xuất kho!");
@@ -1273,12 +1269,14 @@
         const date = document.getElementById('inv_date').value;
         const branch = document.getElementById('inv_branch').value;
 
-        await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
+        // Lưu Tồn Kho
+        const invDoc = await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
 
+        // Lưu Dòng tiền và gắn ID Tồn Kho
         if (amount > 0) {
             let txType = type === 'Nhập kho' ? 'Chi Võ phục' : 'Thu Võ phục';
             let txDesc = type === 'Nhập kho' ? `Nhập kho ${size} từ ${desc}` : `Bán ${size} cho ${desc}`;
-            await addDoc(colRef, { branch, type: txType, description: txDesc, amount, date, timestamp: Date.now() });
+            await addDoc(colRef, { branch, type: txType, description: txDesc, amount, date, timestamp: Date.now(), relatedInvId: invDoc.id });
         }
 
         e.target.reset();
@@ -1448,8 +1446,13 @@
         }
         
         if(uniformSize || uniformFee > 0) {
-            if (uniformFee > 0) await addDoc(colRef, { branch, type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 });
-            if (uniformSize) await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 });
+            // FIX TỒN KHO: Khi thêm học sinh mới có bán võ phục, liên kết ID kho vào dòng tiền
+            const invDoc = uniformSize ? await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }) : null;
+            if (uniformFee > 0) {
+                let txData = { branch, type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 };
+                if (invDoc) txData.relatedInvId = invDoc.id;
+                await addDoc(colRef, txData);
+            }
         }
 
         window.closeAddModal();
@@ -1505,9 +1508,16 @@
         window.showToast("✅ Đã lưu khoản chi!");
     };
 
-    window.deleteTx = (id) => { 
+    // FIX LỖI 1: Cập nhật hàm Xóa giao dịch, tự động xóa tồn kho nếu có liên kết
+    window.deleteTx = async (id, relatedInvId) => { 
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể xóa giao dịch!");
-        if(confirm("Xóa giao dịch này?")) deleteDoc(doc(db, "tst_transactions", id)); 
+        if(confirm("Bạn có chắc chắn muốn xóa giao dịch này không?")) {
+            await deleteDoc(doc(db, "tst_transactions", id));
+            if (relatedInvId && relatedInvId !== 'undefined') {
+                await deleteDoc(doc(db, "tst_inventory", relatedInvId));
+            }
+            window.showToast("✅ Đã xóa giao dịch thành công!");
+        }
     };
 
     window.exportReceipt = async (name, amount, type, date, txMonth, branch, receiptTitle = 'BIÊN LAI THU TIỀN') => {
