@@ -105,7 +105,6 @@
         <h2 style="color:var(--primary); font-size: 1.5rem;">QUẢN LÝ CLB TAEKWONDO TST</h2>
         <input type="password" id="passInput" placeholder="Mật khẩu bảo mật" style="margin: 1rem 0; text-align: center;">
         <button class="btn btn-primary" onclick="checkLogin()" style="width:100%">ĐĂNG NHẬP</button>
-     
     </div>
 </div>
 
@@ -151,6 +150,7 @@
         <button class="tab-btn" id="btn_debt" onclick="switchTab('debt')">⚠️ Báo Nợ</button>
         <button class="tab-btn" id="btn_active" onclick="switchTab('active')">🥋 Đang Tập (<span id="activeStudentCount">0</span>)</button>
         <button class="tab-btn" id="btn_quit" onclick="switchTab('quit')">🛑 Đã Nghỉ</button>
+        <button class="tab-btn" id="btn_report" onclick="switchTab('report')">📊 Báo Cáo</button>
     </div>
 
     <div id="tab_tx" class="tab-content active">
@@ -275,6 +275,26 @@
     </div>
     <div id="tab_quit" class="tab-content">
         <div class="table-wrapper"><table><thead><tr><th>Võ sinh</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
+    </div>
+    
+    <div id="tab_report" class="tab-content">
+        <h4 style="margin-top:0; color:var(--primary)">BÁO CÁO TỔNG HỢP THEO THÁNG</h4>
+        <div class="table-wrapper">
+            <table id="tbl_report">
+                <thead>
+                    <tr>
+                        <th>Tháng</th>
+                        <th>Tập thực tế (Trừ báo nghỉ)</th>
+                        <th>Mới nhập học</th>
+                        <th>Đã nghỉ tập</th>
+                        <th>Tổng Thu</th>
+                        <th>Tổng Chi</th>
+                        <th>Lợi Nhuận</th>
+                    </tr>
+                </thead>
+                <tbody id="reportList"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -739,6 +759,7 @@
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_inventory')), "KhoVoPhuc");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_exp')), "ChiPhi");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_debt')), "NoPhi");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_report')), "BaoCaoThang");
         XLSX.writeFile(wb, `BaoCao_CLB_Thang_${selMonth}.xlsx`);
         window.showToast("✅ Đã tải báo cáo Excel!");
     };
@@ -755,8 +776,9 @@
         const uiActive = document.getElementById('activeList');
         const uiQuit = document.getElementById('quitList');
         const uiInvList = document.getElementById('inventoryList');
+        const uiReport = document.getElementById('reportList'); // Mới: Thêm bảng báo cáo
 
-        uiTx.innerHTML = ''; uiUniformTx.innerHTML = ''; uiExp.innerHTML = ''; uiDebt.innerHTML = ''; uiActive.innerHTML = ''; uiQuit.innerHTML = ''; uiInvList.innerHTML = ''; 
+        uiTx.innerHTML = ''; uiUniformTx.innerHTML = ''; uiExp.innerHTML = ''; uiDebt.innerHTML = ''; uiActive.innerHTML = ''; uiQuit.innerHTML = ''; uiInvList.innerHTML = ''; uiReport.innerHTML = '';
         
         let inc_tuition = 0, inc_exam = 0, inc_other = 0;
         let inc_uniform = 0, exp_uniform = 0;
@@ -905,6 +927,66 @@
                 uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td>${btnRestore}</td></tr>`;
             }
         });
+
+        // ===== XỬ LÝ BÁO CÁO THÁNG =====
+        let monthsSet = new Set();
+        allTransactions.forEach(t => {
+            if(t.date) monthsSet.add(t.date.substring(0, 7));
+        });
+        Object.values(allProfiles).forEach(p => {
+            if(p.createdAt) monthsSet.add(p.createdAt.substring(0, 7));
+            if(p.quitDate) monthsSet.add(p.quitDate.substring(0, 7));
+        });
+        
+        let allMonths = Array.from(monthsSet).sort().reverse();
+
+        allMonths.forEach(m => {
+            let m_new = 0, m_quit = 0, m_active_theoretical = 0, m_skipped = 0;
+            let m_income = 0, m_expense = 0;
+
+            Object.values(allProfiles).forEach(p => {
+                const joinM = p.createdAt ? p.createdAt.substring(0, 7) : "2000-01";
+                const quitM = p.quitDate ? p.quitDate.substring(0, 7) : null;
+
+                if (joinM === m) m_new++;
+                if (quitM === m) m_quit++;
+
+                // Tính số đang tập thực tế của tháng đó: Đã nhập học (<=m) và (chưa nghỉ hoặc nghỉ từ tháng m trở đi)
+                if (joinM <= m && (!quitM || quitM >= m)) {
+                    m_active_theoretical++;
+                    if (p.skippedMonths && p.skippedMonths.includes(m)) {
+                        m_skipped++;
+                    }
+                }
+            });
+
+            let m_actual_practicing = m_active_theoretical - m_skipped;
+
+            allTransactions.forEach(t => {
+                const txM = t.date ? t.date.substring(0, 7) : null;
+                if (txM === m) {
+                    if (['Học phí', 'Lệ phí thi', 'Thu khác', 'Thu Võ phục', 'Võ phục'].includes(t.type)) {
+                        m_income += t.amount;
+                    } else if (['Chi phí', 'Chi Võ phục'].includes(t.type)) {
+                        m_expense += t.amount;
+                    }
+                }
+            });
+
+            let m_profit = m_income - m_expense;
+            let profitColor = m_profit < 0 ? 'var(--secondary)' : 'var(--success)';
+
+            uiReport.innerHTML += `<tr>
+                <td style="font-weight:bold; color:var(--primary)">${formatMonth(m)}</td>
+                <td style="color:var(--info); font-weight:bold; font-size:1.1rem;">${m_actual_practicing}</td>
+                <td style="color:var(--success)">+${m_new}</td>
+                <td style="color:var(--secondary)">-${m_quit}</td>
+                <td style="color:var(--success); font-weight:bold;">${m_income.toLocaleString()} ₫</td>
+                <td style="color:var(--secondary); font-weight:bold;">${m_expense.toLocaleString()} ₫</td>
+                <td style="color:${profitColor}; font-weight:bold;">${m_profit.toLocaleString()} ₫</td>
+            </tr>`;
+        });
+        // ===============================
 
         let totalIncome = inc_tuition + inc_exam + inc_other + inc_uniform;
         let expenseTotal = exp + exp_uniform;
