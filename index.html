@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quản Lý CLB TST - Bản Cập Nhật Chuẩn</title>
+    <title>Quản Lý CLB TST - Bản Ổn Định Đồng Bộ</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -238,7 +238,7 @@
                     <input type="number" id="exam_fee_all" value="200000" placeholder="Số tiền lệ phí thi">
                 </div>
             </div>
-            <button class="btn btn-orange" onclick="processBatchUpgrade()" style="width: 100%; margin-top: 15px; font-size: 1rem;">⚡ XÁC NHẬN THĂNG ĐAI CHO CÁC VÕ SINH ĐÃ CHỌN</button>
+            <button class="btn btn-orange" onclick="processBatchUpgrade()" style="width: 100%; margin-top: 15px; font-size: 1rem;">⚡ XÁC NHẬN THĂNG ĐAI BẰNG BATCH</button>
         </div>
 
         <div class="table-wrapper">
@@ -265,16 +265,17 @@
         </div>
 
         <form id="inventoryForm" class="transaction-form inventory-form">
-            <select id="inv_size" required>
-                <option value="">-- Chọn Size Võ phục --</option>
-                <option value="Số 1 (1m1 - 1m2)">Số 1 (1m1 - 1m2)</option>
-                <option value="Số 2 (1m2 - 1m3)">Số 2 (1m2 - 1m3)</option>
-                <option value="Số 3 (1m3 - 1m4)">Số 3 (1m3 - 1m4)</option>
-                <option value="Số 4 (1m4 - 1m5)">Số 4 (1m4 - 1m5)</option>
-                <option value="Số 5 (1m5 - 1m6)">Số 5 (1m5 - 1m6)</option>
-                <option value="Số 6 (1m6 - 1m7)">Số 6 (1m6 - 1m7)</option>
-                <option value="Số 7 (1m7 - 1m8)">Số 7 (1m7 - 1m8)</option>
-            </select>
+            <input type="text" id="inv_size" placeholder="Nhập Size Võ Phục (VD: Số 1, Người lớn...)" list="inv_size_list" required style="grid-column: span 1;">
+            <datalist id="inv_size_list">
+                <option value="Số 1 (1m1 - 1m2)"></option>
+                <option value="Số 2 (1m2 - 1m3)"></option>
+                <option value="Số 3 (1m3 - 1m4)"></option>
+                <option value="Số 4 (1m4 - 1m5)"></option>
+                <option value="Số 5 (1m5 - 1m6)"></option>
+                <option value="Số 6 (1m6 - 1m7)"></option>
+                <option value="Số 7 (1m7 - 1m8)"></option>
+            </datalist>
+
             <select id="inv_type" onchange="toggleInvType()" required>
                 <option value="Xuất bán">📤 Xuất bán cho Võ sinh</option>
                 <option value="Nhập kho">📥 Nhập kho (Từ xưởng)</option>
@@ -303,7 +304,7 @@
         <h5 style="color:var(--gray); border-bottom: 1px solid #eee; padding-bottom: 5px;">Lịch sử Thu/Chi tiền Võ phục</h5>
         <div class="table-wrapper">
             <table id="tbl_uniform_tx">
-                <thead><tr><th>Ngày lập</th><th>Cơ sở</th><th>Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
+                <thead><tr><th>Ngày lập</th><th>Cơ sở</th><th>Nội dung</th><th>Phân loại</th><th>Số lượng</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
                 <tbody id="uniformTxList"></tbody>
             </table>
         </div>
@@ -487,16 +488,16 @@
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <div>
                             <label style="font-size:0.8rem; display:block; margin-bottom:4px;">Size Võ phục</label>
-                            <select id="add_uniform_size">
-                                <option value="">-- Không mua --</option>
-                                <option value="Số 1 (1m1 - 1m2)">Số 1 (1m1 - 1m2)</option>
-                                <option value="Số 2 (1m2 - 1m3)">Số 2 (1m2 - 1m3)</option>
-                                <option value="Số 3 (1m3 - 1m4)">Số 3 (1m3 - 1m4)</option>
-                                <option value="Số 4 (1m4 - 1m5)">Số 4 (1m4 - 1m5)</option>
-                                <option value="Số 5 (1m5 - 1m6)">Số 5 (1m5 - 1m6)</option>
-                                <option value="Số 6 (1m6 - 1m7)">Số 6 (1m6 - 1m7)</option>
-                                <option value="Số 7 (1m7 - 1m8)">Số 7 (1m7 - 1m8)</option>
-                            </select>
+                            <input type="text" id="add_uniform_size" placeholder="Tên Size..." list="add_size_list" style="width:100%;">
+                            <datalist id="add_size_list">
+                                <option value="Số 1 (1m1 - 1m2)"></option>
+                                <option value="Số 2 (1m2 - 1m3)"></option>
+                                <option value="Số 3 (1m3 - 1m4)"></option>
+                                <option value="Số 4 (1m4 - 1m5)"></option>
+                                <option value="Số 5 (1m5 - 1m6)"></option>
+                                <option value="Số 6 (1m6 - 1m7)"></option>
+                                <option value="Số 7 (1m7 - 1m8)"></option>
+                            </datalist>
                         </div>
                         <div>
                             <label style="font-size:0.8rem; display:block; margin-bottom:4px;">Tiền Võ phục</label>
@@ -504,7 +505,6 @@
                             <input type="hidden" id="add_uniform_actual">
                         </div>
                     </div>
-                    <small style="color:var(--gray); display:block; margin-top:2px;">(Lưu ý: Nếu chọn Size, hệ thống tự động trừ 1 áo trong Kho)</small>
                 </div>
             </div>
         </div>
@@ -561,7 +561,7 @@
 <script>
     window.userRole = 'admin';
 
-    // Helper function giải quyết triệt để lỗi múi giờ của Việt Nam
+    // Fix đồng bộ giờ local tránh lỗi lịch khi sang ngày mới lúc 0h-7h
     function getLocalToday() {
         const d = new Date();
         d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -631,9 +631,7 @@
         document.getElementById('tab_' + tabId).classList.add('active');
         document.getElementById('btn_' + tabId).classList.add('active');
         
-        if(tabId === 'exam' && typeof window.renderExamList === 'function') {
-            window.renderExamList();
-        }
+        if(tabId === 'exam' && typeof window.renderExamList === 'function') window.renderExamList();
     };
 
     window.showToast = (msg) => {
@@ -648,8 +646,9 @@
 </script>
 
 <script type="module">
+    // CẬP NHẬT IMPORT BỔ SUNG writeBatch (Quản lý Sync Nguyên Khối)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, arrayUnion, arrayRemove, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBfxbFrMabJHbARXpAqStIrSFlSAcCxgGY",
@@ -720,9 +719,9 @@
         const a = document.getElementById(actId);
         if(!d || !a) return;
         d.oninput = (e) => {
-            let v = e.target.value.replace(/\D/g, '');
+            let v = e.target.value.replace(/\D/g, ''); // Fix NaN Error
             a.value = v;
-            e.target.value = v ? parseInt(v).toLocaleString('vi-VN') : '';
+            e.target.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : '';
         };
     };
     
@@ -758,13 +757,8 @@
     window.toggleMonthSelect = () => {
         const type = document.getElementById('type').value;
         const monthInput = document.getElementById('tx_month');
-        if(type === 'Học phí') {
-            monthInput.style.display = 'block';
-            monthInput.required = true;
-        } else {
-            monthInput.style.display = 'none';
-            monthInput.required = false;
-        }
+        if(type === 'Học phí') { monthInput.style.display = 'block'; monthInput.required = true; } 
+        else { monthInput.style.display = 'none'; monthInput.required = false; }
     };
 
     window.toggleInvType = () => {
@@ -790,10 +784,9 @@
             div.onclick = () => {
                 descInput.value = name;
                 document.getElementById('branch').value = allProfiles[name].branch || 'CS1';
-                
                 if(document.getElementById('type').value === 'Học phí' && allProfiles[name].tuitionFee) {
                     document.getElementById('amountActual').value = allProfiles[name].tuitionFee;
-                    document.getElementById('amountDisplay').value = parseInt(allProfiles[name].tuitionFee).toLocaleString('vi-VN');
+                    document.getElementById('amountDisplay').value = parseInt(allProfiles[name].tuitionFee, 10).toLocaleString('vi-VN');
                 }
                 autoList.style.display = 'none';
             };
@@ -839,7 +832,7 @@
         document.getElementById('tx_month').value = month;
         if(defaultFee) {
             document.getElementById('amountActual').value = defaultFee;
-            document.getElementById('amountDisplay').value = parseInt(defaultFee).toLocaleString('vi-VN');
+            document.getElementById('amountDisplay').value = parseInt(defaultFee, 10).toLocaleString('vi-VN');
         } else {
             document.getElementById('amountActual').value = '';
             document.getElementById('amountDisplay').value = '';
@@ -855,7 +848,6 @@
             if (!inputAmount) return; 
             amount = Number(inputAmount.replace(/\D/g, ''));
         }
-        
         const today = getLocalToday();
         exportReceipt(name, amount, 'Học phí', today, month, branch, 'PHIẾU BÁO HỌC PHÍ');
     };
@@ -888,7 +880,6 @@
         return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 80px; text-align:center; white-space: normal;">${belt}</span>`;
     }
 
-    // --- CẬP NHẬT LOGIC THI LÊN ĐAI CHO 12 CẤP ---
     window.renderExamList = () => {
         const filterBelt = document.getElementById('exam_filter_belt').value;
         const uiExam = document.getElementById('examList');
@@ -912,6 +903,7 @@
         document.querySelectorAll('.exam-check').forEach(cb => cb.checked = source.checked);
     };
 
+    // FIX ĐỒNG BỘ: DÙNG BATCH WRITE CHO THĂNG ĐAI HÀNG LOẠT
     window.processBatchUpgrade = async () => {
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thực hiện thăng đai!");
         
@@ -924,28 +916,33 @@
         const currentMonth = today.substring(0, 7);
 
         let confirmMsg = `Xác nhận thăng đai lên [${newBelt}] cho ${selected.length} võ sinh?`;
-        if (fee > 0) {
-            confirmMsg += `\nHệ thống sẽ tự động ghi vào Sổ Thu khoản Lệ phí thi tổng cộng: ${(selected.length * fee).toLocaleString()} ₫.`;
-        }
+        if (fee > 0) confirmMsg += `\nHệ thống sẽ tự động ghi vào Sổ Thu khoản Lệ phí thi tổng cộng: ${(selected.length * fee).toLocaleString()} ₫.`;
 
         if(!confirm(confirmMsg)) return;
 
+        const batch = writeBatch(db); // Khởi tạo Batch
+
         for (let name of selected) {
-            if(!allProfiles[name]) continue; // Chống lỗi xóa profile
-            await setDoc(doc(db, "tst_profiles", name), { belt: newBelt }, { merge: true });
+            if(!allProfiles[name]) continue; 
+            const pRef = doc(db, "tst_profiles", name);
+            batch.set(pRef, { belt: newBelt }, { merge: true });
             
             if(fee > 0) {
-                await addDoc(colRef, {
+                const txRef = doc(collection(db, "tst_transactions"));
+                batch.set(txRef, {
                     branch: allProfiles[name].branch || 'CS1',
                     type: 'Lệ phí thi',
                     description: `${name} (Thi lên ${newBelt})`,
                     amount: fee,
                     date: today,
                     txMonth: currentMonth,
-                    timestamp: Date.now()
+                    timestamp: Date.now() + Math.random() // Chống trùng timestamp
                 });
             }
         }
+        
+        // Execute Batch
+        await batch.commit();
 
         window.showToast(`✅ Đã thăng đai thành công cho ${selected.length} võ sinh!`);
         document.getElementById('checkAllExam').checked = false;
@@ -973,26 +970,26 @@
         let exp = 0, totalDebtEst = 0;
         let studentPayments = {};
         
+        // FIX ĐỒNG BỘ: Dynamic Inventory Data
         let inventoryStats = {
-            "Số 1 (1m1 - 1m2)": { nhap: 0, xuat: 0 },
-            "Số 2 (1m2 - 1m3)": { nhap: 0, xuat: 0 },
-            "Số 3 (1m3 - 1m4)": { nhap: 0, xuat: 0 },
-            "Số 4 (1m4 - 1m5)": { nhap: 0, xuat: 0 },
-            "Số 5 (1m5 - 1m6)": { nhap: 0, xuat: 0 },
-            "Số 6 (1m6 - 1m7)": { nhap: 0, xuat: 0 },
+            "Số 1 (1m1 - 1m2)": { nhap: 0, xuat: 0 }, "Số 2 (1m2 - 1m3)": { nhap: 0, xuat: 0 },
+            "Số 3 (1m3 - 1m4)": { nhap: 0, xuat: 0 }, "Số 4 (1m4 - 1m5)": { nhap: 0, xuat: 0 },
+            "Số 5 (1m5 - 1m6)": { nhap: 0, xuat: 0 }, "Số 6 (1m6 - 1m7)": { nhap: 0, xuat: 0 },
             "Số 7 (1m7 - 1m8)": { nhap: 0, xuat: 0 }
         };
 
         allInventory.forEach(inv => {
-            if(inventoryStats[inv.size]) {
-                if(inv.type === 'Nhập kho') inventoryStats[inv.size].nhap += inv.qty;
-                else inventoryStats[inv.size].xuat += inv.qty;
-            }
+            if(!inv.size) return;
+            if(!inventoryStats[inv.size]) inventoryStats[inv.size] = { nhap: 0, xuat: 0 };
+            if(inv.type === 'Nhập kho') inventoryStats[inv.size].nhap += inv.qty;
+            else inventoryStats[inv.size].xuat += inv.qty;
         });
 
         Object.keys(inventoryStats).forEach(size => {
             let s = inventoryStats[size];
             let ton = s.nhap - s.xuat;
+            // Chỉ hiển thị nếu có biến động hoặc là size mặc định
+            if(s.nhap === 0 && s.xuat === 0 && !size.startsWith("Số")) return; 
             let color = ton < 3 ? 'var(--secondary)' : 'var(--success)';
             uiInvList.innerHTML += `<tr>
                 <td style="font-weight:bold;">${size}</td>
@@ -1012,12 +1009,11 @@
 
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
-            if(selMonth && !t.date.startsWith(selMonth)) return;
+            if(selMonth && t.date && !t.date.startsWith(selMonth)) return;
             if(selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
             let safeBranch = t.branch || "CS1";
-            
             const btnDeleteHTML = window.userRole === 'admin' ? `<button class="btn btn-secondary" onclick="deleteTx('${t.id}')" style="padding: 5px 10px;">🗑</button>` : '';
 
             if(t.type === 'Chi phí') {
@@ -1027,12 +1023,16 @@
             else if (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục') {
                 let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
                 if(isInc) inc_uniform += t.amount; else exp_uniform += t.amount;
+                
+                // Trích xuất số lượng từ DB ảo (nếu có, nếu ko mặc định 1 trên bill)
+                let qtyDisp = "-"; // Trên table này ko ghi trực tiếp qty trừ khi parse description
 
                 uiUniformTx.innerHTML += `<tr>
                     <td>${formatDate(t.date)}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
                     <td class="name-link" onclick="openProfile('${cleanName}')" style="font-weight:bold;">${cleanName}</td>
                     <td>${isInc ? 'Xuất bán' : 'Nhập kho'}</td>
+                    <td>${qtyDisp}</td>
                     <td style="color:${isInc ? 'var(--success)' : 'var(--secondary)'}; font-weight:bold;">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td>
                     <td style="display:flex; gap:5px;">
                         ${isInc ? `<button class="btn btn-primary" onclick="exportReceipt('${cleanName}', ${t.amount}, 'Võ phục', '${t.date}', '', '${safeBranch}')" style="padding: 5px 10px; background: #17a2b8;">🧾 Hóa đơn</button>` : ''}
@@ -1202,7 +1202,7 @@
     document.getElementById('inventoryForm').onsubmit = async (e) => {
         e.preventDefault();
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể nhập xuất kho!");
-        const size = document.getElementById('inv_size').value;
+        const size = document.getElementById('inv_size').value.trim();
         const type = document.getElementById('inv_type').value;
         const qty = Number(document.getElementById('inv_qty').value);
         const desc = document.getElementById('inv_desc').value.trim();
@@ -1219,7 +1219,7 @@
         }
 
         e.target.reset();
-        document.getElementById('inv_date').value = getLocalToday();
+        document.getElementById('inv_date').value = getLocalToday(); // FIX ĐỒNG BỘ NGÀY
         window.showToast("✅ Đã cập nhật Kho & Sổ Quỹ!");
     };
 
@@ -1364,7 +1364,7 @@
         const notes = document.getElementById('add_notes').value.trim();
         const fee = Number(document.getElementById('add_fee_actual').value);
         
-        const uniformSize = document.getElementById('add_uniform_size').value;
+        const uniformSize = document.getElementById('add_uniform_size').value.trim();
         const uniformFee = Number(document.getElementById('add_uniform_actual').value);
         
         const joinDate = document.getElementById('add_date').value;
@@ -1410,12 +1410,19 @@
 
         await addDoc(colRef, txData);
 
+        // FIX ĐỒNG BỘ: Tự động khởi tạo chuẩn khi gõ tên học sinh ngoài hệ thống
         if(!allProfiles[name] || allProfiles[name].status === 'quit') {
-            await setDoc(doc(db, "tst_profiles", name), { status: 'active', branch }, { merge: true });
+            const currentProfile = allProfiles[name] || {};
+            await setDoc(doc(db, "tst_profiles", name), { 
+                status: 'active', 
+                branch,
+                belt: currentProfile.belt || 'Đai trắng - Cấp 10',
+                createdAt: currentProfile.createdAt || getLocalToday()
+            }, { merge: true });
         }
 
         e.target.reset();
-        document.getElementById('date').value = getLocalToday();
+        document.getElementById('date').value = getLocalToday(); // FIX ĐỒNG BỘ NGÀY
         document.getElementById('tx_month').value = getLocalToday().substring(0, 7);
         window.toggleMonthSelect();
         window.showToast("✅ Đã lưu khoản thu!");
@@ -1432,7 +1439,7 @@
         await addDoc(colRef, { branch, type: 'Chi phí', description: desc, amount, date, timestamp: Date.now() });
 
         e.target.reset();
-        document.getElementById('exp_date').value = getLocalToday();
+        document.getElementById('exp_date').value = getLocalToday(); // FIX ĐỒNG BỘ NGÀY
         window.showToast("✅ Đã lưu khoản chi!");
     };
 
@@ -1454,7 +1461,6 @@
             else document.getElementById('r_date_top').innerText = formatDate(date);
 
             const p = allProfiles[cleanName] || {};
-            
             document.getElementById('r_belt').innerText = p.belt || 'Chưa cập nhật'; 
 
             const dobWrap = document.getElementById('r_dob_wrap');
@@ -1512,6 +1518,7 @@
         }
     };
 
+    // Khởi tạo ngày mặc định khi vừa vào App
     const localTodayStr = getLocalToday();
     const localMonthStr = localTodayStr.substring(0, 7);
 
