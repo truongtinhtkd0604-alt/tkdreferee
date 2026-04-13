@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quản Lý CLB TST</title>
+    <title>Quản Lý CLB TST - Bản Cập Nhật Chuẩn</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -202,23 +202,35 @@
             <h4 style="margin:0 0 10px 0; color: #d46b08;">CẬP NHẬT THĂNG ĐAI HÀNG LOẠT</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: bold;">1. Lọc cấp đai cũ:</label>
+                    <label style="font-size: 0.8rem; font-weight: bold;">1. Lọc cấp đai hiện tại:</label>
                     <select id="exam_filter_belt" onchange="renderExamList()">
-                        <option value="Trắng">Đai Trắng</option>
-                        <option value="Vàng">Đai Vàng</option>
-                        <option value="Xanh lá">Đai Xanh lá</option>
-                        <option value="Xanh dương">Đai Xanh dương</option>
-                        <option value="Đỏ">Đai Đỏ</option>
+                        <option value="Đai trắng - Cấp 10">Đai trắng - Cấp 10</option>
+                        <option value="Đai trắng 1 vạch - Cấp 9">Đai trắng 1 vạch - Cấp 9</option>
+                        <option value="Đai trắng 2 vạch - Cấp 8">Đai trắng 2 vạch - Cấp 8</option>
+                        <option value="Đai vàng - Cấp 7">Đai vàng - Cấp 7</option>
+                        <option value="Đai xanh lá - Cấp 6">Đai xanh lá - Cấp 6</option>
+                        <option value="Đai xanh dương - Cấp 5">Đai xanh dương - Cấp 5</option>
+                        <option value="Đai đỏ - Cấp 4">Đai đỏ - Cấp 4</option>
+                        <option value="Đai đỏ 1 vạch - Cấp 3">Đai đỏ 1 vạch - Cấp 3</option>
+                        <option value="Đai đỏ 2 vạch - Cấp 2">Đai đỏ 2 vạch - Cấp 2</option>
+                        <option value="Đai đỏ 3 vạch - Cấp 1">Đai đỏ 3 vạch - Cấp 1</option>
+                        <option value="Đai Đỏ - Đen">Đai Đỏ - Đen</option>
                     </select>
                 </div>
                 <div>
                     <label style="font-size: 0.8rem; font-weight: bold;">2. Lên cấp đai mới:</label>
                     <select id="exam_new_belt">
-                        <option value="Vàng">Đai Vàng</option>
-                        <option value="Xanh lá">Đai Xanh lá</option>
-                        <option value="Xanh dương">Đai Xanh dương</option>
-                        <option value="Đỏ">Đai Đỏ</option>
-                        <option value="Đen">Đai Đen</option>
+                        <option value="Đai trắng 1 vạch - Cấp 9">Đai trắng 1 vạch - Cấp 9</option>
+                        <option value="Đai trắng 2 vạch - Cấp 8">Đai trắng 2 vạch - Cấp 8</option>
+                        <option value="Đai vàng - Cấp 7">Đai vàng - Cấp 7</option>
+                        <option value="Đai xanh lá - Cấp 6">Đai xanh lá - Cấp 6</option>
+                        <option value="Đai xanh dương - Cấp 5">Đai xanh dương - Cấp 5</option>
+                        <option value="Đai đỏ - Cấp 4">Đai đỏ - Cấp 4</option>
+                        <option value="Đai đỏ 1 vạch - Cấp 3">Đai đỏ 1 vạch - Cấp 3</option>
+                        <option value="Đai đỏ 2 vạch - Cấp 2">Đai đỏ 2 vạch - Cấp 2</option>
+                        <option value="Đai đỏ 3 vạch - Cấp 1">Đai đỏ 3 vạch - Cấp 1</option>
+                        <option value="Đai Đỏ - Đen">Đai Đỏ - Đen</option>
+                        <option value="Đai Đen">Đai Đen</option>
                     </select>
                 </div>
                 <div>
@@ -362,27 +374,33 @@
                 </div>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <div>
+                <div style="grid-column: span 2;">
                     <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Cấp đai hiện tại</label>
                     <select id="m_belt">
-                        <option value="Trắng">Đai Trắng</option>
-                        <option value="Vàng">Đai Vàng</option>
-                        <option value="Xanh lá">Đai Xanh lá</option>
-                        <option value="Xanh dương">Đai Xanh dương</option>
-                        <option value="Đỏ">Đai Đỏ</option>
-                        <option value="Đen">Đai Đen</option>
+                        <option value="Đai trắng - Cấp 10">Đai trắng - Cấp 10</option>
+                        <option value="Đai trắng 1 vạch - Cấp 9">Đai trắng 1 vạch - Cấp 9</option>
+                        <option value="Đai trắng 2 vạch - Cấp 8">Đai trắng 2 vạch - Cấp 8</option>
+                        <option value="Đai vàng - Cấp 7">Đai vàng - Cấp 7</option>
+                        <option value="Đai xanh lá - Cấp 6">Đai xanh lá - Cấp 6</option>
+                        <option value="Đai xanh dương - Cấp 5">Đai xanh dương - Cấp 5</option>
+                        <option value="Đai đỏ - Cấp 4">Đai đỏ - Cấp 4</option>
+                        <option value="Đai đỏ 1 vạch - Cấp 3">Đai đỏ 1 vạch - Cấp 3</option>
+                        <option value="Đai đỏ 2 vạch - Cấp 2">Đai đỏ 2 vạch - Cấp 2</option>
+                        <option value="Đai đỏ 3 vạch - Cấp 1">Đai đỏ 3 vạch - Cấp 1</option>
+                        <option value="Đai Đỏ - Đen">Đai Đỏ - Đen</option>
+                        <option value="Đai Đen">Đai Đen</option>
                     </select>
                 </div>
                 <div>
                     <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Ngày sinh</label>
                     <input type="date" id="m_dob">
                 </div>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div>
                     <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Số điện thoại Zalo</label>
                     <input type="tel" id="m_phone" placeholder="Nhập SĐT">
                 </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
                 <div>
                     <label style="font-size: 0.8rem; color:#666; font-weight:bold;">Mức học phí chuẩn</label>
                     <input type="number" id="m_fee" placeholder="Mức phí chuẩn">
@@ -411,7 +429,7 @@
                 <label style="font-weight:bold; font-size:0.9rem">Họ và tên võ sinh *</label>
                 <input type="text" id="add_name" placeholder="VD: Nguyễn Văn A" required>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
                 <div>
                     <label style="font-weight:bold; font-size:0.9rem">Cơ sở tập</label>
                     <select id="add_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
@@ -419,12 +437,18 @@
                 <div>
                     <label style="font-weight:bold; font-size:0.9rem">Cấp đai nhập học</label>
                     <select id="add_belt">
-                        <option value="Trắng">Đai Trắng</option>
-                        <option value="Vàng">Đai Vàng</option>
-                        <option value="Xanh lá">Đai Xanh lá</option>
-                        <option value="Xanh dương">Đai Xanh dương</option>
-                        <option value="Đỏ">Đai Đỏ</option>
-                        <option value="Đen">Đai Đen</option>
+                        <option value="Đai trắng - Cấp 10">Đai trắng - Cấp 10</option>
+                        <option value="Đai trắng 1 vạch - Cấp 9">Đai trắng 1 vạch - Cấp 9</option>
+                        <option value="Đai trắng 2 vạch - Cấp 8">Đai trắng 2 vạch - Cấp 8</option>
+                        <option value="Đai vàng - Cấp 7">Đai vàng - Cấp 7</option>
+                        <option value="Đai xanh lá - Cấp 6">Đai xanh lá - Cấp 6</option>
+                        <option value="Đai xanh dương - Cấp 5">Đai xanh dương - Cấp 5</option>
+                        <option value="Đai đỏ - Cấp 4">Đai đỏ - Cấp 4</option>
+                        <option value="Đai đỏ 1 vạch - Cấp 3">Đai đỏ 1 vạch - Cấp 3</option>
+                        <option value="Đai đỏ 2 vạch - Cấp 2">Đai đỏ 2 vạch - Cấp 2</option>
+                        <option value="Đai đỏ 3 vạch - Cấp 1">Đai đỏ 3 vạch - Cấp 1</option>
+                        <option value="Đai Đỏ - Đen">Đai Đỏ - Đen</option>
+                        <option value="Đai Đen">Đai Đen</option>
                     </select>
                 </div>
             </div>
@@ -535,8 +559,14 @@
 <div id="toastMessage" class="toast">✅ Thành công!</div>
 
 <script>
-    // Phân quyền biến toàn cục
     window.userRole = 'admin';
+
+    // Helper function giải quyết triệt để lỗi múi giờ của Việt Nam
+    function getLocalToday() {
+        const d = new Date();
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().split('T')[0];
+    }
 
     function checkLogin() {
         const pass = document.getElementById('passInput').value;
@@ -550,7 +580,6 @@
             document.getElementById('inventoryForm').style.display = 'none';
             document.getElementById('expenseForm').style.display = 'none';
             document.getElementById('btnAddStudent').style.display = 'none';
-            // Ẩn nút thăng đai với viewer
             const btnBatch = document.querySelector('#tab_exam .btn-orange');
             if(btnBatch) btnBatch.style.display = 'none';
         } else {
@@ -602,7 +631,6 @@
         document.getElementById('tab_' + tabId).classList.add('active');
         document.getElementById('btn_' + tabId).classList.add('active');
         
-        // Gọi hàm render thi lên đai nếu tab được chọn
         if(tabId === 'exam' && typeof window.renderExamList === 'function') {
             window.renderExamList();
         }
@@ -640,7 +668,7 @@
 
     window.forceRender = renderApp;
 
-    // ===== CẤU HÌNH NGÂN HÀNG CHO VIETQR =====
+    // CẤU HÌNH NGÂN HÀNG
     const BANK_ID = "AGRIBANK"; 
     const ACCOUNT_NO = "4300205305756"; 
     const ACCOUNT_NAME = "TRUONG SANH TINH - CLB TAEKWONDO TST"; 
@@ -828,7 +856,7 @@
             amount = Number(inputAmount.replace(/\D/g, ''));
         }
         
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalToday();
         exportReceipt(name, amount, 'Học phí', today, month, branch, 'PHIẾU BÁO HỌC PHÍ');
     };
 
@@ -847,17 +875,20 @@
     };
 
     function getBeltBadge(belt) {
-        if(!belt) belt = 'Trắng';
+        if(!belt) belt = 'Đai trắng - Cấp 10';
         let bg = '#fff'; let col = '#333'; let border = '1px solid #ccc';
-        if(belt === 'Vàng') { bg = 'var(--belt-yellow)'; border = 'none'; }
-        else if(belt === 'Xanh lá') { bg = 'var(--belt-green)'; col = '#fff'; border = 'none'; }
-        else if(belt === 'Xanh dương') { bg = 'var(--belt-blue)'; col = '#fff'; border = 'none'; }
-        else if(belt === 'Đỏ') { bg = 'var(--belt-red)'; col = '#fff'; border = 'none'; }
-        else if(belt === 'Đen') { bg = 'var(--belt-black)'; col = '#fff'; border = 'none'; }
-        return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 60px; text-align:center;">${belt}</span>`;
+        
+        if(belt.includes('trắng')) { bg = '#fff'; col = '#333'; }
+        else if(belt.includes('vàng')) { bg = 'var(--belt-yellow)'; border = 'none'; }
+        else if(belt.includes('xanh lá')) { bg = 'var(--belt-green)'; col = '#fff'; border = 'none'; }
+        else if(belt.includes('xanh dương')) { bg = 'var(--belt-blue)'; col = '#fff'; border = 'none'; }
+        else if(belt.includes('đỏ')) { bg = 'var(--belt-red)'; col = '#fff'; border = 'none'; }
+        else if(belt.includes('Đen') || belt.includes('Đỏ - Đen')) { bg = 'var(--belt-black)'; col = '#fff'; border = 'none'; }
+        
+        return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 80px; text-align:center; white-space: normal;">${belt}</span>`;
     }
 
-    // --- LOGIC: THI LÊN ĐAI HÀNG LOẠT ---
+    // --- CẬP NHẬT LOGIC THI LÊN ĐAI CHO 12 CẤP ---
     window.renderExamList = () => {
         const filterBelt = document.getElementById('exam_filter_belt').value;
         const uiExam = document.getElementById('examList');
@@ -866,7 +897,7 @@
         
         Object.keys(allProfiles).forEach(name => {
             const p = allProfiles[name];
-            if(p.status === 'active' && (p.belt || 'Trắng') === filterBelt) {
+            if(p.status === 'active' && (p.belt || 'Đai trắng - Cấp 10') === filterBelt) {
                 uiExam.innerHTML += `<tr>
                     <td><input type="checkbox" class="exam-check" value="${name}"></td>
                     <td style="font-weight:bold; color:var(--primary);">${name}</td>
@@ -889,7 +920,7 @@
         
         const newBelt = document.getElementById('exam_new_belt').value;
         const fee = Number(document.getElementById('exam_fee_all').value) || 0;
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalToday();
         const currentMonth = today.substring(0, 7);
 
         let confirmMsg = `Xác nhận thăng đai lên [${newBelt}] cho ${selected.length} võ sinh?`;
@@ -900,10 +931,9 @@
         if(!confirm(confirmMsg)) return;
 
         for (let name of selected) {
-            // 1. Cập nhật cấp đai mới vào hồ sơ
+            if(!allProfiles[name]) continue; // Chống lỗi xóa profile
             await setDoc(doc(db, "tst_profiles", name), { belt: newBelt }, { merge: true });
             
-            // 2. Tự động ghi Sổ thu lệ phí thi
             if(fee > 0) {
                 await addDoc(colRef, {
                     branch: allProfiles[name].branch || 'CS1',
@@ -919,9 +949,8 @@
 
         window.showToast(`✅ Đã thăng đai thành công cho ${selected.length} võ sinh!`);
         document.getElementById('checkAllExam').checked = false;
-        renderExamList(); // Cập nhật lại danh sách hiển thị
+        renderExamList(); 
     };
-    // ------------------------------------
 
     function renderApp() {
         const selMonth = document.getElementById('filterMonth').value; 
@@ -1165,7 +1194,6 @@
         document.getElementById('debtCount').innerText = uiDebt.children.length + " Bạn";
         document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
 
-        // Gọi làm mới giao diện tab thi lên đai nếu nó đang hiển thị
         if(document.getElementById('tab_exam') && document.getElementById('tab_exam').classList.contains('active')) {
             if(typeof window.renderExamList === 'function') window.renderExamList();
         }
@@ -1191,7 +1219,7 @@
         }
 
         e.target.reset();
-        document.getElementById('inv_date').valueAsDate = new Date();
+        document.getElementById('inv_date').value = getLocalToday();
         window.showToast("✅ Đã cập nhật Kho & Sổ Quỹ!");
     };
 
@@ -1230,11 +1258,11 @@
         document.getElementById('m_name').innerText = cleanName;
         document.getElementById('m_status').value = p.status || 'active';
         document.getElementById('m_branch').value = p.branch || 'CS1';
-        document.getElementById('m_belt').value = p.belt || 'Trắng'; // Cấp đai
+        document.getElementById('m_belt').value = p.belt || 'Đai trắng - Cấp 10'; 
         document.getElementById('m_phone').value = p.phone || '';
         document.getElementById('m_fee').value = p.tuitionFee || '';
         document.getElementById('m_dob').value = p.dob || '';
-        document.getElementById('m_notes').value = p.notes || ''; // Ghi chú
+        document.getElementById('m_notes').value = p.notes || ''; 
         
         const skipped = p.skippedMonths || [];
         let skippedHtml = skipped.sort().map(m => {
@@ -1273,7 +1301,7 @@
         };
 
         if (newStatus === 'quit' && currentProfile.status !== 'quit') {
-            updateData.quitDate = new Date().toISOString().split('T')[0]; 
+            updateData.quitDate = getLocalToday(); 
         } else if (newStatus === 'active') {
             updateData.quitDate = null; 
         }
@@ -1314,7 +1342,7 @@
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thêm võ sinh!");
         document.getElementById('add_name').value = '';
         document.getElementById('add_dob').value = '';
-        document.getElementById('add_belt').value = 'Trắng'; // Mặc định Đai Trắng
+        document.getElementById('add_belt').value = 'Đai trắng - Cấp 10'; 
         document.getElementById('add_phone').value = '';
         document.getElementById('add_notes').value = '';
         document.getElementById('add_fee_default').value = '';
@@ -1323,7 +1351,7 @@
         document.getElementById('add_uniform_size').value = ''; 
         document.getElementById('add_uniform_display').value = '';
         document.getElementById('add_uniform_actual').value = '';
-        document.getElementById('add_date').valueAsDate = new Date();
+        document.getElementById('add_date').value = getLocalToday();
         document.getElementById('addModal').style.display = 'flex';
     };
 
@@ -1387,8 +1415,8 @@
         }
 
         e.target.reset();
-        document.getElementById('date').valueAsDate = new Date();
-        document.getElementById('tx_month').value = new Date().toISOString().substring(0, 7);
+        document.getElementById('date').value = getLocalToday();
+        document.getElementById('tx_month').value = getLocalToday().substring(0, 7);
         window.toggleMonthSelect();
         window.showToast("✅ Đã lưu khoản thu!");
     };
@@ -1404,7 +1432,7 @@
         await addDoc(colRef, { branch, type: 'Chi phí', description: desc, amount, date, timestamp: Date.now() });
 
         e.target.reset();
-        document.getElementById('exp_date').valueAsDate = new Date();
+        document.getElementById('exp_date').value = getLocalToday();
         window.showToast("✅ Đã lưu khoản chi!");
     };
 
@@ -1427,7 +1455,7 @@
 
             const p = allProfiles[cleanName] || {};
             
-            document.getElementById('r_belt').innerText = p.belt || 'Chưa cập nhật'; // In cấp đai lên bill
+            document.getElementById('r_belt').innerText = p.belt || 'Chưa cập nhật'; 
 
             const dobWrap = document.getElementById('r_dob_wrap');
             if (p.dob) { document.getElementById('r_dob').innerText = formatDate(p.dob); dobWrap.style.display = 'block'; } 
@@ -1484,14 +1512,17 @@
         }
     };
 
-    document.getElementById('filterMonth').value = new Date().toISOString().substring(0, 7);
+    const localTodayStr = getLocalToday();
+    const localMonthStr = localTodayStr.substring(0, 7);
+
+    document.getElementById('filterMonth').value = localMonthStr;
     document.getElementById('filterMonth').onchange = renderApp;
     document.getElementById('filterBranch').onchange = renderApp;
     document.getElementById('searchInput').oninput = renderApp;
-    document.getElementById('date').valueAsDate = new Date();
-    document.getElementById('tx_month').value = new Date().toISOString().substring(0, 7);
-    document.getElementById('inv_date').valueAsDate = new Date();
-    document.getElementById('exp_date').valueAsDate = new Date();
+    document.getElementById('date').value = localTodayStr;
+    document.getElementById('tx_month').value = localMonthStr;
+    document.getElementById('inv_date').value = localTodayStr;
+    document.getElementById('exp_date').value = localTodayStr;
 </script>
 </body>
 </html>
