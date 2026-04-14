@@ -415,8 +415,10 @@
                     <input type="hidden" id="add_fee_actual">
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-600 mb-1">Size Võ phục</label>
-                    <input type="text" id="add_uniform_size" list="add_size_list">
+                    <label class="block text-xs text-gray-600 mb-1">Size Võ phục (Từ kho)</label>
+                    <select id="add_uniform_size" class="w-full bg-white">
+                        <option value="">-- Chọn size (nếu mua) --</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs text-gray-600 mb-1">Tiền Võ phục</label>
@@ -911,17 +913,32 @@
             inv.type === 'Nhập kho' ? inventoryStats[inv.size].nhap += inv.qty : inventoryStats[inv.size].xuat += inv.qty;
         });
 
+        // TẠO GIAO DIỆN SELECT CHO FORM THÊM VÕ SINH
+        let sizeSelectHtml = '<option value="">-- Không mua / Trống --</option>';
+
         Object.keys(inventoryStats).forEach(size => {
             let s = inventoryStats[size]; 
             let ton = s.nhap - s.xuat; 
             if(s.nhap === 0 && s.xuat === 0 && !size.startsWith("Số")) return; 
+            
+            // Đổ vào Bảng Tồn Kho
             invListHtml += `<tr>
                 <td class="font-bold">${size}</td>
                 <td class="text-green-600">+${s.nhap}</td>
                 <td class="text-red-600">-${s.xuat}</td>
                 <td class="${ton<3 ? 'text-red-600' : 'text-green-600'} font-black text-lg">${ton}</td>
             </tr>`;
+
+            // Đổ vào Select Form Thêm võ sinh
+            if (ton > 0) {
+                sizeSelectHtml += `<option value="${size}">${size} (Còn: ${ton} bộ)</option>`;
+            } else {
+                sizeSelectHtml += `<option value="${size}" disabled>${size} (Hết hàng)</option>`;
+            }
         });
+
+        const addSizeSelect = document.getElementById('add_uniform_size');
+        if(addSizeSelect) addSizeSelect.innerHTML = sizeSelectHtml;
 
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
@@ -1301,7 +1318,9 @@
 
     window.openAddModal = () => {
         if(window.userRole === 'viewer') return;
-        ['add_name','add_dob','add_phone','add_notes','add_fee_default','add_fee_display','add_fee_actual','add_uniform_size','add_uniform_display','add_uniform_actual'].forEach(id => document.getElementById(id).value = '');
+        ['add_name','add_dob','add_phone','add_notes','add_fee_default','add_fee_display','add_fee_actual','add_uniform_display','add_uniform_actual'].forEach(id => document.getElementById(id).value = '');
+        
+        document.getElementById('add_uniform_size').value = ''; // Reset select
         document.getElementById('add_belt').value = 'Đai trắng - Cấp 10'; 
         document.getElementById('add_date').value = getLocalToday(); 
         document.getElementById('addModal').style.display = 'flex';
@@ -1344,6 +1363,7 @@
         }
         
         if(uniformSize || uniformFee > 0) { 
+            // Cập nhật xuất bán vào kho: Sẽ tự động làm giảm tồn kho trên hệ thống
             const invDoc = uniformSize ? await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }) : null; 
             if (uniformFee > 0) {
                 await addDoc(colRef, { 
@@ -1358,7 +1378,7 @@
             }
         }
         closeAddModal(); 
-        window.showToast("✅ Đã lưu hồ sơ mới!");
+        window.showToast("✅ Đã lưu hồ sơ mới và cập nhật kho!");
     };
 
     document.getElementById('transactionForm').onsubmit = async (e) => {
@@ -1418,7 +1438,6 @@
         } 
     };
 
-    // Fix Lỗi "Quy Nhơn" trước ngày tháng: Cập nhật hàm exportReceipt
     window.exportReceipt = async (name, amount, type, date, txMonth, branch, receiptTitle = 'BIÊN LAI THU TIỀN') => {
         try {
             const node = document.getElementById('receiptTemplate'); 
