@@ -122,7 +122,6 @@
         <button class="tab-btn" id="btn_debt" onclick="switchTab('debt')">⚠️ Báo Nợ</button>
         <button class="tab-btn" id="btn_active" onclick="switchTab('active')">🥋 Đang Tập (<span id="activeStudentCount">0</span>)</button>
         <button class="tab-btn" id="btn_quit" onclick="switchTab('quit')">🛑 Đã Nghỉ</button>
-        <button class="tab-btn" id="btn_report" onclick="switchTab('report')">📑 Dữ Liệu</button>
     </div>
 
     <div id="tab_dashboard" class="tab-content active">
@@ -154,6 +153,16 @@
             <div class="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
                 <h4 class="text-sm font-bold text-gray-600 mb-4 uppercase">👥 Biến động số lượng Võ sinh đang tập</h4>
                 <canvas id="memberChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h4 class="text-primary font-bold text-lg mb-4">BÁO CÁO DỮ LIỆU TỔNG HỢP</h4>
+            <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
+                <table id="tbl_report">
+                    <thead><tr><th>Tháng</th><th>Tập thực tế</th><th>Mới nhập</th><th>Đã nghỉ</th><th>Tổng Thu</th><th>Tổng Chi</th><th>Lợi Nhuận</th></tr></thead>
+                    <tbody id="reportList"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -261,46 +270,57 @@
     </div>
 
     <div id="tab_inventory" class="tab-content">
-        <h4 class="text-purple-700 font-bold text-lg mb-4">QUẢN LÝ KHO & DOANH THU VÕ PHỤC</h4>
+        <h4 class="text-purple-700 font-bold text-lg mb-4">QUẢN LÝ KHO (TỔNG) & DOANH THU VÕ PHỤC</h4>
         <div class="bg-purple-50 border-l-4 border-purple-600 p-4 rounded-lg flex flex-wrap gap-6 mb-6">
             <div class="text-sm">Tổng thu bán: <span id="sum_uniform_in" class="block text-lg font-bold text-green-600">0 ₫</span></div>
             <div class="text-sm">Tổng chi nhập: <span id="sum_uniform_out" class="block text-lg font-bold text-red-600">0 ₫</span></div>
             <div class="text-sm">Lợi nhuận võ phục: <span id="sum_uniform_profit" class="block text-xl font-bold text-purple-700">0 ₫</span></div>
         </div>
 
-        <form id="inventoryForm" class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-[#fdfbff] p-4 rounded-xl border border-purple-200 border-dashed mb-6">
-            <input type="text" id="inv_size" placeholder="Nhập Size Võ Phục (VD: Số 1...)" list="inv_size_list" required>
-            <datalist id="inv_size_list"><option value="Số 1 (1m1 - 1m2)"></option><option value="Số 2 (1m2 - 1m3)"></option><option value="Số 3 (1m3 - 1m4)"></option><option value="Số 4 (1m4 - 1m5)"></option><option value="Số 5 (1m5 - 1m6)"></option><option value="Số 6 (1m6 - 1m7)"></option><option value="Số 7 (1m7 - 1m8)"></option></datalist>
+        <form id="inventoryForm" class="grid grid-cols-1 md:grid-cols-5 gap-3 bg-[#fdfbff] p-4 rounded-xl border border-purple-200 border-dashed mb-6">
+            <select id="inv_size" required class="bg-white">
+                <option value="" disabled selected>-- Chọn Size --</option>
+                <option value="Số 1 (1m1 - 1m2)">Số 1 (1m1 - 1m2)</option>
+                <option value="Số 2 (1m2 - 1m3)">Số 2 (1m2 - 1m3)</option>
+                <option value="Số 3 (1m3 - 1m4)">Số 3 (1m3 - 1m4)</option>
+                <option value="Số 4 (1m4 - 1m5)">Số 4 (1m4 - 1m5)</option>
+                <option value="Số 5 (1m5 - 1m6)">Số 5 (1m5 - 1m6)</option>
+                <option value="Số 6 (1m6 - 1m7)">Số 6 (1m6 - 1m7)</option>
+                <option value="Số 7 (1m7 - 1m8)">Số 7 (1m7 - 1m8)</option>
+            </select>
 
-            <select id="inv_type" onchange="toggleInvType()" required><option value="Xuất bán">📤 Xuất bán cho Võ sinh</option><option value="Nhập kho">📥 Nhập kho (Từ xưởng)</option></select>
-            <input type="number" id="inv_qty" placeholder="Số lượng áo" required min="1">
+            <select id="inv_type" onchange="toggleInvType()" required class="bg-white">
+                <option value="Xuất bán">📤 Xuất bán</option>
+                <option value="Nhập kho">📥 Nhập kho</option>
+            </select>
+            
+            <input type="number" id="inv_qty" placeholder="Số lượng" required min="1">
 
-            <div class="autocomplete-container">
+            <div class="autocomplete-container md:col-span-2">
                 <input type="text" id="inv_desc" placeholder="Tên Võ sinh / Đại lý" autocomplete="off" required>
                 <div id="inv-autocomplete-list" class="autocomplete-items"></div>
             </div>
 
-            <div class="relative">
+            <div class="relative md:col-span-2">
                 <input type="text" id="inv_amountDisplay" placeholder="Tổng Tiền" required>
                 <input type="hidden" id="inv_amountActual">
             </div>
             
-            <input type="date" id="inv_date" required>
-            <select id="inv_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
-            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg py-2 transition">LƯU KHO SỔ QUỸ</button>
+            <input type="date" id="inv_date" required class="md:col-span-1">
+            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg py-2 transition md:col-span-2">LƯU KHO SỔ QUỸ</button>
         </form>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <h5 class="text-sm font-bold text-gray-500 mb-2 uppercase">Bảng Tồn Kho</h5>
+                <h5 class="text-sm font-bold text-gray-500 mb-2 uppercase">Bảng Tồn Kho Gộp Chung</h5>
                 <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
                     <table id="tbl_inventory"><thead><tr><th>Size Võ Phục</th><th>Tổng Nhập</th><th>Tổng Bán</th><th>TỒN KHO</th></tr></thead><tbody id="inventoryList"></tbody></table>
                 </div>
             </div>
             <div>
-                <h5 class="text-sm font-bold text-gray-500 mb-2 uppercase">Lịch sử Giao dịch</h5>
+                <h5 class="text-sm font-bold text-gray-500 mb-2 uppercase">Lịch sử Giao dịch Kho</h5>
                 <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
-                    <table id="tbl_uniform_tx"><thead><tr><th>Ngày</th><th>CS</th><th>Nội dung</th><th>Loại</th><th>Số lượng</th><th>Tiền</th><th>Thao tác</th></tr></thead><tbody id="uniformTxList"></tbody></table>
+                    <table id="tbl_uniform_tx"><thead><tr><th>Ngày</th><th>Nội dung</th><th>Loại</th><th>Kích cỡ</th><th>Tiền</th><th>Thao tác</th></tr></thead><tbody id="uniformTxList"></tbody></table>
                 </div>
             </div>
         </div>
@@ -308,6 +328,10 @@
 
     <div id="tab_expense" class="tab-content">
         <h4 class="text-secondary font-bold text-lg mb-4">GHI NHẬN CHI PHÍ VẬN HÀNH KHÁC</h4>
+        <div class="bg-red-50 border-l-4 border-secondary p-4 rounded-lg flex flex-wrap gap-6 mb-6">
+            <div class="text-sm">Tổng chi phí vận hành kỳ này: <span id="sum_expense_tab" class="block text-2xl font-bold text-secondary">0 ₫</span></div>
+        </div>
+
         <form id="expenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-[#fffafa] p-4 rounded-xl border border-red-200 border-dashed mb-6">
             <select id="exp_branch"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option><option value="Chung">Chung / Khác</option></select>
             <input type="text" id="exp_desc" placeholder="Nội dung chi (Tiền điện, Nước...)" required class="md:col-span-2">
@@ -322,23 +346,19 @@
     </div>
 
     <div id="tab_debt" class="tab-content">
+        <h4 class="text-yellow-600 font-bold text-lg mb-4">DANH SÁCH BÁO NỢ HỌC PHÍ</h4>
+        <div class="bg-yellow-50 border-l-4 border-warning p-4 rounded-lg flex flex-wrap gap-6 mb-6">
+            <div class="text-sm">Số lượng võ sinh đang nợ: <span id="sum_debt_count_tab" class="block text-xl font-bold text-yellow-700">0 Bạn</span></div>
+            <div class="text-sm">Tổng tiền học phí dự thu: <span id="sum_debt_amount_tab" class="block text-xl font-bold text-yellow-800">0 ₫</span></div>
+        </div>
         <div class="overflow-x-auto bg-white rounded-xl border border-gray-200"><table id="tbl_debt"><thead><tr><th>Kỳ nợ</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác</th></tr></thead><tbody id="debtList"></tbody></table></div>
     </div>
+
     <div id="tab_active" class="tab-content">
         <div class="overflow-x-auto bg-white rounded-xl border border-gray-200"><table id="tbl_active"><thead><tr><th>Họ và tên</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập</th><th>Thao tác</th></tr></thead><tbody id="activeList"></tbody></table></div>
     </div>
     <div id="tab_quit" class="tab-content">
         <div class="overflow-x-auto bg-white rounded-xl border border-gray-200"><table id="tbl_quit"><thead><tr><th>Võ sinh</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
-    </div>
-    
-    <div id="tab_report" class="tab-content">
-        <h4 class="text-primary font-bold text-lg mb-4">BÁO CÁO DỮ LIỆU TỔNG HỢP</h4>
-        <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
-            <table id="tbl_report">
-                <thead><tr><th>Tháng</th><th>Tập thực tế</th><th>Mới nhập</th><th>Đã nghỉ</th><th>Tổng Thu</th><th>Tổng Chi</th><th>Lợi Nhuận</th></tr></thead>
-                <tbody id="reportList"></tbody>
-            </table>
-        </div>
     </div>
 </div>
 
@@ -697,7 +717,7 @@
                 div.innerHTML = `<strong>${name}</strong> <span class="badge" style="background:#e9ecef; color:#495057;">${allProfiles[name].branch || 'CS1'}</span>`;
                 div.onclick = () => {
                     inp.value = name;
-                    document.getElementById(isTxForm ? 'branch' : 'inv_branch').value = allProfiles[name].branch || 'CS1';
+                    if(isTxForm) document.getElementById('branch').value = allProfiles[name].branch || 'CS1';
                     if(isTxForm && document.getElementById('type').value === 'Học phí' && allProfiles[name].tuitionFee) {
                         document.getElementById('amountActual').value = allProfiles[name].tuitionFee;
                         document.getElementById('amountDisplay').value = parseInt(allProfiles[name].tuitionFee, 10).toLocaleString('vi-VN');
@@ -950,8 +970,14 @@
 
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
+            
+            // Kiểm tra xem có phải giao dịch võ phục không
+            let isUniformTx = (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục');
+            
             if(selMonth && t.date && !t.date.startsWith(selMonth) && t.txMonth !== selMonth) return;
-            if(selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
+            
+            // Bỏ qua lọc cơ sở đối với dữ liệu Kho (để Kho luôn luôn là gộp chung toàn CLB)
+            if(!isUniformTx && selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
             
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
@@ -967,19 +993,23 @@
                     <td class="text-red-600 font-bold">-${t.amount.toLocaleString()}</td>
                     <td>${btnDel}</td>
                 </tr>`;
-            } else if (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục') {
+            } else if (isUniformTx) {
                 let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
                 if(isInc) inc_uniform += t.amount; else exp_uniform += t.amount;
                 
+                // Lấy size gần đúng để hiển thị từ Nội dung
+                let sizeText = "-";
+                let matchSize = t.description.match(/(Số \d+)/);
+                if(matchSize) sizeText = matchSize[1];
+
                 uniformTxHtml += `<tr>
                     <td>${formatDate(t.date)}</td>
-                    <td><span class="badge bg-gray-200 text-gray-800">${safeBranch}</span></td>
                     <td class="name-link" onclick="openProfile('${cleanName}')">${cleanName}</td>
                     <td>${isInc ? 'Xuất bán' : 'Nhập kho'}</td>
-                    <td>-</td>
+                    <td><span class="badge bg-purple-100 text-purple-800">${sizeText}</span></td>
                     <td class="${isInc ? 'text-green-600' : 'text-red-600'} font-bold">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td>
                     <td class="flex gap-1">
-                        ${isInc ? `<button class="bg-cyan-600 text-white px-2 py-1 rounded text-xs" onclick="exportReceipt('${cleanName}', ${t.amount}, 'Võ phục', '${t.date}', '', '${safeBranch}')">🧾</button>` : ''}
+                        ${isInc ? `<button class="bg-cyan-600 text-white px-2 py-1 rounded text-xs" onclick="exportReceipt('${cleanName}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung')">🧾</button>` : ''}
                         ${btnDel}
                     </td>
                 </tr>`;
@@ -1158,6 +1188,11 @@
         document.getElementById('debtCount').innerText = debtCountRender + " Bạn"; 
         document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
 
+        // Update New Summary Banners
+        if(document.getElementById('sum_expense_tab')) document.getElementById('sum_expense_tab').innerText = exp.toLocaleString() + " ₫";
+        if(document.getElementById('sum_debt_count_tab')) document.getElementById('sum_debt_count_tab').innerText = debtCountRender + " Bạn";
+        if(document.getElementById('sum_debt_amount_tab')) document.getElementById('sum_debt_amount_tab').innerText = totalDebtEst.toLocaleString() + " ₫";
+
         // RENDER CHARTS
         if(financeChartInstance) financeChartInstance.destroy();
         financeChartInstance = new Chart(document.getElementById('financeChart'), {
@@ -1194,7 +1229,9 @@
         const desc = document.getElementById('inv_desc').value.trim(); 
         const amount = Number(document.getElementById('inv_amountActual').value); 
         const date = document.getElementById('inv_date').value; 
-        const branch = document.getElementById('inv_branch').value;
+        
+        // Mặc định luôn là Chung (Kho Gộp)
+        const branch = 'Chung';
         
         const invDoc = await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
         
@@ -1363,11 +1400,11 @@
         }
         
         if(uniformSize || uniformFee > 0) { 
-            // Cập nhật xuất bán vào kho: Sẽ tự động làm giảm tồn kho trên hệ thống
+            // Cập nhật xuất bán vào kho
             const invDoc = uniformSize ? await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }) : null; 
             if (uniformFee > 0) {
                 await addDoc(colRef, { 
-                    branch, 
+                    branch: 'Chung', // Ép về Chung cho Kho tổng
                     type: 'Thu Võ phục', 
                     description: `Bán ${uniformSize} cho ${name}`, 
                     amount: uniformFee, 
