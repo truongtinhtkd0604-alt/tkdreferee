@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quản Lý CLB TST - Bản Ổn Định Đồng Bộ (Tối Ưu Hiệu Suất)</title>
+    <title>Quản Lý CLB TST - Bản Ổn Định Đồng Bộ (Có Dashboard)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --dark: #1a1a1a; --light: #f8f9fa; --gray: #6c757d; --purple: #6f42c1; --belt-yellow: #f1c40f; --belt-green: #2ecc71; --belt-blue: #3498db; --belt-red: #e74c3c; --belt-black: #2c3e50; }
         body { font-family: 'Inter', sans-serif; background: #eef2f7; margin: 0; padding: 10px; font-size: 16px; }
@@ -86,15 +87,18 @@
         .rev-item { font-size: 0.85rem; }
         .rev-item span { font-weight: bold; font-size: 1.1rem; color: var(--primary); display: block; margin-top: 5px;}
 
+        /* CSS Tối ưu thêm cho Mobile */
         @media (max-width: 768px) {
             .app-container { padding: 15px 10px; border-radius: 0; }
             .filters, .transaction-form { grid-template-columns: 1fr; }
-            .btn { width: 100%; justify-content: center; }
+            .btn { width: 100%; justify-content: center; margin-bottom: 5px; }
             .header { flex-direction: column; align-items: flex-start; }
             .header-left img { height: 40px; }
             .table-wrapper { padding-bottom: 10px; }
             .modal-content { padding: 15px; }
-            td, th { padding: 10px; }
+            td, th { padding: 10px; font-size: 0.85rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .chart-container { grid-template-columns: 1fr !important; }
         }
     </style>
 </head>
@@ -141,11 +145,12 @@
             <option value="CS1">CS1: Huỳnh Tấn Phát</option>
             <option value="CS2">CS2: Sân vận động</option>
         </select>
-        <input type="text" id="searchInput" placeholder="🔍 Tìm tên võ sinh, nội dung...">
+        <input type="text" id="searchInput" placeholder="🔍 Tên, SĐT, Cấp đai, Ghi chú...">
     </div>
 
     <div class="tabs-nav">
-        <button class="tab-btn active" id="btn_tx" onclick="switchTab('tx')">💼 Học Phí</button>
+        <button class="tab-btn active" id="btn_dashboard" onclick="switchTab('dashboard')">📊 Tổng Quan</button>
+        <button class="tab-btn" id="btn_tx" onclick="switchTab('tx')">💼 Học Phí</button>
         <button class="tab-btn" id="btn_exam" onclick="switchTab('exam')">🏆 Thi Lên Đai</button>
         <button class="tab-btn" id="btn_inventory" onclick="switchTab('inventory')">📦 Kho Võ Phục</button>
         <button class="tab-btn" id="btn_expense" onclick="switchTab('expense')">💸 Mục Đã Chi</button>
@@ -155,7 +160,20 @@
         <button class="tab-btn" id="btn_report" onclick="switchTab('report')">📊 Báo Cáo</button>
     </div>
 
-    <div id="tab_tx" class="tab-content active">
+    <div id="tab_dashboard" class="tab-content active">
+        <div class="chart-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
+            <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h5 style="margin: 0 0 15px 0; color: var(--gray); text-transform: uppercase; font-size: 0.9rem;">📈 Dòng tiền Thu/Chi 6 tháng gần nhất</h5>
+                <canvas id="financeChart" height="200"></canvas>
+            </div>
+            <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h5 style="margin: 0 0 15px 0; color: var(--gray); text-transform: uppercase; font-size: 0.9rem;">👥 Biến động số lượng Võ sinh đang tập</h5>
+                <canvas id="memberChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab_tx" class="tab-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
             <h4 style="margin:0; color:var(--primary)">GHI NHẬN HỌC PHÍ</h4>
             <button class="btn btn-success" id="btnAddStudent" onclick="openAddModal()">➕ THÊM VÕ SINH MỚI</button>
@@ -297,7 +315,7 @@
             <input type="hidden" id="inv_amountActual">
             <input type="date" id="inv_date" required>
             <select id="inv_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select>
-            <button type="submit" class="btn btn-purple">LƯU KHO & SỔ QUỸ</button>
+            <button type="submit" class="btn btn-purple">LƯU KHO SỔ QUỸ</button>
         </form>
 
         <div class="table-wrapper" style="margin-bottom: 20px;">
@@ -566,6 +584,9 @@
 
 <script>
     window.userRole = 'admin';
+    // Khởi tạo biến cho biểu đồ
+    let financeChartInstance = null;
+    let memberChartInstance = null;
 
     function getLocalToday() {
         const d = new Date();
@@ -776,7 +797,7 @@
 
     // FIX UX: Click vào lại sẽ mở danh sách nếu có chữ
     descInput.onfocus = function() { if(this.value) this.oninput(); };
-    
+
     descInput.oninput = function() {
         let val = this.value.toLowerCase().trim();
         autoList.innerHTML = '';
@@ -886,7 +907,7 @@
         exportReceipt(name, amount, 'Học phí', today, month, branch, 'PHIẾU BÁO HỌC PHÍ');
     };
 
-    // Hàm phụ trợ giúp dọn dẹp bảng trước khi xuất Excel để không bị dính các nút bấm rác
+    // Helper xóa cột thao tác khi xuất Excel
     function getCleanTableForExcel(tableId) {
         let tb = document.getElementById(tableId);
         if(!tb) return document.createElement('table');
@@ -944,7 +965,7 @@
         allTransactions.forEach(t => {
             if (t.type === 'Lệ phí thi' && (t.txMonth === selMonth || (t.date && t.date.startsWith(selMonth)))) {
                 Object.keys(allProfiles).forEach(n => {
-                    // FIX: Sử dụng exact match an toàn hơn
+                    // FIX BUG NHẬN DIỆN: Dùng exact match
                     if (t.description === `${n} (Thi lên ${document.getElementById('exam_new_belt').value})` || t.description.startsWith(n + " (Thi lên")) {
                         paidStudents[n] = t;
                     }
@@ -1044,7 +1065,7 @@
     function renderApp() {
         const selMonth = document.getElementById('filterMonth').value; 
         const selBranch = document.getElementById('filterBranch').value; 
-        const search = document.getElementById('searchInput').value.toLowerCase();
+        const search = document.getElementById('searchInput').value.toLowerCase().trim();
 
         const uiTx = document.getElementById('txList');
         const uiUniformTx = document.getElementById('uniformTxList');
@@ -1105,6 +1126,7 @@
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
             let safeBranch = t.branch || "CS1";
+            // Gắn relatedInvId vào nút Xóa để thu hồi tồn kho
             const btnDeleteHTML = window.userRole === 'admin' ? `<button class="btn btn-secondary" onclick="deleteTx('${t.id}', '${t.relatedInvId || ''}')" style="padding: 5px 10px;">🗑</button>` : '';
 
             if(t.type === 'Chi phí') {
@@ -1160,7 +1182,16 @@
             let safeBranch = p.branch || "CS1"; 
 
             if(selBranch !== 'all' && safeBranch !== selBranch) return;
-            if(search && !name.toLowerCase().includes(search) && !(p.notes && p.notes.toLowerCase().includes(search))) return;
+
+            // TÍNH NĂNG SMART SEARCH ĐA TIÊU CHÍ ĐƯỢC THÊM VÀO ĐÂY
+            let matchesSearch = true;
+            if (search) {
+                matchesSearch = name.toLowerCase().includes(search) || 
+                                (p.phone && p.phone.includes(search)) || 
+                                (p.belt && p.belt.toLowerCase().includes(search)) || 
+                                (p.notes && p.notes.toLowerCase().includes(search));
+            }
+            if (!matchesSearch) return; // Bỏ qua nếu không khớp tìm kiếm
 
             let beltHTML = getBeltBadge(p.belt);
 
@@ -1193,7 +1224,7 @@
 
                 if(!paidThisMonth && !skippedThisMonth && !joinedAfterThisMonth) {
                     debtCountRender++;
-                    // FIX LỖI NaN: Number(undefined) sẽ ra NaN, làm sập bộ đếm tiền. Đã thêm || 0
+                    // FIX LỖI NaN: Number(undefined) sẽ ra NaN, làm sập bộ đếm tiền.
                     totalDebtEst += (Number(p.tuitionFee) || 0);
 
                     const btnThuHTML = window.userRole === 'admin' ? `<button class="btn btn-success" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>` : '';
@@ -1227,6 +1258,13 @@
         
         let allMonths = Array.from(monthsSet).sort().reverse();
 
+        // CHUẨN BỊ DATA CHO DASHBOARD BIỂU ĐỒ (Lấy 6 tháng gần nhất)
+        let chartLabels = []; 
+        let chartIncome = []; 
+        let chartExpense = []; 
+        let chartActive = [];
+        let chronologicalMonths = [...allMonths].slice(0, 6).reverse(); 
+
         allMonths.forEach(m => {
             let m_new = 0, m_quit = 0, m_active_theoretical = 0, m_skipped = 0;
             let m_income = 0, m_expense = 0;
@@ -1254,6 +1292,15 @@
 
             let m_profit = m_income - m_expense;
             let profitColor = m_profit < 0 ? 'var(--secondary)' : 'var(--success)';
+
+            // Push dữ liệu vào mảng cho Biểu đồ
+            if (chronologicalMonths.includes(m)) {
+                let index = chronologicalMonths.indexOf(m);
+                chartLabels[index] = formatMonth(m);
+                chartIncome[index] = m_income; 
+                chartExpense[index] = m_expense; 
+                chartActive[index] = m_actual_practicing;
+            }
 
             reportHtml += `<tr>
                 <td style="font-weight:bold; color:var(--primary)">${formatMonth(m)}</td>
@@ -1301,11 +1348,42 @@
         document.getElementById('debtCount').innerText = debtCountRender + " Bạn";
         document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
 
+        // RENDER BIỂU ĐỒ (DASHBOARD)
+        const ctxFinance = document.getElementById('financeChart');
+        if(ctxFinance) {
+            if(financeChartInstance) financeChartInstance.destroy();
+            financeChartInstance = new Chart(ctxFinance, {
+                type: 'bar',
+                data: { 
+                    labels: chartLabels, 
+                    datasets: [
+                        { label: 'Tổng Thu', data: chartIncome, backgroundColor: '#28a745', borderRadius: 4 },
+                        { label: 'Tổng Chi', data: chartExpense, backgroundColor: '#C8102E', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        const ctxMember = document.getElementById('memberChart');
+        if(ctxMember) {
+            if(memberChartInstance) memberChartInstance.destroy();
+            memberChartInstance = new Chart(ctxMember, {
+                type: 'line',
+                data: { 
+                    labels: chartLabels, 
+                    datasets: [{ label: 'Võ sinh Đang tập', data: chartActive, borderColor: '#0033A0', backgroundColor: 'rgba(0, 51, 160, 0.1)', fill: true, tension: 0.3, pointRadius: 5 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
         if(document.getElementById('tab_exam') && document.getElementById('tab_exam').classList.contains('active')) {
             if(typeof window.renderExamList === 'function') window.renderExamList();
         }
     }
 
+    // Khi lưu Võ Phục, lưu ID của file Inventory vào Giao dịch tài chính
     document.getElementById('inventoryForm').onsubmit = async (e) => {
         e.preventDefault();
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể nhập xuất kho!");
@@ -1317,8 +1395,10 @@
         const date = document.getElementById('inv_date').value;
         const branch = document.getElementById('inv_branch').value;
 
+        // Lưu Tồn Kho
         const invDoc = await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
 
+        // Lưu Dòng tiền và gắn ID Tồn Kho
         if (amount > 0) {
             let txType = type === 'Nhập kho' ? 'Chi Võ phục' : 'Thu Võ phục';
             let txDesc = type === 'Nhập kho' ? `Nhập kho ${size} từ ${desc}` : `Bán ${size} cho ${desc}`;
@@ -1492,6 +1572,7 @@
         }
         
         if(uniformSize || uniformFee > 0) {
+            // FIX TỒN KHO: Khi thêm học sinh mới có bán võ phục, liên kết ID kho vào dòng tiền
             const invDoc = uniformSize ? await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }) : null;
             if (uniformFee > 0) {
                 let txData = { branch, type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 };
@@ -1553,6 +1634,7 @@
         window.showToast("✅ Đã lưu khoản chi!");
     };
 
+    // Cập nhật hàm Xóa giao dịch, tự động xóa tồn kho nếu có liên kết
     window.deleteTx = async (id, relatedInvId) => { 
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể xóa giao dịch!");
         if(confirm("Bạn có chắc chắn muốn xóa giao dịch này không?")) {
