@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quản Lý CLB TST - Bản Ổn Định Đồng Bộ</title>
+    <title>Quản Lý CLB TST - Bản Ổn Định Đồng Bộ (Tối Ưu Hiệu Suất)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -239,7 +239,7 @@
                 </div>
                 <div>
                     <label style="font-size: 0.8rem; font-weight: bold;">3. Lệ phí thi mặc định (đ/bạn):</label>
-                    <input type="number" id="exam_fee_all" value="250.000" placeholder="Số tiền lệ phí thi">
+                    <input type="number" id="exam_fee_all" value="250000" placeholder="Số tiền lệ phí thi">
                 </div>
             </div>
             <button class="btn btn-orange" onclick="processBatchUpgrade()" style="width: 100%; margin-top: 15px; font-size: 1rem;">⚡ XÁC NHẬN THĂNG ĐAI BẰNG BATCH (Tự động bỏ qua các bạn đã nộp phí)</button>
@@ -339,10 +339,10 @@
         <div class="table-wrapper"><table id="tbl_debt"><thead><tr><th>Kỳ nợ</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác</th></tr></thead><tbody id="debtList"></tbody></table></div>
     </div>
     <div id="tab_active" class="tab-content">
-        <div class="table-wrapper"><table><thead><tr><th>Họ và tên</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập học</th><th>Thao tác</th></tr></thead><tbody id="activeList"></tbody></table></div>
+        <div class="table-wrapper"><table id="tbl_active"><thead><tr><th>Họ và tên</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập học</th><th>Thao tác</th></tr></thead><tbody id="activeList"></tbody></table></div>
     </div>
     <div id="tab_quit" class="tab-content">
-        <div class="table-wrapper"><table><thead><tr><th>Võ sinh</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
+        <div class="table-wrapper"><table id="tbl_quit"><thead><tr><th>Võ sinh</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
     </div>
     
     <div id="tab_report" class="tab-content">
@@ -774,6 +774,9 @@
     const descInput = document.getElementById('description');
     const autoList = document.getElementById('autocomplete-list');
 
+    // FIX UX: Click vào lại sẽ mở danh sách nếu có chữ
+    descInput.onfocus = function() { if(this.value) this.oninput(); };
+    
     descInput.oninput = function() {
         let val = this.value.toLowerCase().trim();
         autoList.innerHTML = '';
@@ -800,6 +803,10 @@
 
     const invDescInput = document.getElementById('inv_desc');
     const invAutoList = document.getElementById('inv-autocomplete-list');
+    
+    // FIX UX: Click vào lại sẽ mở danh sách nếu có chữ
+    invDescInput.onfocus = function() { if(this.value) this.oninput(); };
+
     invDescInput.oninput = function() {
         let val = this.value.toLowerCase().trim();
         invAutoList.innerHTML = '';
@@ -879,16 +886,35 @@
         exportReceipt(name, amount, 'Học phí', today, month, branch, 'PHIẾU BÁO HỌC PHÍ');
     };
 
+    // Hàm phụ trợ giúp dọn dẹp bảng trước khi xuất Excel để không bị dính các nút bấm rác
+    function getCleanTableForExcel(tableId) {
+        let tb = document.getElementById(tableId);
+        if(!tb) return document.createElement('table');
+        let clone = tb.cloneNode(true);
+        let rows = clone.querySelectorAll('tr');
+        rows.forEach(row => {
+            let cells = row.querySelectorAll('th, td');
+            if(cells.length > 0) {
+                if (clone.rows[0].cells[cells.length - 1].innerText.toLowerCase().includes('thao tác')) {
+                    row.deleteCell(cells.length - 1);
+                }
+            }
+        });
+        return clone;
+    }
+
     window.exportToExcel = () => {
         const selMonth = document.getElementById('filterMonth').value;
         if(!selMonth) return alert("Vui lòng chọn tháng để xuất báo cáo!");
         let wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_tx')), "NguonThu");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_uniform_tx')), "ThuChiVoPhuc");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_inventory')), "KhoVoPhuc");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_exp')), "ChiPhi");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_debt')), "NoPhi");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tbl_report')), "BaoCaoThang");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_tx')), "NguonThu");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_uniform_tx')), "ThuChiVoPhuc");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_inventory')), "KhoVoPhuc");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_exp')), "ChiPhi");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_debt')), "NoPhi");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_active')), "HocSinh_DangTap");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_quit')), "HocSinh_DaNghi");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_report')), "BaoCaoThang");
         XLSX.writeFile(wb, `BaoCao_CLB_Thang_${selMonth}.xlsx`);
         window.showToast("✅ Đã tải báo cáo Excel!");
     };
@@ -911,7 +937,6 @@
         const filterBelt = document.getElementById('exam_filter_belt').value;
         const uiExam = document.getElementById('examList');
         if(!uiExam) return;
-        uiExam.innerHTML = '';
         
         const selMonth = document.getElementById('filterMonth').value;
         let paidStudents = {};
@@ -919,12 +944,16 @@
         allTransactions.forEach(t => {
             if (t.type === 'Lệ phí thi' && (t.txMonth === selMonth || (t.date && t.date.startsWith(selMonth)))) {
                 Object.keys(allProfiles).forEach(n => {
-                    // FIX BUG NHẬN DIỆN: Sử dụng startsWith thay vì includes để tránh nhầm A với Anh
-                    if (t.description.startsWith(n + " (Thi lên")) paidStudents[n] = t;
+                    // FIX: Sử dụng exact match an toàn hơn
+                    if (t.description === `${n} (Thi lên ${document.getElementById('exam_new_belt').value})` || t.description.startsWith(n + " (Thi lên")) {
+                        paidStudents[n] = t;
+                    }
                 });
             }
         });
 
+        // Tối ưu hiệu suất bằng String thay vì innerHTML += trong vòng lặp
+        let htmlExam = '';
         Object.keys(allProfiles).forEach(name => {
             const p = allProfiles[name];
             if(p.status === 'active' && (p.belt || 'Đai trắng - Cấp 10') === filterBelt) {
@@ -935,7 +964,7 @@
                     (window.userRole === 'admin' ? `<button class="btn btn-secondary" onclick="deleteTx('${isPaid.id}')" style="padding: 4px 8px; font-size: 0.8rem; background:#6c757d;">Xóa</button>` : '') :
                     (window.userRole === 'admin' ? `<button class="btn btn-orange" onclick="quickCollectExam('${name}', '${p.branch || 'CS1'}')" style="padding: 4px 8px; font-size: 0.8rem;">💰 Thu phí</button>` : '');
 
-                uiExam.innerHTML += `<tr>
+                htmlExam += `<tr>
                     <td><input type="checkbox" class="exam-check" value="${name}"></td>
                     <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold; color:var(--primary);">${name}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${p.branch || 'CS1'}</span></td>
@@ -945,6 +974,7 @@
                 </tr>`;
             }
         });
+        uiExam.innerHTML = htmlExam;
     };
 
     window.toggleAllExam = (source) => {
@@ -965,8 +995,11 @@
         let paidStudents = {};
         allTransactions.forEach(t => {
             if (t.type === 'Lệ phí thi' && (t.txMonth === currentMonth || (t.date && t.date.startsWith(currentMonth)))) {
-                // FIX BUG NHẬN DIỆN: Dùng startsWith
-                selected.forEach(n => { if (t.description.startsWith(n + " (Thi lên")) paidStudents[n] = true; });
+                selected.forEach(n => { 
+                    if (t.description === `${n} (Thi lên ${newBelt})` || t.description.startsWith(n + " (Thi lên")) {
+                        paidStudents[n] = true; 
+                    }
+                });
             }
         });
 
@@ -1021,9 +1054,10 @@
         const uiQuit = document.getElementById('quitList');
         const uiInvList = document.getElementById('inventoryList');
         const uiReport = document.getElementById('reportList');
-
-        uiTx.innerHTML = ''; uiUniformTx.innerHTML = ''; uiExp.innerHTML = ''; uiDebt.innerHTML = ''; uiActive.innerHTML = ''; uiQuit.innerHTML = ''; uiInvList.innerHTML = ''; uiReport.innerHTML = '';
         
+        // Tối ưu hiệu suất: Dùng String thao tác RAM thay vì bắt DOM Browser vẽ lại (Reflow) hàng trăm lần
+        let txHtml = '', uniformTxHtml = '', expHtml = '', debtHtml = '', activeHtml = '', quitHtml = '', invListHtml = '', reportHtml = '';
+
         let inc_tuition = 0, inc_exam = 0, inc_other = 0;
         let inc_uniform = 0, exp_uniform = 0;
         let exp = 0, totalDebtEst = 0;
@@ -1048,7 +1082,7 @@
             let ton = s.nhap - s.xuat;
             if(s.nhap === 0 && s.xuat === 0 && !size.startsWith("Số")) return; 
             let color = ton < 3 ? 'var(--secondary)' : 'var(--success)';
-            uiInvList.innerHTML += `<tr>
+            invListHtml += `<tr>
                 <td style="font-weight:bold;">${size}</td>
                 <td style="color:var(--success)">+${s.nhap}</td>
                 <td style="color:var(--secondary)">-${s.xuat}</td>
@@ -1071,12 +1105,11 @@
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
             let safeBranch = t.branch || "CS1";
-            // FIX LỖI 1: Gắn relatedInvId vào nút Xóa để thu hồi tồn kho
             const btnDeleteHTML = window.userRole === 'admin' ? `<button class="btn btn-secondary" onclick="deleteTx('${t.id}', '${t.relatedInvId || ''}')" style="padding: 5px 10px;">🗑</button>` : '';
 
             if(t.type === 'Chi phí') {
                 exp += t.amount;
-                uiExp.innerHTML += `<tr><td>${formatDate(t.date)}</td><td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td><td style="font-weight:bold;">${t.description}</td><td style="color:var(--secondary); font-weight:bold;">-${t.amount.toLocaleString()}</td><td>${btnDeleteHTML}</td></tr>`;
+                expHtml += `<tr><td>${formatDate(t.date)}</td><td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td><td style="font-weight:bold;">${t.description}</td><td style="color:var(--secondary); font-weight:bold;">-${t.amount.toLocaleString()}</td><td>${btnDeleteHTML}</td></tr>`;
             } 
             else if (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục') {
                 let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
@@ -1084,7 +1117,7 @@
                 
                 let qtyDisp = "-"; 
 
-                uiUniformTx.innerHTML += `<tr>
+                uniformTxHtml += `<tr>
                     <td>${formatDate(t.date)}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
                     <td class="name-link" onclick="openProfile('${cleanName}')" style="font-weight:bold;">${cleanName}</td>
@@ -1104,7 +1137,7 @@
 
                 let monthLabel = t.txMonth ? formatMonth(t.txMonth) : "-";
                 
-                uiTx.innerHTML += `<tr>
+                txHtml += `<tr>
                     <td>${formatDate(t.date)}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
                     <td><span class="badge" style="background:#e0f7fa; color:#006064">${monthLabel}</span></td>
@@ -1119,6 +1152,9 @@
             }
         });
 
+        let activeCount = 0;
+        let debtCountRender = 0;
+
         Object.keys(allProfiles).forEach(name => {
             const p = allProfiles[name];
             let safeBranch = p.branch || "CS1"; 
@@ -1129,13 +1165,14 @@
             let beltHTML = getBeltBadge(p.belt);
 
             if(p.status === 'active') {
+                activeCount++;
                 let lastPaidStr = "Chưa có";
                 if(studentPayments[name] && studentPayments[name].size > 0) {
                     const sorted = Array.from(studentPayments[name]).sort();
                     lastPaidStr = formatMonth(sorted[sorted.length - 1]);
                 }
 
-                uiActive.innerHTML += `<tr>
+                activeHtml += `<tr>
                     <td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">
                         ${name}
                         ${p.notes ? '<span title="'+p.notes+'" style="color:var(--warning); cursor:help;"> 📝</span>' : ''}
@@ -1155,12 +1192,14 @@
                 const joinedAfterThisMonth = joinedDate > selMonth;
 
                 if(!paidThisMonth && !skippedThisMonth && !joinedAfterThisMonth) {
-                    if(p.tuitionFee) totalDebtEst += Number(p.tuitionFee);
+                    debtCountRender++;
+                    // FIX LỖI NaN: Number(undefined) sẽ ra NaN, làm sập bộ đếm tiền. Đã thêm || 0
+                    totalDebtEst += (Number(p.tuitionFee) || 0);
 
                     const btnThuHTML = window.userRole === 'admin' ? `<button class="btn btn-success" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')" style="padding: 6px 10px; font-size: 0.8rem;">💰 Thu</button>` : '';
                     const btnBaoNghiHTML = window.userRole === 'admin' ? `<button class="btn" onclick="skipMonth('${name}', '${selMonth}')" style="padding: 6px 10px; font-size: 0.8rem; background:#ffc107; color:#856404; font-weight:bold;">⏸ Báo Nghỉ</button>` : '';
 
-                    uiDebt.innerHTML += `<tr>
+                    debtHtml += `<tr>
                         <td><span class="badge badge-quit" style="font-size:0.85rem">${formatMonth(selMonth)}</span></td>
                         <td>${lastPaidStr}</td>
                         <td><span class="badge" style="background:#e9ecef; color:#333">${safeBranch}</span></td>
@@ -1175,7 +1214,7 @@
                 }
             } else {
                 const btnRestore = window.userRole === 'admin' ? `<button class="btn btn-primary" style="padding: 5px 10px;" onclick="openProfile('${name}')">🔄 Khôi phục</button>` : '';
-                uiQuit.innerHTML += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${beltHTML}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td>${btnRestore}</td></tr>`;
+                quitHtml += `<tr><td class="name-link" onclick="openProfile('${name}')" style="font-weight:bold;">${name}</td><td>${beltHTML}</td><td>${safeBranch}</td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td>${btnRestore}</td></tr>`;
             }
         });
 
@@ -1216,7 +1255,7 @@
             let m_profit = m_income - m_expense;
             let profitColor = m_profit < 0 ? 'var(--secondary)' : 'var(--success)';
 
-            uiReport.innerHTML += `<tr>
+            reportHtml += `<tr>
                 <td style="font-weight:bold; color:var(--primary)">${formatMonth(m)}</td>
                 <td style="color:var(--info); font-weight:bold; font-size:1.1rem;">${m_actual_practicing}</td>
                 <td style="color:var(--success)">+${m_new}</td>
@@ -1226,6 +1265,16 @@
                 <td style="color:${profitColor}; font-weight:bold;">${m_profit.toLocaleString()} ₫</td>
             </tr>`;
         });
+
+        // Đổ toàn bộ dữ liệu HTML vào UI 1 lần duy nhất để tối ưu hiệu suất
+        uiTx.innerHTML = txHtml;
+        uiUniformTx.innerHTML = uniformTxHtml;
+        uiExp.innerHTML = expHtml;
+        uiDebt.innerHTML = debtHtml;
+        uiActive.innerHTML = activeHtml;
+        uiQuit.innerHTML = quitHtml;
+        uiInvList.innerHTML = invListHtml;
+        uiReport.innerHTML = reportHtml;
 
         let totalIncome = inc_tuition + inc_exam + inc_other + inc_uniform;
         let expenseTotal = exp + exp_uniform;
@@ -1248,8 +1297,8 @@
         profitEl.innerText = profit.toLocaleString() + " ₫";
         profitEl.style.color = profit < 0 ? "#ffcccc" : "white";
 
-        document.getElementById('activeStudentCount').innerText = Object.values(allProfiles).filter(p => p.status === 'active').length;
-        document.getElementById('debtCount').innerText = uiDebt.children.length + " Bạn";
+        document.getElementById('activeStudentCount').innerText = activeCount;
+        document.getElementById('debtCount').innerText = debtCountRender + " Bạn";
         document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
 
         if(document.getElementById('tab_exam') && document.getElementById('tab_exam').classList.contains('active')) {
@@ -1257,7 +1306,6 @@
         }
     }
 
-    // FIX LỖI 1: Khi lưu Võ Phục, lưu ID của file Inventory vào Giao dịch tài chính
     document.getElementById('inventoryForm').onsubmit = async (e) => {
         e.preventDefault();
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể nhập xuất kho!");
@@ -1269,10 +1317,8 @@
         const date = document.getElementById('inv_date').value;
         const branch = document.getElementById('inv_branch').value;
 
-        // Lưu Tồn Kho
         const invDoc = await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
 
-        // Lưu Dòng tiền và gắn ID Tồn Kho
         if (amount > 0) {
             let txType = type === 'Nhập kho' ? 'Chi Võ phục' : 'Thu Võ phục';
             let txDesc = type === 'Nhập kho' ? `Nhập kho ${size} từ ${desc}` : `Bán ${size} cho ${desc}`;
@@ -1446,7 +1492,6 @@
         }
         
         if(uniformSize || uniformFee > 0) {
-            // FIX TỒN KHO: Khi thêm học sinh mới có bán võ phục, liên kết ID kho vào dòng tiền
             const invDoc = uniformSize ? await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }) : null;
             if (uniformFee > 0) {
                 let txData = { branch, type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1 };
@@ -1508,7 +1553,6 @@
         window.showToast("✅ Đã lưu khoản chi!");
     };
 
-    // FIX LỖI 1: Cập nhật hàm Xóa giao dịch, tự động xóa tồn kho nếu có liên kết
     window.deleteTx = async (id, relatedInvId) => { 
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể xóa giao dịch!");
         if(confirm("Bạn có chắc chắn muốn xóa giao dịch này không?")) {
