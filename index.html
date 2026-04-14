@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quản Lý CLB TST - Bản Pro (Tailwind + Dashboard)</title>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -459,9 +463,9 @@
         <p style="margin: 5px 0 0; font-size: 22px; font-weight: bold; color: #C8102E;" id="r_amount">0 ₫</p>
         <p style="margin: 5px 0 0; font-size: 12px; font-style: italic; color: #555;" id="r_amount_words"></p>
     </div>
-    <div id="r_qr_wrap" style="text-align: center; margin-top: 20px; display: none;">
+    <div id="r_qr_wrap" style="text-align: center; margin-top: 20px; display: none; width: 100%;">
         <p style="font-size: 12px; color: #555; margin-bottom: 5px; font-weight: bold;">MÃ QR THANH TOÁN TỰ ĐỘNG</p>
-        <img id="qrCodeImg" crossorigin="anonymous" style="width: 250px; height: 250px; border-radius: 8px; border: 1px solid #ccc; padding: 5px; background: white;">
+        <img id="qrCodeImg" crossorigin="anonymous" style="display: block; margin: 0 auto; width: 250px; height: 250px; border-radius: 8px; border: 1px solid #ccc; padding: 5px; background: white;">
     </div>
     <p style="text-align: center; font-size: 11px; margin-top: 20px; font-style: italic; color: #777;">Cảm ơn quý phụ huynh, các em võ sinh đã đồng hành cùng CLB!</p>
 </div>
@@ -1414,6 +1418,7 @@
         } 
     };
 
+    // Fix Lỗi "Quy Nhơn" trước ngày tháng: Cập nhật hàm exportReceipt
     window.exportReceipt = async (name, amount, type, date, txMonth, branch, receiptTitle = 'BIÊN LAI THU TIỀN') => {
         try {
             const node = document.getElementById('receiptTemplate'); 
@@ -1422,7 +1427,8 @@
             document.getElementById('receiptTitle').innerText = receiptTitle;
             
             const dParts = date.split('-'); 
-            document.getElementById('r_date_top').innerText = dParts.length === 3 ? `Ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}` : formatDate(date);
+            // Thêm "Quy Nhơn, " vào trước ngày
+            document.getElementById('r_date_top').innerText = dParts.length === 3 ? `Quy Nhơn, ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}` : `Quy Nhơn, ${formatDate(date)}`;
             
             const p = allProfiles[cleanName] || {}; 
             document.getElementById('r_belt').innerText = p.belt || 'Chưa cập nhật'; 
