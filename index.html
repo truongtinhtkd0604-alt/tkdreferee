@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quản Lý CLB TST - Bản Pro V2 (Mobile Optimized)</title>
+    <title>Quản Lý CLB TST - Bản Pro (Tailwind + Dashboard)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,114 +26,99 @@
 
     <style>
         :root { --primary: #0033A0; --secondary: #C8102E; --success: #28a745; --warning: #ffc107; --info: #17a2b8; --gray: #6c757d; --purple: #6f42c1; --belt-yellow: #f1c40f; --belt-green: #2ecc71; --belt-blue: #3498db; --belt-red: #e74c3c; --belt-black: #2c3e50; }
-        body { font-family: 'Inter', -apple-system, sans-serif; background: #eef2f7; margin: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #eef2f7; margin: 0; }
         
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .app-container { display: none; }
         
-        /* Cải tiến UI Mobile & Sticky Elements */
-        .tabs-nav { position: sticky; top: 0; z-index: 50; background: #eef2f7; margin-inline: -1rem; padding-inline: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        /* Tabs */
         .tabs-nav::-webkit-scrollbar { display: none; }
-        .tab-btn { padding: 14px 16px; font-weight: 700; color: #6c757d; border-bottom: 3px solid transparent; cursor: pointer; transition: 0.2s; white-space: nowrap; font-size: 0.95rem; }
+        .tab-btn { padding: 12px 16px; font-weight: 600; color: #6c757d; border-bottom: 3px solid transparent; cursor: pointer; transition: 0.3s; white-space: nowrap; }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
         .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
-        .tab-content.active { display: block; padding-top: 10px;}
+        .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Tối ưu kích thước chạm cho di động (Touch Targets) */
-        input, select, textarea { border: 1px solid #d1d5db; padding: 12px 14px; border-radius: 10px; width: 100%; outline: none; transition: 0.2s; min-height: 48px; font-size: 16px; /* Chống zoom trên iOS */ }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,160,0.15); }
+        /* Tables & Inputs overrides */
+        input, select, textarea { border: 1px solid #d1d5db; padding: 10px 12px; border-radius: 8px; width: 100%; outline: none; transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,51,160,0.1); }
         input:disabled, select:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
-        button { min-height: 48px; display: flex; align-items: center; justify-content: center; }
-        .btn-small { min-height: 36px; padding: 6px 12px; } /* Cho các nút trong bảng */
         
         table { width: 100%; border-collapse: collapse; min-width: 650px; }
         th { background: #f8f9fa; color: #4b5563; font-size: 0.8rem; padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; text-transform: uppercase; white-space: nowrap; }
-        td { padding: 14px 12px; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; vertical-align: middle; }
-        .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; padding: 8px 0; display: block; }
+        td { padding: 12px; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; vertical-align: middle; }
+        .name-link { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; }
         
-        .badge { padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: inline-block; white-space: nowrap; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-block; white-space: nowrap; }
         .badge-active { background: #dcfce7; color: #166534; }
         .badge-quit { background: #fee2e2; color: #991b1b; }
         
-        /* Modal Bottom Sheet cho Mobile */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
-        .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 20px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; position: relative; }
+        /* Modal & UI */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; padding: 10px; backdrop-filter: blur(2px); }
+        .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
         
-        @media (max-width: 768px) {
-            .modal { align-items: flex-end; /* Kéo xuống đáy */ }
-            .modal-content { border-radius: 24px 24px 0 0; padding: 20px 16px 30px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-            td { padding: 12px 8px; }
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .autocomplete-items { position: absolute; border: 1px solid #ddd; z-index: 99; top: 100%; left: 0; right: 0; background: #fff; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 0 0 8px 8px;}
+        .autocomplete-items div { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 0.9rem;}
+        .autocomplete-items div:hover { background-color: #f0f4ff; }
         
-        .autocomplete-items { position: absolute; border: 1px solid #ddd; z-index: 99; top: 100%; left: 0; right: 0; background: #fff; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 0 0 12px 12px;}
-        .autocomplete-items div { padding: 14px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 0.95rem; }
-        .autocomplete-items div:hover { background-color: #f0fdf4; }
-        
-        .toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: #fff; text-align: center; border-radius: 12px; padding: 14px 20px; position: fixed; z-index: 10001; right: 50%; transform: translateX(50%) translateY(100px); bottom: 30px; transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1); font-size: 0.95rem; font-weight:bold; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
-        .toast.show { visibility: visible; transform: translateX(50%) translateY(0); }
-        @media (min-width: 768px) { .toast { right: 30px; bottom: 30px; transform: translateX(0) translateY(100px); width: auto; } .toast.show { transform: translateX(0) translateY(0); } }
+        .toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: #fff; text-align: center; border-radius: 8px; padding: 12px 16px; position: fixed; z-index: 10001; right: 20px; bottom: 20px; transform: translateY(100px); transition: 0.3s; font-size: 0.9rem; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .toast.show { visibility: visible; transform: translateY(0); }
         .toast.loading { background-color: var(--warning); color: #333; }
         
-        /* Floating Action Button (FAB) */
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background-color: var(--success); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); cursor: pointer; z-index: 90; transition: transform 0.2s; }
-        .fab:active { transform: scale(0.9); }
-        @media (min-width: 768px) { .fab { display: none; } }
-
+        /* Receipt format */
         #receiptTemplate { position: absolute; left: -9999px; visibility: hidden; width: 380px; background: white; padding: 25px; border-radius: 10px; border: 2px solid #0033A0; box-sizing: border-box;}
     </style>
 </head>
-<body class="p-0 md:p-4 text-gray-800">
+<body class="p-2 md:p-4 text-gray-800">
 
 <div id="loginOverlay">
-    <div class="bg-white p-8 rounded-3xl w-[90%] max-w-sm text-center shadow-2xl">
-        <img src="logo.png" id="loginLogo" alt="Logo" onerror="this.src='https://via.placeholder.com/240x80?text=LOGO+TST'" class="w-full max-w-[200px] mx-auto mb-6 object-contain">
-        <h2 class="text-primary text-2xl font-black mb-6">HỆ THỐNG TST</h2>
-        <input type="password" id="passInput" placeholder="Nhập mật khẩu" class="mb-6 text-center text-lg border-2 border-gray-200">
-        <button onclick="checkLogin()" class="w-full bg-primary hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg text-lg">ĐĂNG NHẬP</button>
+    <div class="bg-white p-8 rounded-2xl w-[90%] max-w-sm text-center shadow-2xl">
+        <img src="logo.png" id="loginLogo" alt="Logo" onerror="this.src='https://via.placeholder.com/240x80?text=LOGO+TST'" class="w-full max-w-[200px] mx-auto mb-4 object-contain">
+        <h2 class="text-primary text-xl font-bold mb-6">QUẢN LÝ CLB TST</h2>
+        <input type="password" id="passInput" placeholder="Nhập mật khẩu" class="mb-4 text-center text-lg border-2 border-gray-200">
+        <button onclick="checkLogin()" class="w-full bg-primary hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md">ĐĂNG NHẬP</button>
     </div>
 </div>
 
-<div class="app-container max-w-[1280px] mx-auto bg-white md:rounded-2xl shadow-xl p-4 md:p-6 min-h-screen md:min-h-0" id="mainApp">
+<div class="app-container max-w-[1280px] mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-6" id="mainApp">
     
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-4 mb-4 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-4 mb-6 gap-4">
         <div class="flex items-center gap-3">
             <img src="logo.png" alt="TST Logo" onerror="this.src='https://via.placeholder.com/150x50?text=TST'" class="h-12 w-auto object-contain">
-            <h2 class="text-primary text-2xl font-extrabold uppercase m-0 tracking-tight">Quản Lý TST</h2>
+            <h2 class="text-primary text-xl md:text-2xl font-extrabold uppercase m-0">Quản Lý CLB TST</h2>
         </div>
-        <button id="exportBtn" onclick="exportToExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
+        <button id="exportBtn" onclick="exportToExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 shadow-sm transition">
             📥 Xuất Báo Cáo Excel
         </button>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-2xl border border-gray-200 mb-2 shadow-inner">
-        <div class="col-span-2 md:col-span-1">
-            <label class="block text-xs font-bold text-gray-500 mb-1">Tìm kiếm thông minh</label>
-            <div class="relative">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-lg">🔍</span>
-                <input type="text" id="searchInput" placeholder="Tên, SĐT, Cấp đai..." class="pl-10 bg-white">
-            </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 shadow-inner">
         <div>
-            <label class="block text-xs font-bold text-gray-500 mb-1">Kỳ báo cáo</label>
-            <input type="month" id="filterMonth" class="bg-white">
+            <label class="block text-xs font-bold text-gray-500 mb-1">Kỳ báo cáo (Tháng)</label>
+            <input type="month" id="filterMonth">
         </div>
         <div>
             <label class="block text-xs font-bold text-gray-500 mb-1">Lọc Cơ sở</label>
-            <select id="filterBranch" class="bg-white">
-                <option value="all">🏢 Tất cả</option>
-                <option value="CS1">📍 CS1</option>
-                <option value="CS2">📍 CS2</option>
+            <select id="filterBranch">
+                <option value="all">🏢 Tất cả cơ sở</option>
+                <option value="CS1">📍 CS1: Huỳnh Tấn Phát</option>
+                <option value="CS2">📍 CS2: Sân vận động</option>
             </select>
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Tìm kiếm thông minh</label>
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">🔍</span>
+                <input type="text" id="searchInput" placeholder="Tên, SĐT, Cấp đai, Ghi chú..." class="pl-10">
+            </div>
         </div>
     </div>
 
-    <div class="tabs-nav flex gap-1 mb-4 overflow-x-auto pb-1">
-        <button class="tab-btn active" id="btn_tx" onclick="switchTab('tx')">💼 Thu Phí</button>
+    <div class="tabs-nav flex gap-2 border-b-2 border-gray-100 mb-6 overflow-x-auto pb-1">
+        <button class="tab-btn active" id="btn_tx" onclick="switchTab('tx')">💼 Học Phí</button>
         <button class="tab-btn" id="btn_debt" onclick="switchTab('debt')">⚠️ Báo Nợ</button>
         <button class="tab-btn" id="btn_inventory" onclick="switchTab('inventory')">📦 Kho Võ Phục</button>
-        <button class="tab-btn" id="btn_exam" onclick="switchTab('exam')">🏆 Thi Đai</button>
+        <button class="tab-btn" id="btn_exam" onclick="switchTab('exam')">🏆 Thi Lên Đai</button>
         <button class="tab-btn" id="btn_expense" onclick="switchTab('expense')">💸 Chi Phí</button>
         <button class="tab-btn" id="btn_active" onclick="switchTab('active')">🥋 Đang Tập (<span id="activeStudentCount">0</span>)</button>
         <button class="tab-btn" id="btn_quit" onclick="switchTab('quit')">🛑 Đã Nghỉ</button>
@@ -141,65 +126,66 @@
     </div>
 
     <div id="tab_tx" class="tab-content active">
-        <div class="hidden md:flex justify-between items-center mb-4 gap-3">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
             <h4 class="text-primary font-bold text-lg">GHI NHẬN HỌC PHÍ & THU KHÁC</h4>
-            <button id="btnAddStudent" onclick="openAddModal()" class="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 transition">➕ THÊM VÕ SINH MỚI</button>
+            <button id="btnAddStudent" onclick="openAddModal()" class="w-full md:w-auto bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition">➕ THÊM VÕ SINH MỚI</button>
         </div>
 
-        <div class="bg-blue-50 border-l-4 border-primary p-4 rounded-xl flex flex-wrap gap-6 mb-6">
-            <div class="text-sm">Học phí kỳ này: <span id="sum_tuition" class="block text-2xl font-black text-primary">0 ₫</span></div>
-            <div class="text-sm text-gray-600">Thu khác: <span id="sum_other" class="block text-xl font-bold">0 ₫</span></div>
+        <div class="bg-blue-50 border-l-4 border-primary p-4 rounded-lg flex flex-wrap gap-6 mb-6">
+            <div class="text-sm">Tổng Học phí kỳ này: <span id="sum_tuition" class="block text-xl font-bold text-primary">0 ₫</span></div>
+            <div class="text-sm text-gray-500">Khoản thu khác: <span id="sum_other" class="block text-lg font-bold">0 ₫</span></div>
         </div>
 
-        <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-5 gap-4 bg-white p-5 rounded-2xl border border-blue-200 shadow-sm mb-6">
-            <select id="branch" class="bg-gray-50 font-semibold"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option></select>
-            <select id="type" onchange="toggleMonthSelect()" class="bg-gray-50 font-semibold">
+        <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-5 gap-3 bg-white p-4 rounded-xl border border-blue-200 border-dashed mb-6">
+            <select id="branch"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option></select>
+            <select id="type" onchange="toggleMonthSelect()">
                 <option value="Học phí">Học phí</option>
                 <option value="Thu khác">Thu khác</option>
             </select>
             
-            <div class="autocomplete-container md:col-span-1 relative">
-                <input type="text" id="description" placeholder="Tên võ sinh / Nội dung" autocomplete="off" required class="bg-gray-50 font-bold text-primary">
+            <div class="autocomplete-container md:col-span-1">
+                <input type="text" id="description" placeholder="Tên võ sinh / Nội dung" autocomplete="off" required>
                 <div id="autocomplete-list" class="autocomplete-items"></div>
             </div>
 
-            <input type="month" id="tx_month" title="Tháng thu học phí" required class="bg-gray-50">
+            <input type="month" id="tx_month" title="Tháng thu học phí" required>
             
             <div class="md:col-span-1">
-                <input type="text" id="amountDisplay" placeholder="Số tiền (VNĐ)" required class="bg-gray-50 font-bold text-red-600 text-lg">
+                <input type="text" id="amountDisplay" placeholder="Số tiền (VNĐ)" required>
                 <input type="hidden" id="amountActual">
             </div>
             
-            <input type="date" id="date" required class="bg-gray-50">
-            <button type="submit" class="bg-primary hover:bg-blue-800 text-white font-bold rounded-xl md:col-span-4 transition text-lg">LƯU KHOẢN THU</button>
+            <input type="date" id="date" required>
+            <button type="submit" class="bg-primary hover:bg-blue-800 text-white font-bold rounded-lg md:col-span-4 py-2 transition">LƯU KHOẢN THU</button>
         </form>
 
-        <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
             <table id="tbl_tx">
-                <thead><tr><th>Ngày</th><th>Cơ sở</th><th>Kỳ thu</th><th>Võ sinh / Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
+                <thead><tr><th>Ngày lập</th><th>Cơ sở</th><th>Kỳ thu</th><th>Võ sinh / Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
                 <tbody id="txList"></tbody>
             </table>
         </div>
     </div>
 
     <div id="tab_debt" class="tab-content">
-        <h4 class="text-yellow-600 font-bold text-lg mb-4 hidden md:block">DANH SÁCH BÁO NỢ HỌC PHÍ</h4>
-        <div class="bg-yellow-50 border-l-4 border-warning p-4 rounded-xl flex flex-wrap justify-between gap-4 mb-4 shadow-sm">
-            <div class="text-sm">Đang nợ: <span id="sum_debt_count_tab" class="block text-2xl font-black text-yellow-700">0 Bạn</span></div>
-            <div class="text-sm text-right">Dự thu: <span id="sum_debt_amount_tab" class="block text-2xl font-black text-yellow-800">0 ₫</span></div>
+        <h4 class="text-yellow-600 font-bold text-lg mb-4">DANH SÁCH BÁO NỢ HỌC PHÍ</h4>
+        <div class="bg-yellow-50 border-l-4 border-warning p-4 rounded-lg flex flex-wrap gap-6 mb-6">
+            <div class="text-sm">Số lượng võ sinh đang nợ: <span id="sum_debt_count_tab" class="block text-xl font-bold text-yellow-700">0 Bạn</span></div>
+            <div class="text-sm">Tổng tiền học phí dự thu: <span id="sum_debt_amount_tab" class="block text-xl font-bold text-yellow-800">0 ₫</span></div>
         </div>
-        <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm"><table id="tbl_debt"><thead><tr><th>Kỳ nợ</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác</th></tr></thead><tbody id="debtList"></tbody></table></div>
+        <div class="overflow-x-auto bg-white rounded-xl border border-gray-200"><table id="tbl_debt"><thead><tr><th>Kỳ nợ</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác</th></tr></thead><tbody id="debtList"></tbody></table></div>
     </div>
 
     <div id="tab_inventory" class="tab-content">
-        <div class="bg-purple-50 border-l-4 border-purple-600 p-4 rounded-xl flex flex-wrap justify-between gap-4 mb-6 shadow-sm">
+        <h4 class="text-purple-700 font-bold text-lg mb-4">QUẢN LÝ KHO (TỔNG) & DOANH THU VÕ PHỤC</h4>
+        <div class="bg-purple-50 border-l-4 border-purple-600 p-4 rounded-lg flex flex-wrap gap-6 mb-6">
             <div class="text-sm">Tổng thu bán: <span id="sum_uniform_in" class="block text-lg font-bold text-green-600">0 ₫</span></div>
             <div class="text-sm">Tổng chi nhập: <span id="sum_uniform_out" class="block text-lg font-bold text-red-600">0 ₫</span></div>
-            <div class="text-sm text-right">Lợi nhuận: <span id="sum_uniform_profit" class="block text-2xl font-black text-purple-700">0 ₫</span></div>
+            <div class="text-sm">Lợi nhuận võ phục: <span id="sum_uniform_profit" class="block text-xl font-bold text-purple-700">0 ₫</span></div>
         </div>
 
-        <form id="inventoryForm" class="grid grid-cols-1 md:grid-cols-5 gap-4 bg-[#fdfbff] p-5 rounded-2xl border border-purple-200 shadow-sm mb-6">
-            <select id="inv_size" required class="bg-white font-semibold">
+        <form id="inventoryForm" class="grid grid-cols-1 md:grid-cols-5 gap-3 bg-[#fdfbff] p-4 rounded-xl border border-purple-200 border-dashed mb-6">
+            <select id="inv_size" required class="bg-white">
                 <option value="" disabled selected>-- Chọn Size --</option>
                 <option value="Số 1 (1m1 - 1m2)">Số 1 (1m1 - 1m2)</option>
                 <option value="Số 2 (1m2 - 1m3)">Số 2 (1m2 - 1m3)</option>
@@ -210,54 +196,56 @@
                 <option value="Số 7 (1m7 - 1m8)">Số 7 (1m7 - 1m8)</option>
             </select>
 
-            <select id="inv_type" onchange="toggleInvType()" required class="bg-white font-bold text-purple-700">
+            <select id="inv_type" onchange="toggleInvType()" required class="bg-white">
                 <option value="Xuất bán">📤 Xuất bán</option>
                 <option value="Nhập kho">📥 Nhập kho</option>
             </select>
             
-            <input type="number" id="inv_qty" placeholder="Số lượng" required min="1" class="font-bold text-center">
+            <input type="number" id="inv_qty" placeholder="Số lượng" required min="1">
 
-            <div class="autocomplete-container md:col-span-2 relative">
-                <input type="text" id="inv_desc" placeholder="Tên Võ sinh" autocomplete="off" required>
+            <div class="autocomplete-container md:col-span-2">
+                <input type="text" id="inv_desc" placeholder="Tên Võ sinh / Đại lý" autocomplete="off" required>
                 <div id="inv-autocomplete-list" class="autocomplete-items"></div>
             </div>
 
             <div class="relative md:col-span-2">
-                <input type="text" id="inv_amountDisplay" placeholder="Tổng Tiền" required class="font-bold text-red-600">
+                <input type="text" id="inv_amountDisplay" placeholder="Tổng Tiền" required>
                 <input type="hidden" id="inv_amountActual">
             </div>
             
             <input type="date" id="inv_date" required class="md:col-span-1">
-            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition md:col-span-2 text-lg">LƯU KHO</button>
+            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg py-2 transition md:col-span-2">LƯU KHO SỔ QUỸ</button>
         </form>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <h5 class="text-sm font-bold text-gray-500 mb-2 uppercase">Bảng Tồn Kho Thực Tế</h5>
-                <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm">
-                    <table id="tbl_inventory"><thead><tr><th>Size</th><th>Nhập</th><th>Bán</th><th>TỒN</th></tr></thead><tbody id="inventoryList"></tbody></table>
+                <h5 class="text-sm font-bold text-gray-500 mb-2 uppercase">Bảng Tồn Kho Gộp Chung</h5>
+                <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
+                    <table id="tbl_inventory"><thead><tr><th>Size Võ Phục</th><th>Tổng Nhập</th><th>Tổng Bán</th><th>TỒN KHO</th></tr></thead><tbody id="inventoryList"></tbody></table>
                 </div>
             </div>
             <div>
-                <h5 class="text-sm font-bold text-gray-500 mb-2 uppercase">Lịch sử Giao dịch</h5>
-                <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm">
-                    <table id="tbl_uniform_tx"><thead><tr><th>Ngày</th><th>Nội dung</th><th>Loại</th><th>Cỡ</th><th>Tiền</th><th>Tác vụ</th></tr></thead><tbody id="uniformTxList"></tbody></table>
+                <h5 class="text-sm font-bold text-gray-500 mb-2 uppercase">Lịch sử Giao dịch Kho</h5>
+                <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
+                    <table id="tbl_uniform_tx"><thead><tr><th>Ngày</th><th>Nội dung</th><th>Loại</th><th>Kích cỡ</th><th>Tiền</th><th>Thao tác</th></tr></thead><tbody id="uniformTxList"></tbody></table>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="tab_exam" class="tab-content">
-        <div class="bg-[#fff4e5] border-l-4 border-[#d35400] p-4 rounded-xl mb-6 shadow-sm">
-            <div class="text-sm">Tổng lệ phí thi thu kỳ này: <span id="sum_exam_tab" class="block text-2xl font-black text-[#d35400]">0 ₫</span></div>
+        <h4 class="text-[#d35400] font-bold text-lg mb-4">QUẢN LÝ LỆ PHÍ THI & THĂNG ĐAI</h4>
+        
+        <div class="bg-[#fff4e5] border-l-4 border-[#d35400] p-4 rounded-lg mb-6">
+            <div class="text-sm">Tổng lệ phí thi thu kỳ này: <span id="sum_exam_tab" class="block text-2xl font-bold text-[#d35400]">0 ₫</span></div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-[#ffe5d0] mb-6 shadow-sm">
-            <h4 class="text-[#d46b08] font-bold mb-4 text-lg">⚡ CẬP NHẬT THĂNG ĐAI BATCH</h4>
+        <div class="bg-[#fffafa] p-5 rounded-xl border border-[#ffe5d0] mb-6 shadow-sm">
+            <h4 class="text-[#d46b08] font-bold mb-3 flex items-center gap-2">⚡ CẬP NHẬT THĂNG ĐAI HÀNG LOẠT</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">1. Lọc cấp đai hiện tại:</label>
-                    <select id="exam_filter_belt" onchange="renderExamList()" class="bg-gray-50">
+                    <select id="exam_filter_belt" onchange="renderExamList()" class="bg-white">
                         <option value="Đai trắng - Cấp 10">Đai trắng - Cấp 10</option>
                         <option value="Đai trắng 1 vạch - Cấp 9">Đai trắng 1 vạch - Cấp 9</option>
                         <option value="Đai trắng 2 vạch - Cấp 8">Đai trắng 2 vạch - Cấp 8</option>
@@ -273,7 +261,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">2. Lên cấp đai mới:</label>
-                    <select id="exam_new_belt" class="bg-gray-50" onchange="renderExamList()">
+                    <select id="exam_new_belt" class="bg-white" onchange="renderExamList()">
                         <option value="Đai trắng 1 vạch - Cấp 9">Đai trắng 1 vạch - Cấp 9</option>
                         <option value="Đai trắng 2 vạch - Cấp 8">Đai trắng 2 vạch - Cấp 8</option>
                         <option value="Đai vàng - Cấp 7">Đai vàng - Cấp 7</option>
@@ -288,86 +276,87 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1">3. Lệ phí mặc định (đ/bạn):</label>
-                    <input type="number" id="exam_fee_all" value="250000" class="bg-gray-50 font-bold text-red-600">
+                    <label class="block text-xs font-bold text-gray-600 mb-1">3. Lệ phí thi mặc định (đ/bạn):</label>
+                    <input type="number" id="exam_fee_all" value="250000" placeholder="Số tiền" class="bg-white">
                 </div>
             </div>
-            <button onclick="processBatchUpgrade()" class="w-full mt-5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition shadow-md text-lg">
-                XÁC NHẬN THĂNG ĐAI
+            <button onclick="processBatchUpgrade()" class="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition shadow-md">
+                XÁC NHẬN THĂNG ĐAI BẰNG BATCH (Tự động bỏ qua các bạn đã nộp phí)
             </button>
         </div>
 
-        <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
             <table id="tbl_exam_list">
-                <thead><tr><th width="40" class="text-center"><input type="checkbox" id="checkAllExam" onclick="toggleAllExam(this)" style="min-height:24px; width:24px;"></th><th>Võ sinh</th><th>Cơ sở</th><th>Đai hiện tại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                <thead><tr><th width="40"><input type="checkbox" id="checkAllExam" onclick="toggleAllExam(this)"></th><th>Võ sinh</th><th>Cơ sở</th><th>Cấp đai hiện tại</th><th>Trạng thái nộp phí</th><th>Thao tác</th></tr></thead>
                 <tbody id="examList"></tbody>
             </table>
         </div>
     </div>
 
     <div id="tab_expense" class="tab-content">
-        <div class="bg-red-50 border-l-4 border-secondary p-4 rounded-xl mb-6 shadow-sm">
-            <div class="text-sm">Tổng chi phí vận hành kỳ này: <span id="sum_expense_tab" class="block text-2xl font-black text-secondary">0 ₫</span></div>
+        <h4 class="text-secondary font-bold text-lg mb-4">GHI NHẬN CHI PHÍ VẬN HÀNH KHÁC</h4>
+        <div class="bg-red-50 border-l-4 border-secondary p-4 rounded-lg flex flex-wrap gap-6 mb-6">
+            <div class="text-sm">Tổng chi phí vận hành kỳ này: <span id="sum_expense_tab" class="block text-2xl font-bold text-secondary">0 ₫</span></div>
         </div>
 
-        <form id="expenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-5 rounded-2xl border border-red-200 shadow-sm mb-6">
-            <select id="exp_branch" class="bg-gray-50"><option value="CS1">CS1</option><option value="CS2">CS2</option><option value="Chung">Chung / Khác</option></select>
-            <input type="text" id="exp_desc" placeholder="Nội dung chi (Điện, Nước...)" required class="md:col-span-2 bg-gray-50">
+        <form id="expenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-[#fffafa] p-4 rounded-xl border border-red-200 border-dashed mb-6">
+            <select id="exp_branch"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option><option value="Chung">Chung / Khác</option></select>
+            <input type="text" id="exp_desc" placeholder="Nội dung chi (Tiền điện, Nước...)" required class="md:col-span-2">
             <div>
-                <input type="text" id="exp_amountDisplay" placeholder="Số tiền chi" required class="bg-gray-50 font-bold text-red-600">
+                <input type="text" id="exp_amountDisplay" placeholder="Số tiền chi" required>
                 <input type="hidden" id="exp_amountActual">
             </div>
-            <input type="date" id="exp_date" required class="bg-gray-50">
-            <button type="submit" class="bg-secondary hover:bg-red-800 text-white font-bold rounded-xl md:col-span-3 transition text-lg">LƯU KHOẢN CHI</button>
+            <input type="date" id="exp_date" required>
+            <button type="submit" class="bg-secondary hover:bg-red-800 text-white font-bold rounded-lg md:col-span-3 py-2 transition">LƯU KHOẢN CHI</button>
         </form>
-        <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm"><table id="tbl_exp"><thead><tr><th>Ngày chi</th><th>Cơ sở</th><th>Nội dung</th><th>Số tiền</th><th>Thao tác</th></tr></thead><tbody id="expenseList"></tbody></table></div>
+        <div class="overflow-x-auto bg-white rounded-xl border border-gray-200"><table id="tbl_exp"><thead><tr><th>Ngày chi</th><th>Cơ sở</th><th>Nội dung chi</th><th>Số tiền</th><th>Thao tác</th></tr></thead><tbody id="expenseList"></tbody></table></div>
     </div>
 
     <div id="tab_active" class="tab-content">
-        <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm"><table id="tbl_active"><thead><tr><th>Họ và tên</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập</th><th>Tác vụ</th></tr></thead><tbody id="activeList"></tbody></table></div>
+        <div class="overflow-x-auto bg-white rounded-xl border border-gray-200"><table id="tbl_active"><thead><tr><th>Họ và tên</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Đã đóng tới</th><th>SĐT</th><th>Ngày nhập</th><th>Thao tác</th></tr></thead><tbody id="activeList"></tbody></table></div>
     </div>
 
     <div id="tab_quit" class="tab-content">
-        <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm"><table id="tbl_quit"><thead><tr><th>Võ sinh</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
+        <div class="overflow-x-auto bg-white rounded-xl border border-gray-200"><table id="tbl_quit"><thead><tr><th>Võ sinh</th><th>Cấp đai</th><th>Cơ sở</th><th>Ngày sinh</th><th>Ngày nghỉ</th><th>Thao tác</th></tr></thead><tbody id="quitList"></tbody></table></div>
     </div>
 
     <div id="tab_dashboard" class="tab-content">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-2xl text-white shadow-md">
-                <h3 class="text-xs uppercase font-bold opacity-90">Tổng thu</h3>
-                <p id="totalIncome" class="text-xl md:text-2xl font-black mt-1 truncate">0 ₫</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl text-white shadow-lg">
+                <h3 class="text-xs uppercase font-bold opacity-90">Tổng thu chung</h3>
+                <p id="totalIncome" class="text-xl md:text-2xl font-extrabold mt-1 truncate">0 ₫</p>
             </div>
-            <div class="bg-gradient-to-br from-red-500 to-red-600 p-4 rounded-2xl text-white shadow-md">
-                <h3 class="text-xs uppercase font-bold opacity-90">Tổng chi</h3>
-                <p id="totalExpense" class="text-xl md:text-2xl font-black mt-1 truncate">0 ₫</p>
+            <div class="bg-gradient-to-br from-red-600 to-red-700 p-4 rounded-xl text-white shadow-lg">
+                <h3 class="text-xs uppercase font-bold opacity-90">Tổng chi chung</h3>
+                <p id="totalExpense" class="text-xl md:text-2xl font-extrabold mt-1 truncate">0 ₫</p>
             </div>
-            <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-4 rounded-2xl text-white shadow-md">
+            <div class="bg-gradient-to-br from-blue-700 to-blue-800 p-4 rounded-xl text-white shadow-lg">
                 <h3 class="text-xs uppercase font-bold opacity-90">Lợi nhuận gộp</h3>
-                <p id="totalProfit" class="text-xl md:text-2xl font-black mt-1 truncate">0 ₫</p>
+                <p id="totalProfit" class="text-xl md:text-2xl font-extrabold mt-1 truncate">0 ₫</p>
             </div>
-            <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 p-4 rounded-2xl text-yellow-900 shadow-md">
+            <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 p-4 rounded-xl text-yellow-900 shadow-lg">
                 <h3 class="text-xs uppercase font-bold opacity-90">Chưa nộp phí</h3>
-                <p id="debtCount" class="text-xl md:text-2xl font-black mt-1 truncate">0 Bạn</p>
+                <p id="debtCount" class="text-xl md:text-2xl font-extrabold mt-1 truncate">0 Bạn</p>
                 <div class="text-[0.7rem] font-bold opacity-80 mt-1" id="debtEst">Dự thu: 0 ₫</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div class="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm">
-                <h4 class="text-sm font-bold text-gray-600 mb-4 uppercase">📈 Thu/Chi 6 tháng</h4>
-                <canvas id="financeChart" height="220"></canvas>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
+                <h4 class="text-sm font-bold text-gray-600 mb-4 uppercase">📈 Dòng tiền Thu/Chi 6 tháng gần nhất</h4>
+                <canvas id="financeChart" height="200"></canvas>
             </div>
-            <div class="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm">
-                <h4 class="text-sm font-bold text-gray-600 mb-4 uppercase">👥 Lượng Võ sinh</h4>
-                <canvas id="memberChart" height="220"></canvas>
+            <div class="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
+                <h4 class="text-sm font-bold text-gray-600 mb-4 uppercase">👥 Biến động số lượng Võ sinh đang tập</h4>
+                <canvas id="memberChart" height="200"></canvas>
             </div>
         </div>
 
-        <div class="mt-6">
-            <h4 class="text-primary font-bold text-lg mb-3">BÁO CÁO THÁNG</h4>
-            <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <div class="mt-8">
+            <h4 class="text-primary font-bold text-lg mb-4">BÁO CÁO DỮ LIỆU TỔNG HỢP</h4>
+            <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
                 <table id="tbl_report">
-                    <thead><tr><th>Tháng</th><th>Tập TT</th><th>Mới</th><th>Nghỉ</th><th>Tổng Thu</th><th>Tổng Chi</th><th>Lợi Nhuận</th></tr></thead>
+                    <thead><tr><th>Tháng</th><th>Tập thực tế</th><th>Mới nhập</th><th>Đã nghỉ</th><th>Tổng Thu</th><th>Tổng Chi</th><th>Lợi Nhuận</th></tr></thead>
                     <tbody id="reportList"></tbody>
                 </table>
             </div>
@@ -375,18 +364,14 @@
     </div>
 </div>
 
-<div class="fab" id="fabAdd" onclick="openAddModal()">+</div>
-
 <div id="profileModal" class="modal">
-    <div class="modal-content">
-        <div class="flex justify-between items-center border-b pb-3 mb-4">
-            <h2 id="m_name" class="text-primary font-black text-xl truncate pr-4"></h2>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-800 font-bold bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center text-lg">&times;</button>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-2 gap-4 mb-4">
-            <div><label class="block text-xs font-bold text-gray-500 mb-1">Trạng thái</label><select id="m_status" class="bg-gray-50 font-bold"><option value="active">Đang tập</option><option value="quit">Nghỉ tập</option></select></div>
-            <div><label class="block text-xs font-bold text-gray-500 mb-1">Cơ sở</label><select id="m_branch" class="bg-gray-50"><option value="CS1">CS1</option><option value="CS2">CS2</option></select></div>
-            <div class="col-span-2"><label class="block text-xs font-bold text-gray-500 mb-1">Cấp đai</label><select id="m_belt" class="bg-gray-50 font-bold">
+    <div class="modal-content relative">
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl font-bold">&times;</button>
+        <h2 id="m_name" class="text-primary font-bold text-xl border-b pb-3 mb-4"></h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div><label class="block text-xs font-bold text-gray-500 mb-1">Trạng thái</label><select id="m_status"><option value="active">Đang tập luyện</option><option value="quit">Nghỉ tập</option></select></div>
+            <div><label class="block text-xs font-bold text-gray-500 mb-1">Cơ sở</label><select id="m_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select></div>
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-500 mb-1">Cấp đai</label><select id="m_belt">
                 <option value="Đai trắng - Cấp 10">Đai trắng - Cấp 10</option>
                 <option value="Đai trắng 1 vạch - Cấp 9">Đai trắng 1 vạch - Cấp 9</option>
                 <option value="Đai trắng 2 vạch - Cấp 8">Đai trắng 2 vạch - Cấp 8</option>
@@ -400,70 +385,83 @@
                 <option value="Đai Đỏ - Đen">Đai Đỏ - Đen</option>
                 <option value="Đai Đen">Đai Đen</option>
             </select></div>
-            <div class="col-span-2"><label class="block text-xs font-bold text-gray-500 mb-1">SĐT Zalo</label><input type="tel" id="m_phone" placeholder="Nhập SĐT" class="bg-gray-50 font-bold"></div>
-            <div><label class="block text-xs font-bold text-gray-500 mb-1">Ngày sinh</label><input type="date" id="m_dob" class="bg-gray-50 text-sm"></div>
-            <div><label class="block text-xs font-bold text-gray-500 mb-1">Học phí chuẩn</label><input type="number" id="m_fee" placeholder="Mức phí" class="bg-gray-50 font-bold text-primary"></div>
-            <div class="col-span-2"><label class="block text-xs font-bold text-gray-500 mb-1">Ghi chú</label><textarea id="m_notes" rows="2" class="bg-gray-50"></textarea></div>
+            <div><label class="block text-xs font-bold text-gray-500 mb-1">Ngày sinh</label><input type="date" id="m_dob"></div>
+            <div><label class="block text-xs font-bold text-gray-500 mb-1">SĐT Zalo</label><input type="tel" id="m_phone" placeholder="Nhập SĐT"></div>
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-500 mb-1">Học phí chuẩn</label><input type="number" id="m_fee" placeholder="Mức phí"></div>
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-500 mb-1">Ghi chú</label><textarea id="m_notes" rows="2"></textarea></div>
         </div>
-        <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-xl mb-6">
-            <label class="block text-xs font-bold text-yellow-800 mb-2">⏸ Đã báo nghỉ các tháng:</label>
-            <div id="m_skipped" class="flex flex-wrap gap-2"></div>
+        <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-6">
+            <label class="block text-xs font-bold text-yellow-800 mb-2">⏸ Các tháng đã báo nghỉ:</label>
+            <div id="m_skipped"></div>
         </div>
-        <div class="flex flex-col gap-3">
-            <button id="btnUpdateProfile" onclick="updateProfile()" class="w-full bg-primary hover:bg-blue-800 text-white font-bold rounded-xl text-lg shadow-md">💾 CẬP NHẬT</button>
-            <button id="btnDeleteProfile" onclick="deleteProfile()" class="w-full bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl">🗑 XÓA HỒ SƠ</button>
+        <div class="flex flex-col gap-2">
+            <button id="btnUpdateProfile" onclick="updateProfile()" class="w-full bg-primary hover:bg-blue-800 text-white font-bold py-3 rounded-lg">💾 CẬP NHẬT DỮ LIỆU</button>
+            <button id="btnDeleteProfile" onclick="deleteProfile()" class="w-full bg-red-100 hover:bg-red-200 text-red-700 font-bold py-3 rounded-lg">🗑 XÓA HỒ SƠ</button>
         </div>
     </div>
 </div>
 
 <div id="addModal" class="modal">
-    <div class="modal-content">
-        <div class="flex justify-between items-center border-b pb-3 mb-4">
-            <h2 class="text-green-700 font-black text-xl">THÊM VÕ SINH MỚI</h2>
-            <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-800 font-bold bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center text-lg">&times;</button>
+    <div class="modal-content relative">
+        <button onclick="closeAddModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl font-bold">&times;</button>
+        <h2 class="text-primary font-bold text-xl border-b pb-3 mb-4">THÊM VÕ SINH MỚI</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">Họ và tên *</label><input type="text" id="add_name" required></div>
+            <div><label class="block text-xs font-bold text-gray-600 mb-1">Cơ sở</label><select id="add_branch"><option value="CS1">CS1</option><option value="CS2">CS2</option></select></div>
+            <div><label class="block text-xs font-bold text-gray-600 mb-1">Cấp đai</label><select id="add_belt">
+                <option value="Đai trắng - Cấp 10">Đai trắng - Cấp 10</option>
+                <option value="Đai trắng 1 vạch - Cấp 9">Đai trắng 1 vạch - Cấp 9</option>
+                <option value="Đai trắng 2 vạch - Cấp 8">Đai trắng 2 vạch - Cấp 8</option>
+                <option value="Đai vàng - Cấp 7">Đai vàng - Cấp 7</option>
+                <option value="Đai xanh lá - Cấp 6">Đai xanh lá - Cấp 6</option>
+                <option value="Đai xanh dương - Cấp 5">Đai xanh dương - Cấp 5</option>
+                <option value="Đai đỏ - Cấp 4">Đai đỏ - Cấp 4</option>
+                <option value="Đai đỏ 1 vạch - Cấp 3">Đai đỏ 1 vạch - Cấp 3</option>
+                <option value="Đai đỏ 2 vạch - Cấp 2">Đai đỏ 2 vạch - Cấp 2</option>
+                <option value="Đai đỏ 3 vạch - Cấp 1">Đai đỏ 3 vạch - Cấp 1</option>
+                <option value="Đai Đỏ - Đen">Đai Đỏ - Đen</option>
+                <option value="Đai Đen">Đai Đen</option>
+            </select></div>
+            <div><label class="block text-xs font-bold text-gray-600 mb-1">SĐT Phụ huynh</label><input type="tel" id="add_phone"></div>
+            <div><label class="block text-xs font-bold text-gray-600 mb-1">Ngày sinh</label><input type="date" id="add_dob"></div>
+            <div><label class="block text-xs font-bold text-gray-600 mb-1">Học phí/tháng</label><input type="number" id="add_fee_default"></div>
+            <div><label class="block text-xs font-bold text-gray-600 mb-1">Ngày nhập học</label><input type="date" id="add_date"></div>
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">Ghi chú</label><textarea id="add_notes" rows="2"></textarea></div>
         </div>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">Họ và tên *</label><input type="text" id="add_name" required class="bg-gray-50 font-bold"></div>
-            <div><label class="block text-xs font-bold text-gray-600 mb-1">Cơ sở</label><select id="add_branch" class="bg-gray-50"><option value="CS1">CS1</option><option value="CS2">CS2</option></select></div>
-            <div><label class="block text-xs font-bold text-gray-600 mb-1">Cấp đai</label><select id="add_belt" class="bg-gray-50"><option value="Đai trắng - Cấp 10">Trắng - 10</option><option value="Đai trắng 1 vạch - Cấp 9">Trắng 1 - 9</option><option value="Đai vàng - Cấp 7">Vàng - 7</option></select></div>
-            <div class="col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">SĐT Phụ huynh</label><input type="tel" id="add_phone" class="bg-gray-50 font-bold"></div>
-            <div><label class="block text-xs font-bold text-gray-600 mb-1">Ngày sinh</label><input type="date" id="add_dob" class="bg-gray-50 text-sm"></div>
-            <div><label class="block text-xs font-bold text-gray-600 mb-1">Ngày nhập học</label><input type="date" id="add_date" class="bg-gray-50 text-sm"></div>
-            <div class="col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">Học phí/tháng</label><input type="number" id="add_fee_default" class="bg-gray-50 font-bold text-primary"></div>
-            <div class="col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">Ghi chú</label><textarea id="add_notes" rows="1" class="bg-gray-50"></textarea></div>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6">
-            <label class="block text-sm font-bold text-primary mb-3">💰 THU KHI NHẬP HỌC</label>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="col-span-2">
-                    <label class="block text-xs text-gray-600 mb-1">Học phí tháng đầu</label>
-                    <input type="text" id="add_fee_display" placeholder="Số tiền" class="bg-white font-bold text-red-600">
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
+            <label class="block text-sm font-bold text-primary mb-3">💰 THU TIỀN KHI NHẬP HỌC (Nếu có)</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-600 mb-1">Học phí tháng này</label>
+                    <input type="text" id="add_fee_display" placeholder="Số tiền">
                     <input type="hidden" id="add_fee_actual">
                 </div>
-                <div class="col-span-2">
+                <div>
                     <label class="block text-xs text-gray-600 mb-1">Size Võ phục (Từ kho)</label>
-                    <select id="add_uniform_size" class="w-full bg-white font-bold"></select>
+                    <select id="add_uniform_size" class="w-full bg-white">
+                        <option value="">-- Chọn size (nếu mua) --</option>
+                    </select>
                 </div>
-                <div class="col-span-2">
+                <div>
                     <label class="block text-xs text-gray-600 mb-1">Tiền Võ phục</label>
-                    <input type="text" id="add_uniform_display" placeholder="Số tiền" class="bg-white font-bold text-purple-700">
+                    <input type="text" id="add_uniform_display" placeholder="Số tiền">
                     <input type="hidden" id="add_uniform_actual">
                 </div>
             </div>
         </div>
-        <button onclick="addNewStudent()" class="w-full bg-green-600 hover:bg-green-700 text-white font-black rounded-xl transition text-lg shadow-md">LƯU HỒ SƠ</button>
+        <button onclick="addNewStudent()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition">💾 LƯU HỒ SƠ & GHI SỔ</button>
     </div>
 </div>
 
 <div id="receiptModal" class="modal">
-    <div class="modal-content" style="text-align:center; max-width: 400px; padding: 20px;">
-        <h3 class="text-primary font-black mb-1">XUẤT MÃ QR HÓA ĐƠN</h3>
-        <p class="text-xs text-gray-500 mb-3">📸 Nhấn giữ vào ảnh để copy dán vào Zalo.</p>
-        <div id="receiptContainer" class="bg-white w-full">
-            <img id="receiptPreviewImg" class="w-full rounded-xl border border-gray-200 shadow-md mb-4">
+    <div class="modal-content" style="text-align:center; max-width: 400px; padding: 15px;">
+        <h3 style="color:var(--primary); margin-top:0;">XUẤT MÃ QR & HÓA ĐƠN</h3>
+        <p style="font-size:0.85rem; color:var(--gray); margin-bottom:10px;">📸 <strong>Mẹo Zalo:</strong> Nhấn giữ vào ảnh rồi dán thẳng vào Zalo phụ huynh.</p>
+        <div id="receiptContainer" style="display:inline-block; background:white; width: 100%;">
+            <img id="receiptPreviewImg" style="width:100%; border-radius:8px; border: 1px solid #eee; box-shadow:0 4px 12px rgba(0,0,0,0.1); margin-bottom:15px;">
         </div>
-        <button class="w-full bg-primary text-white font-bold rounded-xl mb-3 shadow-md" id="btnDownloadReceipt">⬇️ TẢI ẢNH</button>
-        <button onclick="document.getElementById('receiptModal').style.display='none'" class="w-full bg-gray-100 text-gray-800 font-bold rounded-xl">ĐÓNG</button>
+        <button class="w-full bg-primary hover:bg-blue-800 text-white font-bold py-3 rounded-lg mb-2" id="btnDownloadReceipt">⬇️ TẢI ẢNH VỀ MÁY</button>
+        <button onclick="document.getElementById('receiptModal').style.display='none'" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg">ĐÓNG</button>
     </div>
 </div>
 
@@ -486,7 +484,7 @@
     </div>
     <div style="margin-top: 20px; padding: 15px; background: #eef2f7; text-align: center; border-radius: 8px;">
         <p style="margin: 0; font-size: 13px; color: #666;">SỐ TIỀN THANH TOÁN</p>
-        <p style="margin: 5px 0 0; font-size: 24px; font-weight: 900; color: #C8102E;" id="r_amount">0 ₫</p>
+        <p style="margin: 5px 0 0; font-size: 22px; font-weight: bold; color: #C8102E;" id="r_amount">0 ₫</p>
         <p style="margin: 5px 0 0; font-size: 12px; font-style: italic; color: #555;" id="r_amount_words"></p>
     </div>
     <div id="r_qr_wrap" style="text-align: center; margin-top: 20px; display: none; width: 100%;">
@@ -502,11 +500,6 @@
     window.userRole = 'admin';
     let financeChartInstance = null;
     let memberChartInstance = null;
-
-    function escapeHTMLAttr(str) {
-        if (!str) return '';
-        return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-    }
 
     function getLocalToday() {
         const d = new Date(); 
@@ -526,7 +519,6 @@
             document.getElementById('inventoryForm').style.display = 'none';
             document.getElementById('expenseForm').style.display = 'none';
             document.getElementById('btnAddStudent').style.display = 'none';
-            document.getElementById('fabAdd').style.display = 'none';
             const btnBatch = document.querySelector('#tab_exam .bg-orange-500');
             if(btnBatch) btnBatch.style.display = 'none';
         } else { 
@@ -577,13 +569,6 @@
         document.getElementById('tab_' + tabId).classList.add('active');
         document.getElementById('btn_' + tabId).classList.add('active', 'border-b-2');
         if(tabId === 'exam' && typeof window.renderExamList === 'function') window.renderExamList();
-        
-        // Hiện FAB chỉ ở các tab cần thiết
-        const fab = document.getElementById('fabAdd');
-        if(window.userRole !== 'viewer') {
-            if(tabId === 'tx' || tabId === 'active') { fab.style.display = 'flex'; fab.onclick = openAddModal; fab.innerHTML = '+'; }
-            else { fab.style.display = 'none'; }
-        }
     };
 
     window.showToast = (msg, duration = 3000, isLoading = false) => {
@@ -735,6 +720,7 @@
             let matches = Object.keys(allProfiles).filter(n => {
                 if(allProfiles[n].status === 'quit') return false;
                 let p = allProfiles[n];
+                // Tối ưu hàm toLowerCase() tránh lỗi undefined
                 let safePhone = p.phone || "";
                 let safeBelt = p.belt || "";
                 let safeNotes = p.notes || "";
@@ -747,7 +733,7 @@
             
             matches.forEach(name => {
                 let div = document.createElement('div');
-                div.innerHTML = `<strong class="text-primary">${name}</strong> <span class="badge" style="background:#e9ecef; color:#495057;">${allProfiles[name].branch || 'CS1'}</span>`;
+                div.innerHTML = `<strong>${name}</strong> <span class="badge" style="background:#e9ecef; color:#495057;">${allProfiles[name].branch || 'CS1'}</span>`;
                 div.onclick = () => {
                     inp.value = name;
                     if(isTxForm) document.getElementById('branch').value = allProfiles[name].branch || 'CS1';
@@ -774,8 +760,8 @@
         window.switchTab('tx'); 
         document.getElementById('type').value = 'Học phí'; 
         window.toggleMonthSelect();
-        
-        document.getElementById('description').value = name; 
+        // Thoát ngoặc an toàn cho tên
+        document.getElementById('description').value = name.replace(/\\'/g, "'"); 
         document.getElementById('branch').value = branch || 'CS1'; 
         document.getElementById('tx_month').value = month;
         document.getElementById('amountActual').value = defaultFee || ''; 
@@ -810,7 +796,7 @@
             if (!inputAmount) return; 
             amount = Number(inputAmount.replace(/\D/g, ''));
         }
-        exportReceipt(name, amount, 'Học phí', getLocalToday(), month, branch, 'PHIẾU BÁO HỌC PHÍ');
+        exportReceipt(name.replace(/\\'/g, "'"), amount, 'Học phí', getLocalToday(), month, branch, 'PHIẾU BÁO HỌC PHÍ');
     };
 
     function getCleanTableForExcel(tableId) {
@@ -853,7 +839,7 @@
         else if(belt.includes('xanh dương')) { bg = 'var(--belt-blue)'; col = '#fff'; border = 'none'; }
         else if(belt.includes('đỏ')) { bg = 'var(--belt-red)'; col = '#fff'; border = 'none'; } 
         else if(belt.includes('Đen') || belt.includes('Đỏ - Đen')) { bg = 'var(--belt-black)'; col = '#fff'; border = 'none'; }
-        return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 90px; text-align:center;">${belt}</span>`;
+        return `<span class="badge" style="background:${bg}; color:${col}; border:${border}; min-width: 80px; text-align:center;">${belt}</span>`;
     }
 
     window.renderExamList = () => {
@@ -876,16 +862,15 @@
             const p = allProfiles[name];
             if(p.status === 'active' && (p.belt || 'Đai trắng - Cấp 10') === filterBelt) {
                 let isPaid = paidStudents[name];
-                let safeNameEsc = escapeHTMLAttr(name);
+                let safeName = name.replace(/'/g, "\\'");
                 
                 let statusBadge = isPaid ? `<span class="badge badge-active">Đã nộp (${isPaid.amount.toLocaleString()} ₫)</span>` : `<span class="badge badge-quit">Chưa nộp</span>`;
                 let actionBtn = isPaid 
-                    ? (window.userRole === 'admin' ? `<button class="bg-gray-500 text-white btn-small rounded-xl font-bold" onclick="deleteTx('${isPaid.id}')">Xóa</button>` : '') 
-                    : (window.userRole === 'admin' ? `<button class="bg-orange-500 text-white btn-small rounded-xl font-bold w-full" onclick="quickCollectExam('${safeNameEsc}', '${p.branch || 'CS1'}')">Thu</button>` : '');
-                
+                    ? (window.userRole === 'admin' ? `<button class="bg-gray-500 text-white px-2 py-1 rounded text-xs" onclick="deleteTx('${isPaid.id}')">Xóa</button>` : '') 
+                    : (window.userRole === 'admin' ? `<button class="bg-orange-500 text-white px-2 py-1 rounded text-xs" onclick="quickCollectExam('${safeName}', '${p.branch || 'CS1'}')">💰 Thu phí</button>` : '');
                 htmlExam += `<tr>
-                    <td class="text-center"><input type="checkbox" class="exam-check" value="${name.replace(/"/g, '&quot;')}" style="min-height:24px; width:24px;"></td>
-                    <td class="name-link" onclick="openProfile('${safeNameEsc}')">${name}</td>
+                    <td><input type="checkbox" class="exam-check" value="${name.replace(/"/g, '&quot;')}"></td>
+                    <td class="name-link" onclick="openProfile('${safeName}')">${name}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${p.branch || 'CS1'}</span></td>
                     <td>${getBeltBadge(p.belt)}</td>
                     <td>${statusBadge}</td>
@@ -919,7 +904,7 @@
         
         let studentsToCharge = selected.filter(n => !paidStudents[n]); 
         let chargeAmount = studentsToCharge.length * fee;
-        let confirmMsg = `Xác nhận thăng đai lên [${newBelt}] cho ${selected.length} võ sinh?` + (fee > 0 && studentsToCharge.length > 0 ? `\nHệ thống tự động THU PHÍ THÊM cho ${studentsToCharge.length} bạn CHƯA NỘP (Tổng: ${chargeAmount.toLocaleString()} ₫).` : "");
+        let confirmMsg = `Xác nhận thăng đai lên [${newBelt}] cho ${selected.length} võ sinh?` + (fee > 0 && studentsToCharge.length > 0 ? `\nHệ thống sẽ tự động THU PHÍ THÊM cho ${studentsToCharge.length} bạn CHƯA NỘP (Tổng: ${chargeAmount.toLocaleString()} ₫).` : "");
         
         if(!confirm(confirmMsg)) return;
         
@@ -1003,6 +988,7 @@
 
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
+            
             let isUniformTx = (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục');
             
             if(selMonth && t.date && !t.date.startsWith(selMonth) && t.txMonth !== selMonth) return;
@@ -1010,8 +996,8 @@
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
             let safeBranch = t.branch || "CS1";
-            let safeNameEsc = escapeHTMLAttr(cleanName);
-            const btnDel = window.userRole === 'admin' ? `<button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold btn-small rounded-xl" onclick="deleteTx('${t.id}', '${t.relatedInvId || ''}')">🗑</button>` : '';
+            let safeNameEscaped = cleanName.replace(/'/g, "\\'");
+            const btnDel = window.userRole === 'admin' ? `<button class="bg-gray-400 hover:bg-gray-500 text-white px-2 py-1 rounded" onclick="deleteTx('${t.id}', '${t.relatedInvId || ''}')">🗑</button>` : '';
 
             if(t.type === 'Chi phí') {
                 exp += t.amount; 
@@ -1032,12 +1018,12 @@
 
                 uniformTxHtml += `<tr>
                     <td>${formatDate(t.date)}</td>
-                    <td class="name-link" onclick="openProfile('${safeNameEsc}')">${cleanName}</td>
+                    <td class="name-link" onclick="openProfile('${safeNameEscaped}')">${cleanName}</td>
                     <td>${isInc ? 'Xuất bán' : 'Nhập kho'}</td>
                     <td><span class="badge bg-purple-100 text-purple-800">${sizeText}</span></td>
                     <td class="${isInc ? 'text-green-600' : 'text-red-600'} font-bold">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td>
-                    <td class="flex gap-2">
-                        ${isInc ? `<button class="bg-cyan-600 text-white btn-small rounded-xl font-bold" onclick="exportReceipt('${safeNameEsc}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung')">🧾 In</button>` : ''}
+                    <td class="flex gap-1">
+                        ${isInc ? `<button class="bg-cyan-600 text-white px-2 py-1 rounded text-xs" onclick="exportReceipt('${safeNameEscaped}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung')">🧾</button>` : ''}
                         ${btnDel}
                     </td>
                 </tr>`;
@@ -1047,17 +1033,17 @@
                 else inc_other += t.amount;
                 
                 let studentNameBase = cleanName.split(' (')[0];
-                let safeStudentNameBaseEsc = escapeHTMLAttr(studentNameBase);
+                let safeStudentNameBase = studentNameBase.replace(/'/g, "\\'");
 
                 txHtml += `<tr>
                     <td>${formatDate(t.date)}</td>
                     <td><span class="badge bg-gray-200 text-gray-800">${safeBranch}</span></td>
                     <td><span class="badge bg-cyan-100 text-cyan-800">${t.txMonth ? formatMonth(t.txMonth) : "-"}</span></td>
-                    <td class="name-link" onclick="openProfile('${safeStudentNameBaseEsc}')">${cleanName}</td>
+                    <td class="name-link" onclick="openProfile('${safeStudentNameBase}')">${cleanName}</td>
                     <td><span class="badge ${t.type === 'Lệ phí thi' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}">${t.type}</span></td>
                     <td class="text-green-600 font-bold">+${t.amount.toLocaleString()}</td>
-                    <td class="flex flex-col md:flex-row gap-2">
-                        <button class="bg-cyan-600 hover:bg-cyan-700 text-white btn-small rounded-xl font-bold w-full md:w-auto" onclick="exportReceipt('${safeStudentNameBaseEsc}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth||''}', '${safeBranch}')">Bill</button>
+                    <td class="flex gap-1">
+                        <button class="bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs" onclick="exportReceipt('${safeStudentNameBase}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth||''}', '${safeBranch}')">Hóa đơn</button>
                         ${btnDel}
                     </td>
                 </tr>`;
@@ -1074,7 +1060,7 @@
             let safePhone = p.phone || "";
             let safeBelt = p.belt || "";
             let safeNotes = p.notes || "";
-            let safeNameEsc = escapeHTMLAttr(name);
+            let safeNameEscaped = name.replace(/'/g, "\\'");
 
             let matchesSearch = true;
             if (search) {
@@ -1095,14 +1081,14 @@
                 }
 
                 activeHtml += `<tr>
-                    <td class="name-link" onclick="openProfile('${safeNameEsc}')">${name}${p.notes ? ' <span title="'+p.notes+'">📝</span>' : ''}</td>
+                    <td class="name-link" onclick="openProfile('${safeNameEscaped}')">${name}${p.notes ? ' <span title="'+p.notes+'">📝</span>' : ''}</td>
                     <td>${beltHTML}</td>
                     <td><span class="badge bg-gray-200 text-gray-800">${safeBranch}</span></td>
                     <td>${formatDate(p.dob)}</td>
                     <td><span class="badge badge-active">${lastPaidStr}</span></td>
-                    <td><a href="tel:${safePhone}" class="text-blue-600 font-bold">${safePhone}</a></td>
+                    <td>${safePhone}</td>
                     <td>${formatDate(p.createdAt)}</td>
-                    <td><button class="bg-primary text-white btn-small rounded-xl font-bold w-full" onclick="openProfile('${safeNameEsc}')">${window.userRole === 'admin' ? 'Sửa' : 'Xem'}</button></td>
+                    <td><button class="bg-primary text-white px-3 py-1 rounded text-xs" onclick="openProfile('${safeNameEscaped}')">${window.userRole === 'admin' ? 'Sửa' : 'Xem'}</button></td>
                 </tr>`;
                 
                 if(!(studentPayments[name] && studentPayments[name].has(selMonth)) && !(p.skippedMonths && p.skippedMonths.includes(selMonth)) && !((p.createdAt ? p.createdAt.substring(0, 7) : "2000-01") > selMonth)) {
@@ -1113,27 +1099,23 @@
                         <td><span class="badge badge-quit">${formatMonth(selMonth)}</span></td>
                         <td>${lastPaidStr}</td>
                         <td><span class="badge bg-gray-200 text-gray-800">${safeBranch}</span></td>
-                        <td class="name-link" onclick="openProfile('${safeNameEsc}')">${name}</td>
-                        <td class="flex flex-col md:flex-row gap-2">
-                            <div class="flex gap-2 w-full">
-                                <button class="bg-cyan-600 text-white btn-small rounded-xl font-bold flex-1" onclick="generatePaymentRequest('${safeNameEsc}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">QR</button>
-                                <button class="bg-blue-600 text-white btn-small rounded-xl font-bold flex-1" onclick="copyAndOpenZalo('${safeNameEsc}', '${selMonth}', '${safePhone}')">Zalo</button>
-                            </div>
-                            <div class="flex gap-2 w-full">
-                                ${window.userRole === 'admin' ? `<button class="bg-green-600 text-white btn-small rounded-xl font-bold flex-1" onclick="quickPay('${safeNameEsc}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">Thu</button>` : ''}
-                                ${window.userRole === 'admin' ? `<button class="bg-gray-200 text-gray-700 btn-small rounded-xl font-bold flex-1" onclick="skipMonth('${safeNameEsc}', '${selMonth}')">Nghỉ</button>` : ''}
-                            </div>
+                        <td class="name-link" onclick="openProfile('${safeNameEscaped}')">${name}</td>
+                        <td class="flex gap-1 flex-wrap">
+                            <button class="bg-cyan-600 text-white px-2 py-1 rounded text-xs" onclick="generatePaymentRequest('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">QR</button>
+                            ${window.userRole === 'admin' ? `<button class="bg-green-600 text-white px-2 py-1 rounded text-xs" onclick="quickPay('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">Thu</button>` : ''}
+                            <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs" onclick="copyAndOpenZalo('${safeNameEscaped}', '${selMonth}', '${safePhone}')">Zalo</button>
+                            ${window.userRole === 'admin' ? `<button class="bg-yellow-500 text-yellow-900 px-2 py-1 rounded text-xs font-bold" onclick="skipMonth('${safeNameEscaped}', '${selMonth}')">Nghỉ</button>` : ''}
                         </td>
                     </tr>`;
                 }
             } else {
                 quitHtml += `<tr>
-                    <td class="name-link" onclick="openProfile('${safeNameEsc}')">${name}</td>
+                    <td class="name-link" onclick="openProfile('${safeNameEscaped}')">${name}</td>
                     <td>${beltHTML}</td>
                     <td>${safeBranch}</td>
                     <td>${formatDate(p.dob)}</td>
                     <td>${formatDate(p.quitDate)}</td>
-                    <td>${window.userRole === 'admin' ? `<button class="bg-primary text-white btn-small rounded-xl font-bold" onclick="openProfile('${safeNameEsc}')">Khôi phục</button>` : ''}</td>
+                    <td>${window.userRole === 'admin' ? `<button class="bg-primary text-white px-2 py-1 rounded text-xs" onclick="openProfile('${safeNameEscaped}')">Khôi phục</button>` : ''}</td>
                 </tr>`;
             }
         });
@@ -1184,7 +1166,7 @@
                 <td class="text-red-600">-${m_quit}</td>
                 <td class="text-green-600 font-bold">${m_inc.toLocaleString()} ₫</td>
                 <td class="text-red-600 font-bold">${m_exp.toLocaleString()} ₫</td>
-                <td class="${(m_inc-m_exp)<0 ? 'text-red-600' : 'text-green-600'} font-black">${(m_inc-m_exp).toLocaleString()} ₫</td>
+                <td class="${(m_inc-m_exp)<0 ? 'text-red-600' : 'text-green-600'} font-bold">${(m_inc-m_exp).toLocaleString()} ₫</td>
             </tr>`;
 
             if (chronologicalMonths.includes(m)) {
@@ -1245,7 +1227,7 @@
             type: 'line',
             data: { 
                 labels: chartLabels, 
-                datasets: [{ label: 'Đang tập', data: chartActive, borderColor: '#0033A0', backgroundColor: 'rgba(0, 51, 160, 0.1)', fill: true, tension: 0.3, pointRadius: 5 }]
+                datasets: [{ label: 'Võ sinh Đang tập', data: chartActive, borderColor: '#0033A0', backgroundColor: 'rgba(0, 51, 160, 0.1)', fill: true, tension: 0.3, pointRadius: 5 }]
             },
             options: { responsive: true, scales: { y: { beginAtZero: true } } }
         });
@@ -1255,7 +1237,7 @@
 
     document.getElementById('inventoryForm').onsubmit = async (e) => {
         e.preventDefault(); 
-        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thao tác!");
+        if(window.userRole === 'viewer') return alert("Tài khoản khách không thể nhập xuất kho!");
         const size = document.getElementById('inv_size').value.trim(); 
         const type = document.getElementById('inv_type').value; 
         const qty = Number(document.getElementById('inv_qty').value); 
@@ -1264,6 +1246,7 @@
         const date = document.getElementById('inv_date').value; 
         
         const branch = 'Chung';
+        
         const invDoc = await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
         
         if (amount > 0) {
@@ -1282,21 +1265,20 @@
         window.showToast("✅ Đã cập nhật Kho!");
     };
 
-    window.copyAndOpenZalo = async (name, month, phone) => {
-        if (!phone) return alert("Võ sinh này chưa có SĐT Zalo!");
+    window.copyAndOpenZalo = (name, month, phone) => {
+        if (!phone) return alert("Võ sinh này chưa có SĐT Zalo. Vui lòng cập nhật hồ sơ!");
         const msg = `Kính gửi Phụ huynh, võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận võ sinh ${name} chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
         const openZalo = () => window.open(`https://zalo.me/${phone}`, '_blank');
         
-        try {
-            if (navigator.clipboard && window.isSecureContext) { 
-                await navigator.clipboard.writeText(msg);
+        if (navigator.clipboard && window.isSecureContext) { 
+            navigator.clipboard.writeText(msg).then(() => { 
                 window.showToast("✅ Copy thành công!"); 
                 setTimeout(openZalo, 300); 
-            } else {
+            }).catch(() => {
                 fallbackCopyTextToClipboard(msg);
-                setTimeout(openZalo, 300); 
-            }
-        } catch (e) {
+                setTimeout(openZalo, 300);
+            }); 
+        } else { 
             fallbackCopyTextToClipboard(msg);
             setTimeout(openZalo, 300); 
         }
@@ -1306,14 +1288,14 @@
         let t = document.createElement("textarea"); 
         t.value = text; 
         t.style.position = "fixed"; 
-        t.style.top = "0"; t.style.left = "0"; t.style.opacity = "0";
         document.body.appendChild(t); 
-        t.focus(); t.select(); 
+        t.focus(); 
+        t.select(); 
         try { 
             document.execCommand('copy'); 
             window.showToast("✅ Copy thành công!"); 
         } catch (e) {
-            console.error('Lỗi Copy', e);
+            console.error('Fallback: Oops, unable to copy', e);
         } 
         document.body.removeChild(t); 
     }
@@ -1331,15 +1313,15 @@
         document.getElementById('m_dob').value = p.dob || ''; 
         document.getElementById('m_notes').value = p.notes || ''; 
         
-        let safeNameEsc = escapeHTMLAttr(name.trim());
+        let safeNameEscaped = name.trim().replace(/'/g, "\\'");
         
         let skippedHtml = (p.skippedMonths || []).sort().map(m => `
-            <span class="badge bg-yellow-100 text-yellow-800 flex items-center gap-1">
+            <span class="badge bg-yellow-100 text-yellow-800 m-1">
                 ${formatMonth(m)} 
-                ${window.userRole === 'admin' ? `<button class="text-red-600 bg-red-100 rounded-full w-5 h-5 flex items-center justify-center font-bold" onclick="removeSkip('${safeNameEsc}', '${m}')">✖</button>` : ''}
+                ${window.userRole === 'admin' ? `<span class="cursor-pointer text-red-600 ml-1" onclick="removeSkip('${safeNameEscaped}', '${m}')">✖</span>` : ''}
             </span>
         `).join('');
-        document.getElementById('m_skipped').innerHTML = skippedHtml || '<span class="text-sm text-gray-500">Chưa có</span>';
+        document.getElementById('m_skipped').innerHTML = skippedHtml || '<span class="text-sm text-gray-500">Chưa có dữ liệu</span>';
         
         document.querySelectorAll('#profileModal input, #profileModal select, #profileModal textarea').forEach(el => el.disabled = window.userRole === 'viewer');
         document.getElementById('btnUpdateProfile').style.display = window.userRole === 'viewer' ? 'none' : 'block'; 
@@ -1377,12 +1359,12 @@
         if(window.userRole !== 'viewer' && confirm(`⚠️ Xóa vĩnh viễn hồ sơ "${document.getElementById('m_name').innerText.trim()}"?`)) { 
             await deleteDoc(doc(db, "tst_profiles", document.getElementById('m_name').innerText.trim())); 
             closeModal(); 
-            window.showToast("✅ Đã xóa!"); 
+            window.showToast("✅ Đã xóa hồ sơ!"); 
         } 
     };
 
     window.skipMonth = async (name, month) => { 
-        if(window.userRole !== 'viewer' && confirm(`Miễn phí tháng ${formatMonth(month)} cho ${name}?`)) { 
+        if(window.userRole !== 'viewer' && confirm(`Xác nhận miễn phí tháng ${formatMonth(month)} cho ${name}?`)) { 
             await setDoc(doc(db, "tst_profiles", name.trim()), { skippedMonths: arrayUnion(month) }, { merge: true }); 
             window.showToast("✅ Đã báo nghỉ!"); 
         } 
@@ -1417,7 +1399,7 @@
         
         if(!name) return alert("Cần nhập tên!"); 
         if(allProfiles[name]) return alert("Võ sinh đã tồn tại!"); 
-        if(uniformFee > 0 && !uniformSize) return alert("Chọn Size Võ phục!");
+        if(uniformFee > 0 && !uniformSize) return alert("Vui lòng chọn Size Võ phục!");
         
         await setDoc(doc(db, "tst_profiles", name), { 
             status: 'active', 
@@ -1457,7 +1439,7 @@
             }
         }
         closeAddModal(); 
-        window.showToast("✅ Đã lưu hồ sơ mới!");
+        window.showToast("✅ Đã lưu hồ sơ mới và cập nhật kho!");
     };
 
     document.getElementById('transactionForm').onsubmit = async (e) => {
@@ -1518,7 +1500,8 @@
     };
 
     window.exportReceipt = async (name, amount, type, date, txMonth, branch, receiptTitle = 'BIÊN LAI THU TIỀN') => {
-        window.showToast("⏳ Đang tạo hóa đơn...", 10000, true);
+        // Tối ưu UX: Hiển thị thông báo ngay lập tức để người dùng không bấm đúp
+        window.showToast("⏳ Đang tạo hóa đơn, vui lòng đợi...", 10000, true);
         
         try {
             const node = document.getElementById('receiptTemplate'); 
@@ -1556,9 +1539,10 @@
                 qrImgEl.src = generateVietQR(amount, cleanName, type === 'Học phí' && txMonth ? `Hoc Phi Thang ${formatMonth(txMonth)}` : type); 
                 document.getElementById('r_qr_wrap').style.display = 'block'; 
                 
+                // Tối ưu tốc độ tải ảnh QR với Timeout (chống treo ứng dụng)
                 await Promise.race([
                     new Promise((res) => { qrImgEl.onload = res; qrImgEl.onerror = res; }),
-                    new Promise((res) => setTimeout(res, 3000))
+                    new Promise((res) => setTimeout(res, 3000)) // Giới hạn đợi API VietQR tối đa 3 giây
                 ]);
             } else {
                 document.getElementById('r_qr_wrap').style.display = 'none';
@@ -1577,7 +1561,7 @@
                 link.click(); 
             };
             
-            document.getElementById('toastMessage').classList.remove("show");
+            document.getElementById('toastMessage').classList.remove("show"); // Tắt Toast báo đang tạo
             document.getElementById('receiptModal').style.display = 'flex';
             
         } catch (error) { 
