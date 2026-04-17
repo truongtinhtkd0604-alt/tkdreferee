@@ -63,6 +63,7 @@
         
         .toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: #fff; text-align: center; border-radius: 8px; padding: 12px 16px; position: fixed; z-index: 10001; right: 20px; bottom: 20px; transform: translateY(100px); transition: 0.3s; font-size: 0.9rem; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .toast.show { visibility: visible; transform: translateY(0); }
+        .toast.loading { background-color: var(--warning); color: #333; }
         
         /* Receipt format */
         #receiptTemplate { position: absolute; left: -9999px; visibility: hidden; width: 380px; background: white; padding: 25px; border-radius: 10px; border: 2px solid #0033A0; box-sizing: border-box;}
@@ -570,11 +571,14 @@
         if(tabId === 'exam' && typeof window.renderExamList === 'function') window.renderExamList();
     };
 
-    window.showToast = (msg) => {
+    window.showToast = (msg, duration = 3000, isLoading = false) => {
         const toast = document.getElementById("toastMessage");
-        toast.innerText = msg; 
+        toast.innerText = msg;
+        if(isLoading) toast.classList.add("loading");
+        else toast.classList.remove("loading");
+        
         toast.classList.add("show");
-        setTimeout(() => toast.classList.remove("show"), 3000);
+        setTimeout(() => toast.classList.remove("show"), duration);
     };
     
     window.closeModal = () => document.getElementById('profileModal').style.display = 'none';
@@ -618,7 +622,7 @@
     }
 
     const docTienVND = (so) => {
-        if (so === 0) return "Không đồng";
+        if (!so || so === 0) return "Không đồng";
         const mangso = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
         const dochangchuc = (so, daydu) => {
             let chuoi = ""; 
@@ -712,14 +716,19 @@
                 list.style.display = 'none'; 
                 return; 
             }
-            // Mở rộng thuật toán tìm kiếm giống hệt Tìm kiếm thông minh (Tìm qua Tên, SĐT, Cấp đai, Ghi chú)
+            
             let matches = Object.keys(allProfiles).filter(n => {
                 if(allProfiles[n].status === 'quit') return false;
                 let p = allProfiles[n];
+                // Tối ưu hàm toLowerCase() tránh lỗi undefined
+                let safePhone = p.phone || "";
+                let safeBelt = p.belt || "";
+                let safeNotes = p.notes || "";
+                
                 return n.toLowerCase().includes(val) || 
-                       (p.phone && p.phone.includes(val)) || 
-                       (p.belt && p.belt.toLowerCase().includes(val)) || 
-                       (p.notes && p.notes.toLowerCase().includes(val));
+                       safePhone.includes(val) || 
+                       safeBelt.toLowerCase().includes(val) || 
+                       safeNotes.toLowerCase().includes(val);
             });
             
             matches.forEach(name => {
@@ -751,7 +760,8 @@
         window.switchTab('tx'); 
         document.getElementById('type').value = 'Học phí'; 
         window.toggleMonthSelect();
-        document.getElementById('description').value = name; 
+        // Thoát ngoặc an toàn cho tên
+        document.getElementById('description').value = name.replace(/\\'/g, "'"); 
         document.getElementById('branch').value = branch || 'CS1'; 
         document.getElementById('tx_month').value = month;
         document.getElementById('amountActual').value = defaultFee || ''; 
@@ -786,7 +796,7 @@
             if (!inputAmount) return; 
             amount = Number(inputAmount.replace(/\D/g, ''));
         }
-        exportReceipt(name, amount, 'Học phí', getLocalToday(), month, branch, 'PHIẾU BÁO HỌC PHÍ');
+        exportReceipt(name.replace(/\\'/g, "'"), amount, 'Học phí', getLocalToday(), month, branch, 'PHIẾU BÁO HỌC PHÍ');
     };
 
     function getCleanTableForExcel(tableId) {
@@ -841,11 +851,9 @@
         let paidStudents = {};
         allTransactions.forEach(t => {
             if (t.type === 'Lệ phí thi' && (t.txMonth === selMonth || (t.date && t.date.startsWith(selMonth)))) {
-                Object.keys(allProfiles).forEach(n => { 
-                    if (t.description === `${n} (Thi lên ${document.getElementById('exam_new_belt').value})` || t.description.startsWith(n + " (Thi lên")) {
-                        paidStudents[n] = t; 
-                    }
-                });
+                let match = (t.description || "").match(/^(.*?)\s*\(Thi lên/);
+                let stuName = match ? match[1].trim() : (t.description || "").trim();
+                if(stuName) paidStudents[stuName] = t;
             }
         });
 
@@ -854,13 +862,15 @@
             const p = allProfiles[name];
             if(p.status === 'active' && (p.belt || 'Đai trắng - Cấp 10') === filterBelt) {
                 let isPaid = paidStudents[name];
+                let safeName = name.replace(/'/g, "\\'");
+                
                 let statusBadge = isPaid ? `<span class="badge badge-active">Đã nộp (${isPaid.amount.toLocaleString()} ₫)</span>` : `<span class="badge badge-quit">Chưa nộp</span>`;
                 let actionBtn = isPaid 
                     ? (window.userRole === 'admin' ? `<button class="bg-gray-500 text-white px-2 py-1 rounded text-xs" onclick="deleteTx('${isPaid.id}')">Xóa</button>` : '') 
-                    : (window.userRole === 'admin' ? `<button class="bg-orange-500 text-white px-2 py-1 rounded text-xs" onclick="quickCollectExam('${name}', '${p.branch || 'CS1'}')">💰 Thu phí</button>` : '');
+                    : (window.userRole === 'admin' ? `<button class="bg-orange-500 text-white px-2 py-1 rounded text-xs" onclick="quickCollectExam('${safeName}', '${p.branch || 'CS1'}')">💰 Thu phí</button>` : '');
                 htmlExam += `<tr>
-                    <td><input type="checkbox" class="exam-check" value="${name}"></td>
-                    <td class="name-link" onclick="openProfile('${name}')">${name}</td>
+                    <td><input type="checkbox" class="exam-check" value="${name.replace(/"/g, '&quot;')}"></td>
+                    <td class="name-link" onclick="openProfile('${safeName}')">${name}</td>
                     <td><span class="badge" style="background:#e9ecef; color:#333">${p.branch || 'CS1'}</span></td>
                     <td>${getBeltBadge(p.belt)}</td>
                     <td>${statusBadge}</td>
@@ -886,9 +896,9 @@
         let paidStudents = {};
         allTransactions.forEach(t => { 
             if (t.type === 'Lệ phí thi' && (t.txMonth === currentMonth || (t.date && t.date.startsWith(currentMonth)))) { 
-                selected.forEach(n => { 
-                    if (t.description === `${n} (Thi lên ${newBelt})` || t.description.startsWith(n + " (Thi lên")) paidStudents[n] = true; 
-                }); 
+                let match = (t.description || "").match(/^(.*?)\s*\(Thi lên/);
+                let stuName = match ? match[1].trim() : (t.description || "").trim();
+                if(stuName) paidStudents[stuName] = true;
             } 
         });
         
@@ -904,7 +914,8 @@
             batch.set(doc(db, "tst_profiles", name), { belt: newBelt }, { merge: true });
             
             if(fee > 0 && !paidStudents[name]) {
-                batch.set(doc(collection(db, "tst_transactions")), { 
+                const newTxRef = doc(collection(db, "tst_transactions"));
+                batch.set(newTxRef, { 
                     branch: allProfiles[name].branch || 'CS1', 
                     type: 'Lệ phí thi', 
                     description: `${name} (Thi lên ${newBelt})`, 
@@ -943,7 +954,6 @@
             inv.type === 'Nhập kho' ? inventoryStats[inv.size].nhap += inv.qty : inventoryStats[inv.size].xuat += inv.qty;
         });
 
-        // TẠO GIAO DIỆN SELECT CHO FORM THÊM VÕ SINH
         let sizeSelectHtml = '<option value="">-- Không mua / Trống --</option>';
 
         Object.keys(inventoryStats).forEach(size => {
@@ -951,7 +961,6 @@
             let ton = s.nhap - s.xuat; 
             if(s.nhap === 0 && s.xuat === 0 && !size.startsWith("Số")) return; 
             
-            // Đổ vào Bảng Tồn Kho
             invListHtml += `<tr>
                 <td class="font-bold">${size}</td>
                 <td class="text-green-600">+${s.nhap}</td>
@@ -959,7 +968,6 @@
                 <td class="${ton<3 ? 'text-red-600' : 'text-green-600'} font-black text-lg">${ton}</td>
             </tr>`;
 
-            // Đổ vào Select Form Thêm võ sinh
             if (ton > 0) {
                 sizeSelectHtml += `<option value="${size}">${size} (Còn: ${ton} bộ)</option>`;
             } else {
@@ -981,17 +989,14 @@
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : "";
             
-            // Kiểm tra xem có phải giao dịch võ phục không
             let isUniformTx = (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục');
             
             if(selMonth && t.date && !t.date.startsWith(selMonth) && t.txMonth !== selMonth) return;
-            
-            // Bỏ qua lọc cơ sở đối với dữ liệu Kho (để Kho luôn luôn là gộp chung toàn CLB)
             if(!isUniformTx && selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
-            
             if(search && !cleanName.toLowerCase().includes(search)) return;
 
             let safeBranch = t.branch || "CS1";
+            let safeNameEscaped = cleanName.replace(/'/g, "\\'");
             const btnDel = window.userRole === 'admin' ? `<button class="bg-gray-400 hover:bg-gray-500 text-white px-2 py-1 rounded" onclick="deleteTx('${t.id}', '${t.relatedInvId || ''}')">🗑</button>` : '';
 
             if(t.type === 'Chi phí') {
@@ -1007,19 +1012,18 @@
                 let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
                 if(isInc) inc_uniform += t.amount; else exp_uniform += t.amount;
                 
-                // Lấy size gần đúng để hiển thị từ Nội dung
                 let sizeText = "-";
                 let matchSize = t.description.match(/(Số \d+)/);
                 if(matchSize) sizeText = matchSize[1];
 
                 uniformTxHtml += `<tr>
                     <td>${formatDate(t.date)}</td>
-                    <td class="name-link" onclick="openProfile('${cleanName}')">${cleanName}</td>
+                    <td class="name-link" onclick="openProfile('${safeNameEscaped}')">${cleanName}</td>
                     <td>${isInc ? 'Xuất bán' : 'Nhập kho'}</td>
                     <td><span class="badge bg-purple-100 text-purple-800">${sizeText}</span></td>
                     <td class="${isInc ? 'text-green-600' : 'text-red-600'} font-bold">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td>
                     <td class="flex gap-1">
-                        ${isInc ? `<button class="bg-cyan-600 text-white px-2 py-1 rounded text-xs" onclick="exportReceipt('${cleanName}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung')">🧾</button>` : ''}
+                        ${isInc ? `<button class="bg-cyan-600 text-white px-2 py-1 rounded text-xs" onclick="exportReceipt('${safeNameEscaped}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung')">🧾</button>` : ''}
                         ${btnDel}
                     </td>
                 </tr>`;
@@ -1028,15 +1032,18 @@
                 else if(t.type === 'Lệ phí thi') inc_exam += t.amount; 
                 else inc_other += t.amount;
                 
+                let studentNameBase = cleanName.split(' (')[0];
+                let safeStudentNameBase = studentNameBase.replace(/'/g, "\\'");
+
                 txHtml += `<tr>
                     <td>${formatDate(t.date)}</td>
                     <td><span class="badge bg-gray-200 text-gray-800">${safeBranch}</span></td>
                     <td><span class="badge bg-cyan-100 text-cyan-800">${t.txMonth ? formatMonth(t.txMonth) : "-"}</span></td>
-                    <td class="name-link" onclick="openProfile('${cleanName.split(' (')[0]}')">${cleanName}</td>
+                    <td class="name-link" onclick="openProfile('${safeStudentNameBase}')">${cleanName}</td>
                     <td><span class="badge ${t.type === 'Lệ phí thi' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}">${t.type}</span></td>
                     <td class="text-green-600 font-bold">+${t.amount.toLocaleString()}</td>
                     <td class="flex gap-1">
-                        <button class="bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs" onclick="exportReceipt('${cleanName.split(' (')[0]}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth||''}', '${safeBranch}')">Hóa đơn</button>
+                        <button class="bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs" onclick="exportReceipt('${safeStudentNameBase}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth||''}', '${safeBranch}')">Hóa đơn</button>
                         ${btnDel}
                     </td>
                 </tr>`;
@@ -1050,13 +1057,17 @@
             let safeBranch = p.branch || "CS1"; 
             if(selBranch !== 'all' && safeBranch !== selBranch) return;
             
-            // TÌM KIẾM THÔNG MINH LIVE SEARCH (Tên, SĐT, Cấp đai, Ghi chú)
+            let safePhone = p.phone || "";
+            let safeBelt = p.belt || "";
+            let safeNotes = p.notes || "";
+            let safeNameEscaped = name.replace(/'/g, "\\'");
+
             let matchesSearch = true;
             if (search) {
                 matchesSearch = name.toLowerCase().includes(search) || 
-                                (p.phone && p.phone.includes(search)) || 
-                                (p.belt && p.belt.toLowerCase().includes(search)) || 
-                                (p.notes && p.notes.toLowerCase().includes(search));
+                                safePhone.includes(search) || 
+                                safeBelt.toLowerCase().includes(search) || 
+                                safeNotes.toLowerCase().includes(search);
             }
             if (!matchesSearch) return;
 
@@ -1070,41 +1081,41 @@
                 }
 
                 activeHtml += `<tr>
-                    <td class="name-link" onclick="openProfile('${name}')">${name}${p.notes ? ' <span title="'+p.notes+'">📝</span>' : ''}</td>
+                    <td class="name-link" onclick="openProfile('${safeNameEscaped}')">${name}${p.notes ? ' <span title="'+p.notes+'">📝</span>' : ''}</td>
                     <td>${beltHTML}</td>
                     <td><span class="badge bg-gray-200 text-gray-800">${safeBranch}</span></td>
                     <td>${formatDate(p.dob)}</td>
                     <td><span class="badge badge-active">${lastPaidStr}</span></td>
-                    <td>${p.phone || ''}</td>
+                    <td>${safePhone}</td>
                     <td>${formatDate(p.createdAt)}</td>
-                    <td><button class="bg-primary text-white px-3 py-1 rounded text-xs" onclick="openProfile('${name}')">${window.userRole === 'admin' ? 'Sửa' : 'Xem'}</button></td>
+                    <td><button class="bg-primary text-white px-3 py-1 rounded text-xs" onclick="openProfile('${safeNameEscaped}')">${window.userRole === 'admin' ? 'Sửa' : 'Xem'}</button></td>
                 </tr>`;
                 
                 if(!(studentPayments[name] && studentPayments[name].has(selMonth)) && !(p.skippedMonths && p.skippedMonths.includes(selMonth)) && !((p.createdAt ? p.createdAt.substring(0, 7) : "2000-01") > selMonth)) {
                     debtCountRender++; 
-                    totalDebtEst += (Number(p.tuitionFee) || 0); // Fix NaN
+                    totalDebtEst += (Number(p.tuitionFee) || 0); 
                     
                     debtHtml += `<tr>
                         <td><span class="badge badge-quit">${formatMonth(selMonth)}</span></td>
                         <td>${lastPaidStr}</td>
                         <td><span class="badge bg-gray-200 text-gray-800">${safeBranch}</span></td>
-                        <td class="name-link" onclick="openProfile('${name}')">${name}</td>
+                        <td class="name-link" onclick="openProfile('${safeNameEscaped}')">${name}</td>
                         <td class="flex gap-1 flex-wrap">
-                            <button class="bg-cyan-600 text-white px-2 py-1 rounded text-xs" onclick="generatePaymentRequest('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">QR</button>
-                            ${window.userRole === 'admin' ? `<button class="bg-green-600 text-white px-2 py-1 rounded text-xs" onclick="quickPay('${name}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">Thu</button>` : ''}
-                            <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs" onclick="copyAndOpenZalo('${name}', '${selMonth}', '${p.phone||''}')">Zalo</button>
-                            ${window.userRole === 'admin' ? `<button class="bg-yellow-500 text-yellow-900 px-2 py-1 rounded text-xs font-bold" onclick="skipMonth('${name}', '${selMonth}')">Nghỉ</button>` : ''}
+                            <button class="bg-cyan-600 text-white px-2 py-1 rounded text-xs" onclick="generatePaymentRequest('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">QR</button>
+                            ${window.userRole === 'admin' ? `<button class="bg-green-600 text-white px-2 py-1 rounded text-xs" onclick="quickPay('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">Thu</button>` : ''}
+                            <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs" onclick="copyAndOpenZalo('${safeNameEscaped}', '${selMonth}', '${safePhone}')">Zalo</button>
+                            ${window.userRole === 'admin' ? `<button class="bg-yellow-500 text-yellow-900 px-2 py-1 rounded text-xs font-bold" onclick="skipMonth('${safeNameEscaped}', '${selMonth}')">Nghỉ</button>` : ''}
                         </td>
                     </tr>`;
                 }
             } else {
                 quitHtml += `<tr>
-                    <td class="name-link" onclick="openProfile('${name}')">${name}</td>
+                    <td class="name-link" onclick="openProfile('${safeNameEscaped}')">${name}</td>
                     <td>${beltHTML}</td>
                     <td>${safeBranch}</td>
                     <td>${formatDate(p.dob)}</td>
                     <td>${formatDate(p.quitDate)}</td>
-                    <td>${window.userRole === 'admin' ? `<button class="bg-primary text-white px-2 py-1 rounded text-xs" onclick="openProfile('${name}')">Khôi phục</button>` : ''}</td>
+                    <td>${window.userRole === 'admin' ? `<button class="bg-primary text-white px-2 py-1 rounded text-xs" onclick="openProfile('${safeNameEscaped}')">Khôi phục</button>` : ''}</td>
                 </tr>`;
             }
         });
@@ -1118,7 +1129,6 @@
         
         let allMonths = Array.from(monthsSet).sort().reverse();
 
-        // DASHBOARD CHARTS DATA PREPARATION
         let chartLabels = []; 
         let chartIncome = []; 
         let chartExpense = []; 
@@ -1149,7 +1159,6 @@
                 } 
             });
             
-            // Render Table Report
             reportHtml += `<tr>
                 <td class="font-bold text-primary">${formatMonth(m)}</td>
                 <td class="text-cyan-700 font-bold text-lg">${m_actual}</td>
@@ -1160,7 +1169,6 @@
                 <td class="${(m_inc-m_exp)<0 ? 'text-red-600' : 'text-green-600'} font-bold">${(m_inc-m_exp).toLocaleString()} ₫</td>
             </tr>`;
 
-            // Prepare Data for Charts
             if (chronologicalMonths.includes(m)) {
                 let index = chronologicalMonths.indexOf(m);
                 chartLabels[index] = formatMonth(m);
@@ -1170,7 +1178,6 @@
             }
         });
 
-        // Insert DOM
         document.getElementById('txList').innerHTML = txHtml; 
         document.getElementById('uniformTxList').innerHTML = uniformTxHtml; 
         document.getElementById('expenseList').innerHTML = expHtml; 
@@ -1198,12 +1205,10 @@
         document.getElementById('debtCount').innerText = debtCountRender + " Bạn"; 
         document.getElementById('debtEst').innerText = `Dự thu: ${totalDebtEst.toLocaleString()} ₫`;
 
-        // Update New Summary Banners
         if(document.getElementById('sum_expense_tab')) document.getElementById('sum_expense_tab').innerText = exp.toLocaleString() + " ₫";
         if(document.getElementById('sum_debt_count_tab')) document.getElementById('sum_debt_count_tab').innerText = debtCountRender + " Bạn";
         if(document.getElementById('sum_debt_amount_tab')) document.getElementById('sum_debt_amount_tab').innerText = totalDebtEst.toLocaleString() + " ₫";
 
-        // RENDER CHARTS
         if(financeChartInstance) financeChartInstance.destroy();
         financeChartInstance = new Chart(document.getElementById('financeChart'), {
             type: 'bar',
@@ -1240,7 +1245,6 @@
         const amount = Number(document.getElementById('inv_amountActual').value); 
         const date = document.getElementById('inv_date').value; 
         
-        // Mặc định luôn là Chung (Kho Gộp)
         const branch = 'Chung';
         
         const invDoc = await addDoc(invRef, { size, type, qty, date, timestamp: Date.now() });
@@ -1270,22 +1274,31 @@
             navigator.clipboard.writeText(msg).then(() => { 
                 window.showToast("✅ Copy thành công!"); 
                 setTimeout(openZalo, 300); 
-            }).catch(() => openZalo()); 
+            }).catch(() => {
+                fallbackCopyTextToClipboard(msg);
+                setTimeout(openZalo, 300);
+            }); 
         } else { 
-            let t = document.createElement("textarea"); 
-            t.value = msg; 
-            t.style.position = "fixed"; 
-            document.body.appendChild(t); 
-            t.focus(); 
-            t.select(); 
-            try { 
-                document.execCommand('copy'); 
-                window.showToast("✅ Copy thành công!"); 
-            } catch (e) {} 
-            document.body.removeChild(t); 
+            fallbackCopyTextToClipboard(msg);
             setTimeout(openZalo, 300); 
         }
     };
+    
+    function fallbackCopyTextToClipboard(text) {
+        let t = document.createElement("textarea"); 
+        t.value = text; 
+        t.style.position = "fixed"; 
+        document.body.appendChild(t); 
+        t.focus(); 
+        t.select(); 
+        try { 
+            document.execCommand('copy'); 
+            window.showToast("✅ Copy thành công!"); 
+        } catch (e) {
+            console.error('Fallback: Oops, unable to copy', e);
+        } 
+        document.body.removeChild(t); 
+    }
 
     window.openProfile = (name) => {
         const p = allProfiles[name.trim()]; 
@@ -1300,10 +1313,12 @@
         document.getElementById('m_dob').value = p.dob || ''; 
         document.getElementById('m_notes').value = p.notes || ''; 
         
+        let safeNameEscaped = name.trim().replace(/'/g, "\\'");
+        
         let skippedHtml = (p.skippedMonths || []).sort().map(m => `
             <span class="badge bg-yellow-100 text-yellow-800 m-1">
                 ${formatMonth(m)} 
-                ${window.userRole === 'admin' ? `<span class="cursor-pointer text-red-600 ml-1" onclick="removeSkip('${name.trim()}', '${m}')">✖</span>` : ''}
+                ${window.userRole === 'admin' ? `<span class="cursor-pointer text-red-600 ml-1" onclick="removeSkip('${safeNameEscaped}', '${m}')">✖</span>` : ''}
             </span>
         `).join('');
         document.getElementById('m_skipped').innerHTML = skippedHtml || '<span class="text-sm text-gray-500">Chưa có dữ liệu</span>';
@@ -1367,7 +1382,7 @@
         if(window.userRole === 'viewer') return;
         ['add_name','add_dob','add_phone','add_notes','add_fee_default','add_fee_display','add_fee_actual','add_uniform_display','add_uniform_actual'].forEach(id => document.getElementById(id).value = '');
         
-        document.getElementById('add_uniform_size').value = ''; // Reset select
+        document.getElementById('add_uniform_size').value = '';
         document.getElementById('add_belt').value = 'Đai trắng - Cấp 10'; 
         document.getElementById('add_date').value = getLocalToday(); 
         document.getElementById('addModal').style.display = 'flex';
@@ -1410,11 +1425,10 @@
         }
         
         if(uniformSize || uniformFee > 0) { 
-            // Cập nhật xuất bán vào kho
             const invDoc = uniformSize ? await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }) : null; 
             if (uniformFee > 0) {
                 await addDoc(colRef, { 
-                    branch: 'Chung', // Ép về Chung cho Kho tổng
+                    branch: 'Chung', 
                     type: 'Thu Võ phục', 
                     description: `Bán ${uniformSize} cho ${name}`, 
                     amount: uniformFee, 
@@ -1486,14 +1500,16 @@
     };
 
     window.exportReceipt = async (name, amount, type, date, txMonth, branch, receiptTitle = 'BIÊN LAI THU TIỀN') => {
+        // Tối ưu UX: Hiển thị thông báo ngay lập tức để người dùng không bấm đúp
+        window.showToast("⏳ Đang tạo hóa đơn, vui lòng đợi...", 10000, true);
+        
         try {
             const node = document.getElementById('receiptTemplate'); 
             const cleanName = name.trim();
             document.getElementById('r_name').innerText = cleanName.toUpperCase(); 
             document.getElementById('receiptTitle').innerText = receiptTitle;
             
-            const dParts = date.split('-'); 
-            // Thêm "Quy Nhơn, " vào trước ngày
+            const dParts = date ? date.split('-') : []; 
             document.getElementById('r_date_top').innerText = dParts.length === 3 ? `Quy Nhơn, ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}` : `Quy Nhơn, ${formatDate(date)}`;
             
             const p = allProfiles[cleanName] || {}; 
@@ -1522,7 +1538,12 @@
             if (amount > 0 && receiptTitle === 'PHIẾU BÁO HỌC PHÍ') { 
                 qrImgEl.src = generateVietQR(amount, cleanName, type === 'Học phí' && txMonth ? `Hoc Phi Thang ${formatMonth(txMonth)}` : type); 
                 document.getElementById('r_qr_wrap').style.display = 'block'; 
-                await new Promise((res) => { qrImgEl.onload = res; qrImgEl.onerror = res; }); 
+                
+                // Tối ưu tốc độ tải ảnh QR với Timeout (chống treo ứng dụng)
+                await Promise.race([
+                    new Promise((res) => { qrImgEl.onload = res; qrImgEl.onerror = res; }),
+                    new Promise((res) => setTimeout(res, 3000)) // Giới hạn đợi API VietQR tối đa 3 giây
+                ]);
             } else {
                 document.getElementById('r_qr_wrap').style.display = 'none';
             }
@@ -1539,11 +1560,13 @@
                 link.href = canvas.toDataURL('image/png'); 
                 link.click(); 
             };
+            
+            document.getElementById('toastMessage').classList.remove("show"); // Tắt Toast báo đang tạo
             document.getElementById('receiptModal').style.display = 'flex';
             
         } catch (error) { 
             console.error(error); 
-            alert("Lỗi tạo hóa đơn!"); 
+            window.showToast("❌ Lỗi tạo hóa đơn!"); 
         } finally { 
             document.getElementById('receiptTemplate').style.cssText = 'position:absolute;left:-9999px;visibility:hidden;'; 
         }
