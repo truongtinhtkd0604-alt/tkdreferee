@@ -18,7 +18,6 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    // Xóa bỏ các màu ghi đè gây lỗi Tailwind (purple, success...), chỉ giữ lại màu thương hiệu
                     colors: { primary: '#0033A0', secondary: '#C8102E' },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
@@ -74,7 +73,6 @@
         /* Receipt format */
         #receiptTemplate { position: absolute; left: -9999px; visibility: hidden; width: 380px; background: white; padding: 25px; border-radius: 10px; border: 2px solid #0033A0; box-sizing: border-box;}
 
-        /* Bảng Tồn Kho Gộp Chung tinh gọn */
         #tbl_inventory th, #tbl_inventory td { padding: 8px 10px; font-size: 0.85rem; }
     </style>
 </head>
@@ -316,11 +314,32 @@
             </button>
         </div>
 
-        <div class="overflow-hidden bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="overflow-hidden bg-white rounded-2xl border border-slate-200 shadow-sm mb-8">
             <div class="overflow-x-auto">
                 <table id="tbl_exam_list">
                     <thead class="bg-slate-50"><tr><th width="40"><input type="checkbox" id="checkAllExam" onclick="toggleAllExam(this)" class="w-4 h-4 cursor-pointer"></th><th>Võ sinh</th><th>Cơ sở</th><th>Cấp đai hiện tại</th><th>Trạng thái nộp phí</th><th>Thao tác</th></tr></thead>
                     <tbody id="examList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 mb-8 shadow-md">
+            <h4 class="text-rose-600 font-extrabold mb-4 flex items-center gap-2 text-lg">💸 CHI PHÍ KỲ THI (Giám khảo, tổ chức, mua đai...)</h4>
+            <form id="examExpenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input type="text" id="ee_desc" placeholder="Nội dung (Tiền giám khảo...)" required class="md:col-span-2">
+                <div>
+                    <input type="text" id="ee_amountDisplay" placeholder="Số tiền chi" required class="font-bold text-rose-700">
+                    <input type="hidden" id="ee_amountActual">
+                </div>
+                <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl py-3 transition shadow-lg shadow-rose-600/30">LƯU CHI PHÍ</button>
+            </form>
+            <div class="mt-4 bg-white p-3 rounded-xl mb-4 border border-rose-100">
+                <div class="text-sm font-semibold text-rose-800">Tổng chi phí cho kỳ thi này: <span id="sum_exam_expense_tab" class="text-lg font-black text-rose-600 ml-2">0 ₫</span></div>
+            </div>
+            <div class="overflow-hidden bg-white rounded-xl border border-rose-100 shadow-sm">
+                <table id="tbl_exam_expense" class="w-full">
+                    <thead class="bg-rose-100 text-rose-800"><tr><th>Ngày chi</th><th>Nội dung chi</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
+                    <tbody id="examExpenseList"></tbody>
                 </table>
             </div>
         </div>
@@ -420,7 +439,7 @@
                 <option value="Đai Đỏ - Đen">Đai Đỏ - Đen</option>
                 <option value="Đai Đen">Đai Đen</option>
             </select></div>
-            <div><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Ngày sinh</label><input type="date" id="m_dob" class="bg-slate-50"></div>
+            <div><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Ngày sinh</label><input type="text" id="m_dob" placeholder="DD/MM/YYYY" class="bg-slate-50"></div>
             <div><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase">SĐT Zalo</label><input type="tel" id="m_phone" placeholder="Nhập SĐT" class="bg-slate-50"></div>
             <div class="md:col-span-2">
                 <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Học phí chuẩn / tháng</label>
@@ -461,7 +480,7 @@
                 <option value="Đai Đen">Đai Đen</option>
             </select></div>
             <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">SĐT Phụ huynh</label><input type="tel" id="add_phone" class="bg-slate-50"></div>
-            <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Ngày sinh</label><input type="date" id="add_dob" class="bg-slate-50"></div>
+            <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Ngày sinh</label><input type="text" id="add_dob" placeholder="DD/MM/YYYY" class="bg-slate-50"></div>
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Học phí/tháng (Mặc định)</label>
                 <input type="text" id="add_fee_default_display" placeholder="Mức phí (VNĐ)" class="bg-slate-50 font-bold text-blue-700">
@@ -607,6 +626,7 @@
             document.getElementById('transactionForm').style.display = 'none';
             document.getElementById('inventoryForm').style.display = 'none';
             document.getElementById('expenseForm').style.display = 'none';
+            document.getElementById('examExpenseForm').style.display = 'none';
             document.getElementById('btnAddStudent').style.display = 'none';
             const btnBatch = document.querySelector('#tab_exam button');
             if(btnBatch && btnBatch.innerText.includes('XÁC NHẬN')) btnBatch.style.display = 'none';
@@ -711,6 +731,7 @@
         return `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.jpg?amount=${amount}&addInfo=${cName}%20${cDesc}&accountName=${accName}`;
     }
 
+    // UPDATE: Tối ưu đọc số tiền VNĐ mượt mà, không lỗi "không trăm" ở cuối
     const docTienVND = (so) => {
         if (!so || so === 0) return "Không đồng";
         const mangso = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
@@ -732,19 +753,20 @@
         const hang = ["", "nghìn", "triệu", "tỷ"]; let arr = []; let kq = "";
         while (so > 0) { arr.push(so % 1000); so = Math.floor(so / 1000); }
         for (let i = arr.length - 1; i >= 0; i--) { 
-            if (arr[i] > 0 || i == 0) kq += docblock(arr[i], i < arr.length - 1) + " " + hang[i]; 
+            // Cập nhật quan trọng: Chỉ đọc block nếu giá trị > 0, chặn tình trạng đọc "không trăm nghìn"
+            if (arr[i] > 0) {
+                kq += docblock(arr[i], i < arr.length - 1 && arr.slice(i+1).some(val => val > 0)) + " " + hang[i]; 
+            }
         }
         kq = kq.trim().replace(/\s+/g, ' '); 
-        return `(${kq.charAt(0).toUpperCase() + kq.slice(1)} đồng)`;
+        return `(${kq.charAt(0).toUpperCase() + kq.slice(1)} đồng chẵn)`;
     };
 
-    // Hàm format tiền tệ (cập nhật triệt để tự động thêm dấu chấm khi render và nhập liệu)
     const formatCurrencyInput = (dispId, actId, callback) => {
         const d = document.getElementById(dispId); 
         const a = document.getElementById(actId);
         if(!d || !a) return;
         
-        // Khởi tạo hiển thị nếu value đã có số
         if(a.value && !d.value) d.value = parseInt(a.value, 10).toLocaleString('vi-VN');
 
         d.addEventListener('input', (e) => {
@@ -755,7 +777,6 @@
         });
     };
 
-    // Hàm tự động tính giá Tổng tiền nhập xuất kho
     window.calcInv = () => {
         let qty = Number(document.getElementById('inv_qty').value) || 0;
         let price = Number(document.getElementById('inv_priceActual').value) || 0;
@@ -764,9 +785,9 @@
         document.getElementById('inv_totalDisplay').value = total > 0 ? total.toLocaleString('vi-VN') + " ₫" : "";
     };
 
-    // Áp dụng định dạng tiền tệ
     formatCurrencyInput('amountDisplay', 'amountActual'); 
     formatCurrencyInput('exp_amountDisplay', 'exp_amountActual'); 
+    formatCurrencyInput('ee_amountDisplay', 'ee_amountActual'); // Khai báo cho input chi phí kỳ thi
     formatCurrencyInput('inv_priceDisplay', 'inv_priceActual', window.calcInv); 
     formatCurrencyInput('add_fee_display', 'add_fee_actual'); 
     formatCurrencyInput('add_uniform_display', 'add_uniform_actual');
@@ -775,7 +796,12 @@
     formatCurrencyInput('add_fee_default_display', 'add_fee_default_actual'); 
     formatCurrencyInput('m_fee_display', 'm_fee_actual'); 
 
-    function formatDate(dateStr) { return dateStr ? dateStr.split('-').reverse().join('/') : ""; }
+    // UPDATE: Xử lý hiển thị thông minh hơn cho Ngày sinh kiểu chuỗi DD/MM/YYYY
+    function formatDate(dateStr) { 
+        if (!dateStr) return "";
+        if (dateStr.includes('/')) return dateStr;
+        return dateStr.split('-').reverse().join('/'); 
+    }
     function formatMonth(monthStr) { return monthStr ? monthStr.split('-').reverse().join('/') : ""; }
 
     let allTransactions = []; 
@@ -907,6 +933,8 @@
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_uniform_tx')), "ThuChiVoPhuc");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_inventory')), "KhoVoPhuc");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_exp')), "ChiPhi");
+        // Xuất luôn phần chi phí kỳ thi
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_exam_expense')), "ChiPhiKyThi");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_debt')), "NoPhi");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_active')), "HocSinh_DangTap");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(getCleanTableForExcel('tbl_quit')), "HocSinh_DaNghi");
@@ -1014,8 +1042,8 @@
         const selBranch = document.getElementById('filterBranch').value; 
         const search = document.getElementById('searchInput').value.toLowerCase().trim();
 
-        let txHtml = '', uniformTxHtml = '', expHtml = '', debtHtml = '', activeHtml = '', quitHtml = '', invListHtml = '', reportHtml = '';
-        let inc_tuition = 0, inc_exam = 0, inc_other = 0, inc_uniform = 0, exp_uniform = 0, exp = 0, totalDebtEst = 0;
+        let txHtml = '', uniformTxHtml = '', expHtml = '', examExpHtml = '', debtHtml = '', activeHtml = '', quitHtml = '', invListHtml = '', reportHtml = '';
+        let inc_tuition = 0, inc_exam = 0, inc_other = 0, inc_uniform = 0, exp_uniform = 0, exp = 0, exp_exam_total = 0, totalDebtEst = 0;
         let studentPayments = {};
         
         let inventoryStats = { 
@@ -1039,7 +1067,6 @@
             let ton = s.nhap - s.xuat; 
             if(s.nhap === 0 && s.xuat === 0 && !size.startsWith("Số")) return; 
             
-            // Render Tồn Kho Bảng Nhỏ
             invListHtml += `<tr class="border-b border-slate-100 hover:bg-slate-50">
                 <td class="font-bold text-slate-700">${size}</td>
                 <td class="text-emerald-600 font-medium">+${s.nhap}</td>
@@ -1083,13 +1110,21 @@
                     <td class="text-rose-600 font-bold">-${t.amount.toLocaleString()}</td>
                     <td>${btnDel}</td>
                 </tr>`;
+            } else if (t.type === 'Chi phí kỳ thi') {
+                exp += t.amount; // Vẫn tính vào tổng chi phí hoạt động
+                exp_exam_total += t.amount;
+                examExpHtml += `<tr>
+                    <td>${formatDate(t.date)}</td>
+                    <td class="font-bold text-slate-800">${t.description}</td>
+                    <td class="text-rose-600 font-bold">-${t.amount.toLocaleString()}</td>
+                    <td>${btnDel}</td>
+                </tr>`;
             } else if (isUniformTx) {
                 let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục');
                 if(isInc) inc_uniform += t.amount; else exp_uniform += t.amount;
                 
                 let sizeText = "-"; let matchSize = t.description.match(/(Số \d+|Size 1m\d*)/); if(matchSize) sizeText = matchSize[1];
 
-                // CẬP NHẬT CLICK ĐỂ SỬA TRỰC TIẾP TỪ BẢNG
                 let clickToEditTag = window.userRole === 'admin' ? `onclick="openEditInv('${t.id}', '${t.relatedInvId || ''}')" title="Nhấn để sửa thông tin giao dịch này"` : '';
                 
                 let renderNameCell = window.userRole === 'admin' ? 
@@ -1210,7 +1245,7 @@
                 const txM = t.date ? t.date.substring(0, 7) : null; 
                 if (txM === m) { 
                     if (['Học phí', 'Lệ phí thi', 'Thu khác', 'Thu Võ phục', 'Võ phục'].includes(t.type)) m_inc += t.amount; 
-                    else if (['Chi phí', 'Chi Võ phục'].includes(t.type)) m_exp += t.amount; 
+                    else if (['Chi phí', 'Chi Võ phục', 'Chi phí kỳ thi'].includes(t.type)) m_exp += t.amount; 
                 } 
             });
             
@@ -1233,6 +1268,7 @@
         document.getElementById('txList').innerHTML = txHtml; 
         document.getElementById('uniformTxList').innerHTML = uniformTxHtml; 
         document.getElementById('expenseList').innerHTML = expHtml; 
+        document.getElementById('examExpenseList').innerHTML = examExpHtml; 
         document.getElementById('debtList').innerHTML = debtHtml; 
         document.getElementById('activeList').innerHTML = activeHtml; 
         document.getElementById('quitList').innerHTML = quitHtml; 
@@ -1244,6 +1280,8 @@
         document.getElementById('sum_tuition').innerText = inc_tuition.toLocaleString() + " ₫"; 
         document.getElementById('sum_other').innerText = inc_other.toLocaleString() + " ₫";
         if(document.getElementById('sum_exam_tab')) document.getElementById('sum_exam_tab').innerText = inc_exam.toLocaleString() + " ₫";
+        if(document.getElementById('sum_exam_expense_tab')) document.getElementById('sum_exam_expense_tab').innerText = exp_exam_total.toLocaleString() + " ₫";
+        
         document.getElementById('sum_uniform_in').innerText = inc_uniform.toLocaleString() + " ₫"; 
         document.getElementById('sum_uniform_out').innerText = exp_uniform.toLocaleString() + " ₫"; 
         document.getElementById('sum_uniform_profit').innerText = (inc_uniform - exp_uniform).toLocaleString() + " ₫";
@@ -1350,7 +1388,7 @@
         document.getElementById('m_fee_actual').value = p.tuitionFee || ''; 
         document.getElementById('m_fee_display').value = p.tuitionFee ? parseInt(p.tuitionFee, 10).toLocaleString('vi-VN') : ''; 
         
-        document.getElementById('m_dob').value = p.dob || ''; document.getElementById('m_notes').value = p.notes || ''; 
+        document.getElementById('m_dob').value = p.dob ? formatDate(p.dob) : ''; document.getElementById('m_notes').value = p.notes || ''; 
         let safeNameEscaped = name.trim().replace(/'/g, "\\'");
         
         let skippedHtml = (p.skippedMonths || []).sort().map(m => `<span class="badge bg-amber-100 text-amber-800 border border-amber-200">${formatMonth(m)} ${window.userRole === 'admin' ? `<span class="cursor-pointer text-rose-600 ml-1 font-black" onclick="removeSkip('${safeNameEscaped}', '${m}')">&times;</span>` : ''}</span>`).join('');
@@ -1434,6 +1472,15 @@
             await addDoc(colRef, { branch: document.getElementById('exp_branch').value, type: 'Chi phí', description: document.getElementById('exp_desc').value.trim(), amount: Number(document.getElementById('exp_amountActual').value), date: document.getElementById('exp_date').value, timestamp: Date.now() }); 
             e.target.reset(); document.getElementById('exp_date').value = getLocalToday(); window.showToast("✅ Đã lưu khoản chi!"); 
         } 
+    };
+
+    // FORM XỬ LÝ CHI PHÍ KỲ THI LÊN ĐAI
+    document.getElementById('examExpenseForm').onsubmit = async (e) => {
+        e.preventDefault();
+        if(window.userRole !== 'viewer') {
+            await addDoc(colRef, { branch: 'Chung', type: 'Chi phí kỳ thi', description: document.getElementById('ee_desc').value.trim(), amount: Number(document.getElementById('ee_amountActual').value), date: getLocalToday(), txMonth: document.getElementById('filterMonth').value || getLocalToday().substring(0, 7), timestamp: Date.now() });
+            e.target.reset(); window.showToast("✅ Đã lưu chi phí kỳ thi!");
+        }
     };
 
     window.deleteTx = async (id, relatedInvId) => { 
