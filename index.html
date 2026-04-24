@@ -159,7 +159,7 @@
                 <div id="autocomplete-list" class="autocomplete-items"></div>
             </div>
 
-            <input type="month" id="tx_month" title="Tháng thu học phí" required>
+            <input type="month" id="tx_month" title="Tháng thu học phí" required onchange="updateExamComboQuarter()">
             
             <div class="md:col-span-1">
                 <input type="text" id="amountDisplay" placeholder="Số tiền (VNĐ)" required class="font-bold text-green-700">
@@ -168,12 +168,12 @@
 
             <div id="exam_fee_container" style="display:none;" class="md:col-span-5 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 bg-orange-50 p-4 rounded-xl border border-orange-100 shadow-inner">
                 <div>
-                    <label class="block text-xs font-bold text-orange-800 mb-1">Nội dung Lệ phí thi (VD: Quý 2/2026)</label>
-                    <input type="text" id="tx_exam_title" placeholder="Ghi rõ tên kỳ thi để xuất hóa đơn">
+                    <label class="block text-xs font-bold text-orange-800 mb-1">Nội dung Lệ phí thi (Tự động theo Quý)</label>
+                    <input type="text" id="tx_exam_title" readonly class="bg-orange-100 cursor-not-allowed font-semibold text-orange-900 border-orange-200">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-orange-800 mb-1">Số tiền Lệ phí thi</label>
-                    <input type="text" id="tx_exam_amountDisplay" placeholder="VNĐ" class="font-bold text-orange-700">
+                    <label class="block text-xs font-bold text-orange-800 mb-1">Số tiền Lệ phí thi (Lấy từ Mặc định)</label>
+                    <input type="text" id="tx_exam_amountDisplay" placeholder="VNĐ" class="font-bold text-orange-700 bg-white">
                     <input type="hidden" id="tx_exam_amountActual">
                 </div>
             </div>
@@ -718,7 +718,18 @@
     window.closeAddModal = () => document.getElementById('addModal').style.display = 'none';
     window.closeEditInvModal = () => document.getElementById('editInvModal').style.display = 'none';
 
-    // Xử lý ẩn/hiện form Combo Học phí + Thi
+    // Cập nhật giá trị Quý tự động khi đổi tháng
+    window.updateExamComboQuarter = () => {
+        const type = document.getElementById('type').value;
+        if (type === 'Học phí + Lệ phí thi') {
+            const txMonthVal = document.getElementById('tx_month').value || getLocalToday().substring(0, 7);
+            const [yyyy, mm] = txMonthVal.split('-');
+            const q = Math.ceil(parseInt(mm, 10) / 3);
+            document.getElementById('tx_exam_title').value = `Quý ${q}/${yyyy}`;
+        }
+    };
+
+    // Xử lý form combo tự động điền giá và Quý
     window.toggleTxFormType = () => {
         const type = document.getElementById('type').value; 
         const monthInput = document.getElementById('tx_month');
@@ -736,12 +747,22 @@
         if (type === 'Học phí + Lệ phí thi') {
             examContainer.style.display = 'grid'; 
             document.getElementById('tx_exam_title').required = true;
-            document.getElementById('tx_exam_amountDisplay').required = true;
             amtDisplay.placeholder = "Số tiền Học phí (VNĐ)";
+            
+            // Gọi hàm để tính và điền Quý ngay lập tức
+            window.updateExamComboQuarter();
+            
+            // Lấy phí từ mục Thi Lên Đai sang làm mặc định nếu ô đang trống
+            const defaultFeeAct = document.getElementById('exam_fee_all_actual').value || '250000';
+            const defaultFeeDisp = document.getElementById('exam_fee_all_display').value || '250.000';
+            
+            if (!document.getElementById('tx_exam_amountActual').value) {
+                document.getElementById('tx_exam_amountActual').value = defaultFeeAct;
+                document.getElementById('tx_exam_amountDisplay').value = defaultFeeDisp;
+            }
         } else {
             examContainer.style.display = 'none';
             document.getElementById('tx_exam_title').required = false;
-            document.getElementById('tx_exam_amountDisplay').required = false;
             amtDisplay.placeholder = "Số tiền (VNĐ)";
         }
     };
@@ -836,7 +857,7 @@
     };
 
     formatCurrencyInput('amountDisplay', 'amountActual'); 
-    formatCurrencyInput('tx_exam_amountDisplay', 'tx_exam_amountActual'); // Khai báo cho input combo
+    formatCurrencyInput('tx_exam_amountDisplay', 'tx_exam_amountActual'); 
     formatCurrencyInput('exp_amountDisplay', 'exp_amountActual'); 
     formatCurrencyInput('ee_amountDisplay', 'ee_amountActual'); 
     formatCurrencyInput('inv_priceDisplay', 'inv_priceActual', window.calcInv); 
@@ -1005,7 +1026,6 @@
         const selMonth = document.getElementById('filterMonth').value; 
         let paidStudents = {};
         
-        // Kiểm tra xem đã đóng phí thi chưa (Tính cả phiếu Thu Lệ Phí Thi rời hoặc Phiếu Combo Học Phí + Thi)
         allTransactions.forEach(t => {
             if ((t.type === 'Lệ phí thi' || t.type === 'Học phí + Lệ phí thi') && (t.txMonth === selMonth || (t.date && t.date.startsWith(selMonth)))) {
                 let stuName = "";
@@ -1164,7 +1184,6 @@
                     <td>${btnDel}</td>
                 </tr>`;
             } else if (t.type === 'Chi phí kỳ thi') {
-                // Tách riêng hoàn toàn Chi phí kỳ thi
                 exp_exam_total += t.amount;
                 examExpHtml += `<tr>
                     <td>${formatDate(t.date)}</td>
@@ -1197,7 +1216,6 @@
                     </td>
                 </tr>`;
             } else {
-                // Xử lý Doanh Thu
                 if(t.type === 'Học phí') { inc_tuition += t.amount; }
                 else if(t.type === 'Lệ phí thi') { inc_exam += t.amount; }
                 else if(t.type === 'Học phí + Lệ phí thi') {
@@ -1293,7 +1311,6 @@
         let chartLabels = []; let chartIncome = []; let chartExpense = []; let chartActive = [];
         let chronologicalMonths = [...allMonths].slice(0, 6).reverse(); 
 
-        // Tính toán Biểu đồ và Báo cáo (Cách ly doanh thu/chi phí thi)
         allMonths.forEach(m => {
             let m_new = 0, m_quit = 0, m_active_theo = 0, m_skipped = 0, m_inc = 0, m_exp = 0;
             
@@ -1309,10 +1326,10 @@
                 const txM = t.date ? t.date.substring(0, 7) : null; 
                 if (txM === m) { 
                     if (t.type === 'Học phí + Lệ phí thi') {
-                        m_inc += (t.tuitionAmount || 0); // Chỉ cộng phần Học phí vào DT Vận hành chung
+                        m_inc += (t.tuitionAmount || 0); 
                     }
                     else if (['Học phí', 'Thu khác', 'Thu Võ phục', 'Võ phục'].includes(t.type)) m_inc += t.amount; 
-                    else if (['Chi phí', 'Chi Võ phục'].includes(t.type)) m_exp += t.amount; // Không cộng Chi phí kỳ thi
+                    else if (['Chi phí', 'Chi Võ phục'].includes(t.type)) m_exp += t.amount; 
                 } 
             });
             
@@ -1342,7 +1359,6 @@
         document.getElementById('inventoryList').innerHTML = invListHtml; 
         document.getElementById('reportList').innerHTML = reportHtml;
 
-        // Chỉ cộng Tổng thu vận hành, cách ly toàn bộ khoản thi
         let tInc = inc_tuition + inc_other + inc_uniform; 
         let tExp = exp + exp_uniform; 
         let tProf = tInc - tExp;
@@ -1350,7 +1366,6 @@
         document.getElementById('sum_tuition').innerText = inc_tuition.toLocaleString() + " ₫"; 
         document.getElementById('sum_other').innerText = inc_other.toLocaleString() + " ₫";
         
-        // Hiển thị ở Tab Kỳ thi
         if(document.getElementById('sum_exam_tab')) document.getElementById('sum_exam_tab').innerText = inc_exam.toLocaleString() + " ₫";
         if(document.getElementById('sum_exam_expense_tab')) document.getElementById('sum_exam_expense_tab').innerText = exp_exam_total.toLocaleString() + " ₫";
         if(document.getElementById('sum_exam_profit_tab')) document.getElementById('sum_exam_profit_tab').innerText = (inc_exam - exp_exam_total).toLocaleString() + " ₫";
@@ -1359,7 +1374,6 @@
         document.getElementById('sum_uniform_out').innerText = exp_uniform.toLocaleString() + " ₫"; 
         document.getElementById('sum_uniform_profit').innerText = (inc_uniform - exp_uniform).toLocaleString() + " ₫";
         
-        // Cập nhật Dashboard lớn
         document.getElementById('totalIncome').innerText = tInc.toLocaleString() + " ₫"; 
         document.getElementById('totalExpense').innerText = tExp.toLocaleString() + " ₫";
         document.getElementById('totalProfit').innerText = tProf.toLocaleString() + " ₫"; 
@@ -1525,7 +1539,6 @@
         closeAddModal(); window.showToast("✅ Đã lưu hồ sơ mới và cập nhật kho!");
     };
 
-    // FORM XỬ LÝ LƯU GIAO DỊCH CHUNG & GỘP COMBO
     document.getElementById('transactionForm').onsubmit = async (e) => {
         e.preventDefault(); 
         if(window.userRole === 'viewer') return;
@@ -1545,7 +1558,7 @@
             txData.tuitionAmount = amount;
             txData.examAmount = examAmount;
             txData.examTitle = examTitle;
-            txData.amount = amount + examAmount; // Tổng phiếu thu
+            txData.amount = amount + examAmount; 
             txData.txMonth = txMonth;
         } else {
             txData.amount = amount;
@@ -1560,6 +1573,7 @@
         e.target.reset(); 
         document.getElementById('date').value = getLocalToday(); 
         document.getElementById('tx_month').value = getLocalToday().substring(0, 7); 
+        document.getElementById('tx_exam_amountActual').value = ""; // Xóa đệm để lần sau gọi đúng giá trị mặc định mới
         window.toggleTxFormType(); 
         window.showToast("✅ Đã lưu khoản thu thành công!");
     };
@@ -1572,7 +1586,6 @@
         } 
     };
 
-    // FORM XỬ LÝ CHI PHÍ KỲ THI LÊN ĐAI
     document.getElementById('examExpenseForm').onsubmit = async (e) => {
         e.preventDefault();
         if(window.userRole !== 'viewer') {
@@ -1589,7 +1602,6 @@
         } 
     };
 
-    // UPDATE: Khả năng xử lý in biên lai Gộp Học Phí + Thi Lên Đai
     window.exportReceipt = async (name, amount, type, date, txMonth, branch, extraDesc = '', receiptTitle = 'BIÊN LAI THU TIỀN') => {
         window.showToast("⏳ Đang tạo hóa đơn, vui lòng đợi...", 10000, true);
         
@@ -1597,6 +1609,7 @@
             const node = document.getElementById('receiptTemplate'); const cleanName = name.trim();
             document.getElementById('r_name').innerText = cleanName.toUpperCase(); document.getElementById('receiptTitle').innerText = receiptTitle;
             
+            // Xử lý địa điểm "Quy Nhơn" dựa trên thông tin hệ thống
             const dParts = date ? date.split('-') : []; document.getElementById('r_date_top').innerText = dParts.length === 3 ? `Quy Nhơn, ngày ${dParts[2]} tháng ${dParts[1]} năm ${dParts[0]}` : `Quy Nhơn, ${formatDate(date)}`;
             
             const p = allProfiles[cleanName] || {}; document.getElementById('r_belt').innerText = p.belt || 'Chưa cập nhật'; 
@@ -1607,10 +1620,9 @@
             
             let qrDesc = type;
             
-            // Xử lý riêng giao diện Hóa Đơn khi là Gộp Combo
             if(type === 'Học phí + Lệ phí thi') {
                 document.getElementById('r_type').innerText = `Học phí tháng ${formatMonth(txMonth)} + Lệ phí thi ${extraDesc}`;
-                document.getElementById('r_month_wrap').style.display = 'none'; // Đã gộp trong Nội dung thu ở trên
+                document.getElementById('r_month_wrap').style.display = 'none'; 
                 qrDesc = `Hoc phi va Le phi thi`;
             } else {
                 document.getElementById('r_type').innerText = type;
@@ -1618,11 +1630,14 @@
             }
             
             const qrImgEl = document.getElementById('qrCodeImg');
-            if (amount > 0 && receiptTitle === 'PHIẾU BÁO HỌC PHÍ' || receiptTitle === 'BIÊN LAI THU TIỀN') { 
+            // CHỈ HIỂN THỊ MÃ QR KHI LÀ PHIẾU BÁO HỌC PHÍ (CHƯA THU)
+            if (amount > 0 && receiptTitle === 'PHIẾU BÁO HỌC PHÍ') { 
                 qrImgEl.src = generateVietQR(amount, cleanName, type === 'Học phí' && txMonth ? `Hoc Phi Thang ${formatMonth(txMonth)}` : qrDesc); 
                 document.getElementById('r_qr_wrap').style.display = 'block'; 
                 await Promise.race([new Promise((res) => { qrImgEl.onload = res; qrImgEl.onerror = res; }), new Promise((res) => setTimeout(res, 3000))]);
-            } else document.getElementById('r_qr_wrap').style.display = 'none';
+            } else {
+                document.getElementById('r_qr_wrap').style.display = 'none';
+            }
             
             node.style.position = 'absolute'; node.style.visibility = 'visible';
             
