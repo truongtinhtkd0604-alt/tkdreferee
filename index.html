@@ -675,9 +675,48 @@
     };
     setupAutocomplete('description', 'autocomplete-list', true); setupAutocomplete('inv_desc', 'inv-autocomplete-list', false);
 
-    window.quickPay = (name, month, branch, defaultFee) => {
+    // BẢN NÂNG CẤP PRO: CHỨC NĂNG THU TRỰC TIẾP KHÔNG CHUYỂN TAB
+    window.quickPay = async (name, month, branch, defaultFee) => {
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thu tiền!");
-        window.switchTab('tx'); document.getElementById('type').value = 'Học phí'; window.toggleTxFormType(); document.getElementById('description').value = name.replace(/\\'/g, "'"); document.getElementById('branch').value = branch || 'CS1'; document.getElementById('tx_month').value = month; document.getElementById('amountActual').value = defaultFee || ''; document.getElementById('amountDisplay').value = defaultFee ? parseInt(defaultFee, 10).toLocaleString('vi-VN') : ''; document.getElementById('amountDisplay').focus(); window.scrollTo({top: 0, behavior: 'smooth'});
+        
+        let defaultAmountStr = defaultFee ? parseInt(defaultFee, 10).toLocaleString('vi-VN') : '0';
+        let cleanName = name.replace(/\\'/g, "'");
+
+        // Hỏi người dùng xác nhận nhanh qua Prompt (Cho phép đổi lại số tiền thực tế thu)
+        let inputAmount = prompt(`XÁC NHẬN THU HỌC PHÍ\nVõ sinh: ${cleanName}\nKỳ học phí: ${formatMonth(month)}\n\nNhập số tiền thu (VNĐ):`, defaultAmountStr);
+        if (inputAmount === null) return; // Nếu huỷ thao tác
+        
+        let amount = Number(inputAmount.replace(/\D/g, ''));
+        if (amount <= 0) return alert("Số tiền không hợp lệ!");
+
+        try {
+            // Ghi thẳng dữ liệu lên cơ sở dữ liệu Firebase
+            await addDoc(colRef, { 
+                branch: branch || 'CS1', 
+                type: 'Học phí', 
+                description: cleanName, 
+                amount: amount, 
+                date: getLocalToday(), 
+                txMonth: month, 
+                timestamp: Date.now() 
+            });
+            
+            // Xử lý auto-active nếu võ sinh từng báo nghỉ nhưng nay nộp lại tiền học
+            if(!allProfiles[cleanName] || allProfiles[cleanName].status === 'quit') {
+                await setDoc(doc(db, "tst_profiles", cleanName), { 
+                    status: 'active', 
+                    branch: branch || 'CS1', 
+                    belt: (allProfiles[cleanName] || {}).belt || 'Đai trắng - Cấp 10', 
+                    createdAt: (allProfiles[cleanName] || {}).createdAt || getLocalToday() 
+                }, { merge: true });
+            }
+
+            // Giao diện sẽ tự phản hồi qua onSnapshot Listener -> Báo Notification
+            window.showToast(`✅ Đã thu thành công ${amount.toLocaleString('vi-VN')} ₫ của ${cleanName}!`);
+        } catch (error) {
+            console.error("Lỗi khi ghi dữ liệu thu:", error);
+            alert("Đã xảy ra lỗi hệ thống, vui lòng thử lại!");
+        }
     };
 
     window.quickCollectExam = async (name, branch) => {
@@ -944,7 +983,7 @@
 
     window.copyAndOpenZalo = (name, month, phone) => {
         if (!phone) return alert("Võ sinh này chưa có SĐT Zalo. Vui lòng cập nhật hồ sơ!");
-        const msg = `Kính gửi Phụ huynh, võ sinh ${name},\nCLB Taekwondo TST xin thông báo: Hiện tại hệ thống ghi nhận võ sinh ${name} chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
+        const msg = `Kính gửi Phụ huynh, võ sinh ${name},\nCLB Taekwondo TST - Quy Nhơn xin thông báo: Hiện tại hệ thống ghi nhận võ sinh ${name} chưa hoàn thành học phí tháng ${formatMonth(month)}.\nPhụ huynh vui lòng kiểm tra và đóng học phí giúp CLB nhé.\nXin chân thành cảm ơn!`;
         const openZalo = () => window.open(`https://zalo.me/${phone}`, '_blank');
         if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(msg).then(() => { window.showToast("✅ Copy thành công!"); setTimeout(openZalo, 300); }).catch(() => { fallbackCopyTextToClipboard(msg); setTimeout(openZalo, 300); }); } else { fallbackCopyTextToClipboard(msg); setTimeout(openZalo, 300); }
     };
