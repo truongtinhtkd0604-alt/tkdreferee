@@ -33,7 +33,7 @@
         #loginOverlay { position: fixed; inset: 0; background: radial-gradient(circle at top right, var(--primary), #001540); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .app-container { display: none; }
         
-        /* Tabs dính (Sticky) cho Mobile/Desktop */
+        /* Tabs dính (Sticky) */
         .tabs-wrapper { position: sticky; top: 0; z-index: 50; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); padding-top: 12px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; margin-left: -1rem; margin-right: -1rem; padding-left: 1rem; padding-right: 1rem; }
         @media (min-width: 768px) { .tabs-wrapper { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; border-radius: 0 0 12px 12px; } }
         
@@ -48,12 +48,10 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUpSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* Tối ưu Input Mobile */
         input, select, textarea { border: 1.5px solid #cbd5e1; padding: 10px 14px; border-radius: 10px; width: 100%; outline: none; transition: all 0.2s; background: #fff; font-size: 16px !important; color: #1e293b; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,160,0.15); }
-        input:disabled, select:disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; border-color: #e2e8f0; }
+        input:disabled, select:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; border-color: #e2e8f0; }
         
-        /* Bảng hiển thị chuyên nghiệp - Fix tràn */
         .table-wrapper { overflow-x: auto; overflow-y: auto; max-height: 70vh; -webkit-overflow-scrolling: touch; border-radius: 12px; width: 100%; }
         .table-wrapper::-webkit-scrollbar { height: 8px; width: 8px; }
         .table-wrapper::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; border: 2px solid #fff; }
@@ -64,19 +62,13 @@
         
         .name-link { color: var(--primary); font-weight: 700; cursor: pointer; transition: 0.2s; }
         .name-link:hover { text-decoration: underline; color: #001540; }
-        
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-block; white-space: nowrap; }
         .badge-active { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .badge-quit { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
         
-        /* Modal & UI - Mobile Bottom Sheet */
         .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); z-index: 10000; padding: 0; backdrop-filter: blur(5px); align-items: flex-end; justify-content: center; }
         .modal-content { background: white; width: 100%; max-width: 650px; border-radius: 20px 20px 0 0; padding: 20px; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; position: relative; animation: slideUpSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
-        
-        @media (min-width: 768px) {
-            .modal { padding: 20px; align-items: center; }
-            .modal-content { border-radius: 20px; animation: fadeIn 0.2s; padding-bottom: 20px; }
-        }
+        @media (min-width: 768px) { .modal { padding: 20px; align-items: center; } .modal-content { border-radius: 20px; animation: fadeIn 0.2s; padding-bottom: 20px; } }
         
         .autocomplete-items { position: absolute; border: 1px solid #e2e8f0; z-index: 99; top: 100%; left: 0; right: 0; background: #fff; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1); border-radius: 0 0 10px 10px; border-top: none; }
         .autocomplete-items div { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; }
@@ -87,12 +79,9 @@
         .toast.loading { background-color: #f59e0b; }
         
         #receiptTemplate { position: absolute; left: -9999px; visibility: hidden; width: 400px; background: white; padding: 30px; border-radius: 16px; border: 2px solid #0033A0; box-sizing: border-box; font-family: 'Inter', sans-serif;}
-
-        /* Nút hành động Compact cho Table */
         .action-btns { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
         .btn-sm { padding: 6px 10px; font-size: 0.75rem; font-weight: 700; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; border: 1px solid transparent; }
 
-        /* ================= MEDIA QUERY TỐI ƯU MOBILE ================= */
         @media (max-width: 768px) {
             body { padding-bottom: 60px; }
             .app-container { padding: 12px 16px; border-radius: 0; box-shadow: none; border: none; }
@@ -148,7 +137,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
         <div>
-            <label class="block text-[0.7rem] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Kỳ báo cáo</label>
+            <label class="block text-[0.7rem] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Kỳ báo cáo (Tháng doanh thu)</label>
             <input type="month" id="filterMonth" class="bg-white shadow-sm border-slate-200">
         </div>
         <div>
@@ -175,38 +164,48 @@
         </div>
 
         <div class="bg-blue-50/50 border-l-4 border-primary p-4 rounded-xl flex flex-wrap gap-5 md:gap-8 mb-6 border border-blue-100">
-            <div><span class="text-xs font-bold text-blue-800 uppercase tracking-wide">Tổng Học phí kỳ này</span> <span id="sum_tuition" class="block text-xl md:text-3xl font-black text-primary mt-0.5">0 ₫</span></div>
+            <div><span class="text-xs font-bold text-blue-800 uppercase tracking-wide">Doanh thu Học phí kỳ này</span> <span id="sum_tuition" class="block text-xl md:text-3xl font-black text-primary mt-0.5">0 ₫</span></div>
             <div><span class="text-xs font-bold text-indigo-800 uppercase tracking-wide">Khoản thu khác</span> <span id="sum_other" class="block text-lg md:text-2xl font-bold text-indigo-900 mt-0.5">0 ₫</span></div>
         </div>
 
-        <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-6 gap-3 md:gap-4 bg-white p-4 md:p-5 rounded-xl border border-blue-50 shadow-sm mb-6 relative z-10">
-            <select id="branch" class="bg-slate-50"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option></select>
-            <select id="type" onchange="toggleTxFormType()" class="bg-slate-50">
+        <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 bg-white p-4 md:p-5 rounded-xl border border-blue-50 shadow-sm mb-6 relative z-10 items-start">
+            
+            <input type="date" id="date" required class="md:col-span-2 bg-slate-50" onchange="updateExamComboQuarter()" title="Ngày giao dịch">
+            
+            <select id="branch" class="md:col-span-2 bg-slate-50"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option></select>
+            
+            <select id="type" onchange="toggleTxFormType()" class="md:col-span-3 bg-slate-50">
                 <option value="Học phí">Học phí</option>
                 <option value="Học phí + Lệ phí thi">Học phí + Lệ phí thi</option>
                 <option value="Thu khác">Thu khác</option>
             </select>
             
-            <div class="autocomplete-container md:col-span-1 relative">
+            <div class="autocomplete-container md:col-span-5 relative">
                 <input type="text" id="description" placeholder="Tên võ sinh / Nội dung" autocomplete="off" required class="bg-slate-50">
                 <div id="autocomplete-list" class="autocomplete-items"></div>
             </div>
 
-            <input type="month" id="tx_month" title="Tháng thu học phí bắt đầu" required onchange="updateExamComboQuarter()" class="bg-slate-50">
-            
-            <select id="tx_package" class="bg-slate-50 font-bold text-primary" onchange="updateAmountByPackage()">
-                <option value="1">Gói 1 Tháng</option>
-                <option value="3">Gói 3 Tháng</option>
-                <option value="6">Gói 6 Tháng</option>
-                <option value="12">Gói 12 Tháng</option>
-            </select>
-
-            <div class="md:col-span-1">
-                <input type="text" id="amountDisplay" placeholder="Số tiền (VNĐ)" required class="font-black text-emerald-600 bg-slate-50 text-base md:text-lg">
-                <input type="hidden" id="amountActual">
+            <div id="tx_package_wrapper" class="flex flex-col gap-1 md:col-span-3">
+                <select id="tx_package" class="bg-slate-50 font-bold text-primary" onchange="updateAmountByPackage()">
+                    <option value="1">Gói 1 Tháng</option>
+                    <option value="3">Gói 3 Tháng</option>
+                    <option value="6">Gói 6 Tháng</option>
+                    <option value="12">Gói 12 Tháng</option>
+                </select>
+                <label class="flex items-center gap-1.5 cursor-pointer mt-0.5">
+                    <input type="checkbox" id="tx_discount" class="w-4 h-4 text-rose-500 rounded border-slate-300 focus:ring-rose-500" onchange="updateAmountByPackage()">
+                    <span class="text-[0.7rem] font-bold text-rose-600 uppercase">Giảm 10% học phí</span>
+                </label>
             </div>
 
-            <div id="exam_fee_container" style="display:none;" class="md:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 bg-orange-50 p-4 rounded-xl border border-orange-100">
+            <div class="md:col-span-3">
+                <input type="text" id="amountDisplay" placeholder="Số tiền (VNĐ)" required class="font-black text-emerald-600 bg-slate-50 text-base md:text-lg w-full h-[46px]">
+                <input type="hidden" id="amountActual">
+            </div>
+            
+            <button type="submit" class="bg-primary hover:bg-blue-800 text-white font-bold rounded-xl md:col-span-6 py-3 transition shadow-sm tracking-wide h-[46px]">XÁC NHẬN LƯU</button>
+
+            <div id="exam_fee_container" style="display:none;" class="md:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 bg-orange-50 p-4 rounded-xl border border-orange-100">
                 <div>
                     <label class="block text-[0.7rem] font-bold text-orange-800 mb-1 uppercase">Nội dung Lệ phí thi</label>
                     <input type="text" id="tx_exam_title" readonly class="bg-orange-100/50 cursor-not-allowed font-semibold text-orange-900 border-orange-200">
@@ -217,15 +216,12 @@
                     <input type="hidden" id="tx_exam_amountActual">
                 </div>
             </div>
-            
-            <input type="date" id="date" required class="md:col-span-1 bg-slate-50">
-            <button type="submit" class="bg-primary hover:bg-blue-800 text-white font-bold rounded-xl md:col-span-5 py-3 transition shadow-sm tracking-wide">XÁC NHẬN LƯU</button>
         </form>
 
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="table-wrapper">
                 <table id="tbl_tx">
-                    <thead><tr><th>Ngày lập</th><th>Cơ sở</th><th>Kỳ thu</th><th>Võ sinh / Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
+                    <thead><tr><th>Ngày thanh toán</th><th>Cơ sở</th><th>Kỳ doanh thu</th><th>Võ sinh / Nội dung</th><th>Phân loại</th><th>Số tiền</th><th>Thao tác</th></tr></thead>
                     <tbody id="txList"></tbody>
                 </table>
             </div>
@@ -276,7 +272,7 @@
                 <h5 class="text-[0.8rem] font-black text-slate-700 mb-2 uppercase tracking-wide flex items-center gap-1.5"><span>📊</span> Bảng Tồn Kho</h5>
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <table id="tbl_inventory" class="w-full">
-                        <thead><tr><th>Size</th><th>Nhập</th><th>Bán</th><th>TỒN</th></tr></thead>
+                        <thead><tr><th>Size</th><th>Nhập</th><th>Bán/Tặng</th><th>TỒN</th></tr></thead>
                         <tbody id="inventoryList"></tbody>
                     </table>
                 </div>
@@ -384,17 +380,17 @@
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
             <div class="stat-card bg-gradient-to-br from-emerald-500 to-teal-600 p-4 md:p-5 rounded-2xl text-white shadow-sm relative overflow-hidden">
                 <div class="absolute -right-2 -top-2 opacity-20 text-5xl">📈</div>
-                <h3 class="text-[0.65rem] md:text-xs uppercase font-bold opacity-90 tracking-wider">Tổng Thu Tháng</h3>
+                <h3 class="text-[0.65rem] md:text-xs uppercase font-bold opacity-90 tracking-wider">Doanh Thu Tháng</h3>
                 <p id="totalIncomeDashboard" class="text-lg md:text-2xl font-black mt-1 truncate relative z-10">0 ₫</p>
             </div>
             <div class="stat-card bg-gradient-to-br from-rose-500 to-red-600 p-4 md:p-5 rounded-2xl text-white shadow-sm relative overflow-hidden">
                 <div class="absolute -right-2 -top-2 opacity-20 text-5xl">📉</div>
-                <h3 class="text-[0.65rem] md:text-xs uppercase font-bold opacity-90 tracking-wider">Chi Phí Vận Hành</h3>
+                <h3 class="text-[0.65rem] md:text-xs uppercase font-bold opacity-90 tracking-wider">Chi Phí Tháng</h3>
                 <p id="totalExpenseDashboard" class="text-lg md:text-2xl font-black mt-1 truncate relative z-10">0 ₫</p>
             </div>
             <div class="stat-card bg-gradient-to-br from-blue-600 to-indigo-700 p-4 md:p-5 rounded-2xl text-white shadow-sm relative overflow-hidden">
                 <div class="absolute -right-2 -top-2 opacity-20 text-5xl">💎</div>
-                <h3 class="text-[0.65rem] md:text-xs uppercase font-bold opacity-90 tracking-wider">Lãi Tháng</h3>
+                <h3 class="text-[0.65rem] md:text-xs uppercase font-bold opacity-90 tracking-wider">Lãi Tháng Này</h3>
                 <p id="totalProfitDashboard" class="text-lg md:text-2xl font-black mt-1 truncate relative z-10">0 ₫</p>
             </div>
             
@@ -414,7 +410,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div class="bg-white border border-slate-100 p-4 md:p-5 rounded-2xl shadow-sm">
-                <h4 class="text-xs md:text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">📈 Dòng tiền Thu/Chi 6 tháng</h4>
+                <h4 class="text-xs md:text-sm font-black text-slate-700 mb-4 uppercase tracking-wider">📈 Dòng tiền Doanh Thu/Chi 6 tháng</h4>
                 <div class="relative h-[200px] md:h-[240px] w-full"><canvas id="financeChart"></canvas></div>
             </div>
             <div class="bg-white border border-slate-100 p-4 md:p-5 rounded-2xl shadow-sm">
@@ -480,9 +476,28 @@
         <div class="bg-blue-50/50 border border-blue-100 p-4 rounded-xl mb-5 shadow-inner">
             <label class="block text-[0.8rem] font-black text-primary mb-3 flex items-center gap-1.5 uppercase"><span>💰</span> THU TIỀN NHẬP HỌC</label>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="md:col-span-2"><label class="block text-[0.7rem] text-slate-600 mb-1 uppercase font-bold">Học phí tháng đầu</label><input type="text" id="add_fee_display" placeholder="Số tiền" class="bg-white font-bold"><input type="hidden" id="add_fee_actual"></div>
-                <div><label class="block text-[0.7rem] text-slate-600 mb-1 uppercase font-bold">Size Võ phục</label><select id="add_uniform_size" class="w-full bg-white font-medium"><option value="">-- Chọn size --</option></select></div>
-                <div><label class="block text-[0.7rem] text-slate-600 mb-1 uppercase font-bold">Tiền Võ phục</label><input type="text" id="add_uniform_display" placeholder="Số tiền" class="bg-white font-bold"><input type="hidden" id="add_uniform_actual"></div>
+                <div>
+                    <label class="block text-[0.7rem] text-slate-600 mb-1 uppercase font-bold">Gói học phí</label>
+                    <div class="flex gap-2 items-center">
+                        <select id="add_package" class="w-full bg-white font-medium text-primary" onchange="updateAddPackageAmount()">
+                            <option value="1">1 Tháng</option><option value="3">3 Tháng</option><option value="6">6 Tháng</option><option value="12">12 Tháng</option>
+                        </select>
+                        <label class="flex items-center gap-1.5 cursor-pointer whitespace-nowrap bg-white px-2 py-2 border border-slate-200 rounded-lg">
+                            <input type="checkbox" id="add_discount" class="w-3.5 h-3.5 text-rose-600 rounded" onchange="updateAddPackageAmount()">
+                            <span class="text-[0.65rem] font-bold text-rose-600 uppercase">Giảm 10%</span>
+                        </label>
+                    </div>
+                </div>
+                <div><label class="block text-[0.7rem] text-slate-600 mb-1 uppercase font-bold">Tổng tiền Học phí</label><input type="text" id="add_fee_display" placeholder="Số tiền" class="bg-white font-bold"><input type="hidden" id="add_fee_actual"></div>
+                
+                <div class="md:col-span-2 mt-2 border-t border-blue-200 pt-3"><label class="block text-[0.7rem] text-slate-600 mb-1 uppercase font-bold">Size Võ phục</label><select id="add_uniform_size" class="w-full bg-white font-medium"><option value="">-- Chọn size --</option></select></div>
+                <div class="md:col-span-2 flex items-center gap-2">
+                    <label class="flex items-center gap-2 cursor-pointer w-full">
+                        <input type="checkbox" id="add_uniform_gift" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary" onchange="toggleAddUniformGift()">
+                        <span class="text-[0.8rem] font-bold text-slate-700 uppercase">🎁 Tặng võ phục (Miễn phí)</span>
+                    </label>
+                </div>
+                <div class="md:col-span-2"><label class="block text-[0.7rem] text-slate-600 mb-1 uppercase font-bold">Tiền Võ phục</label><input type="text" id="add_uniform_display" placeholder="Số tiền" class="bg-white font-bold"><input type="hidden" id="add_uniform_actual"></div>
             </div>
         </div>
         <button onclick="addNewStudent()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition shadow-sm text-sm">💾 LƯU HỒ SƠ & GHI SỔ</button>
@@ -602,20 +617,64 @@
     window.updateExamComboQuarter = () => {
         const type = document.getElementById('type').value;
         if (type === 'Học phí + Lệ phí thi') {
-            const txMonthVal = document.getElementById('tx_month').value || getLocalToday().substring(0, 7);
+            const dateVal = document.getElementById('date').value;
+            const txMonthVal = dateVal ? dateVal.substring(0, 7) : getLocalToday().substring(0, 7);
             const [yyyy, mm] = txMonthVal.split('-'); const q = Math.ceil(parseInt(mm, 10) / 3); document.getElementById('tx_exam_title').value = `Quý ${q}/${yyyy}`;
         }
     };
 
     window.toggleTxFormType = () => {
-        const type = document.getElementById('type').value; const monthInput = document.getElementById('tx_month'); const packageInput = document.getElementById('tx_package'); const examContainer = document.getElementById('exam_fee_container'); const amtDisplay = document.getElementById('amountDisplay');
-        if (type === 'Học phí' || type === 'Học phí + Lệ phí thi') { monthInput.style.display = 'block'; packageInput.style.display = 'block'; monthInput.required = true; } else { monthInput.style.display = 'none'; packageInput.style.display = 'none'; monthInput.required = false; }
+        const type = document.getElementById('type').value; 
+        const packageWrapper = document.getElementById('tx_package_wrapper'); 
+        const examContainer = document.getElementById('exam_fee_container'); 
+        const amtDisplay = document.getElementById('amountDisplay');
+        if (type === 'Học phí' || type === 'Học phí + Lệ phí thi') { 
+            packageWrapper.style.display = 'flex'; 
+        } else { 
+            packageWrapper.style.display = 'none'; 
+        }
         if (type === 'Học phí + Lệ phí thi') {
             examContainer.style.display = 'grid'; document.getElementById('tx_exam_title').required = true; amtDisplay.placeholder = "Số tiền Học phí";
             window.updateExamComboQuarter();
             const defaultFeeAct = document.getElementById('exam_fee_all_actual').value || '250000'; const defaultFeeDisp = document.getElementById('exam_fee_all_display').value || '250.000';
             if (!document.getElementById('tx_exam_amountActual').value) { document.getElementById('tx_exam_amountActual').value = defaultFeeAct; document.getElementById('tx_exam_amountDisplay').value = defaultFeeDisp; }
         } else { examContainer.style.display = 'none'; document.getElementById('tx_exam_title').required = false; amtDisplay.placeholder = "Số tiền (VNĐ)"; }
+    };
+
+    window.updateAmountByPackage = () => {
+        let name = document.getElementById('description').value.trim();
+        let p = allProfiles[name];
+        if(p && p.tuitionFee) {
+            let months = parseInt(document.getElementById('tx_package').value) || 1;
+            let isDiscount = document.getElementById('tx_discount').checked;
+            let total = parseInt(p.tuitionFee, 10) * months;
+            if(isDiscount) total = total - Math.floor(total * 10 / 100);
+            document.getElementById('amountActual').value = total; 
+            document.getElementById('amountDisplay').value = total.toLocaleString('vi-VN');
+        }
+    };
+
+    window.updateAddPackageAmount = () => {
+        let defaultFee = parseInt(document.getElementById('add_fee_default_actual').value) || 0;
+        let months = parseInt(document.getElementById('add_package').value) || 1;
+        let isDiscount = document.getElementById('add_discount').checked;
+        let total = defaultFee * months;
+        if(isDiscount) total = total - Math.floor(total * 10 / 100);
+        document.getElementById('add_fee_actual').value = total;
+        document.getElementById('add_fee_display').value = total > 0 ? total.toLocaleString('vi-VN') : '';
+    };
+
+    window.toggleAddUniformGift = () => {
+        let isGift = document.getElementById('add_uniform_gift').checked;
+        let feeDisp = document.getElementById('add_uniform_display');
+        let feeAct = document.getElementById('add_uniform_actual');
+        if(isGift) {
+            feeDisp.value = "0"; feeAct.value = "0";
+            feeDisp.disabled = true; feeDisp.classList.add('bg-slate-100');
+        } else {
+            feeDisp.disabled = false; feeDisp.classList.remove('bg-slate-100');
+            feeDisp.value = ""; feeAct.value = ""; 
+        }
     };
 </script>
 
@@ -648,7 +707,7 @@
     };
 
     window.calcInv = () => { let qty = Number(document.getElementById('inv_qty').value) || 0; let price = Number(document.getElementById('inv_priceActual').value) || 0; let total = qty * price; document.getElementById('inv_totalActual').value = total; document.getElementById('inv_totalDisplay').value = total > 0 ? total.toLocaleString('vi-VN') + " ₫" : ""; };
-    formatCurrencyInput('amountDisplay', 'amountActual'); formatCurrencyInput('tx_exam_amountDisplay', 'tx_exam_amountActual'); formatCurrencyInput('exp_amountDisplay', 'exp_amountActual'); formatCurrencyInput('ee_amountDisplay', 'ee_amountActual'); formatCurrencyInput('inv_priceDisplay', 'inv_priceActual', window.calcInv); formatCurrencyInput('add_fee_display', 'add_fee_actual'); formatCurrencyInput('add_uniform_display', 'add_uniform_actual'); formatCurrencyInput('ei_amountDisplay', 'ei_amountActual'); formatCurrencyInput('exam_fee_all_display', 'exam_fee_all_actual'); formatCurrencyInput('add_fee_default_display', 'add_fee_default_actual'); formatCurrencyInput('m_fee_display', 'm_fee_actual'); 
+    formatCurrencyInput('amountDisplay', 'amountActual'); formatCurrencyInput('tx_exam_amountDisplay', 'tx_exam_amountActual'); formatCurrencyInput('exp_amountDisplay', 'exp_amountActual'); formatCurrencyInput('ee_amountDisplay', 'ee_amountActual'); formatCurrencyInput('inv_priceDisplay', 'inv_priceActual', window.calcInv); formatCurrencyInput('add_fee_display', 'add_fee_actual'); formatCurrencyInput('add_uniform_display', 'add_uniform_actual'); formatCurrencyInput('ei_amountDisplay', 'ei_amountActual'); formatCurrencyInput('exam_fee_all_display', 'exam_fee_all_actual'); formatCurrencyInput('add_fee_default_display', 'add_fee_default_actual', window.updateAddPackageAmount); formatCurrencyInput('m_fee_display', 'm_fee_actual'); 
 
     function formatDate(dateStr) { if (!dateStr) return ""; if (dateStr.includes('/')) return dateStr; return dateStr.split('-').reverse().join('/'); }
     function formatMonth(monthStr) { return monthStr ? monthStr.split('-').reverse().join('/') : ""; }
@@ -659,17 +718,6 @@
     onSnapshot(query(invRef, orderBy("timestamp", "desc")), (snap) => { allInventory = snap.docs.map(d => ({id: d.id, ...d.data()})); renderApp(); });
 
     window.toggleInvType = () => { document.getElementById('inv_desc').placeholder = document.getElementById('inv_type').value === 'Xuất bán' ? "Tên Võ sinh" : "Tên Đại lý / Xưởng may"; };
-
-    window.updateAmountByPackage = () => {
-        let name = document.getElementById('description').value.trim();
-        let p = allProfiles[name];
-        if(p && p.tuitionFee) {
-            let months = parseInt(document.getElementById('tx_package').value) || 1;
-            let total = parseInt(p.tuitionFee, 10) * months;
-            document.getElementById('amountActual').value = total; 
-            document.getElementById('amountDisplay').value = total.toLocaleString('vi-VN');
-        }
-    };
 
     const setupAutocomplete = (inputId, listId, isTxForm) => {
         const inp = document.getElementById(inputId); const list = document.getElementById(listId);
@@ -845,7 +893,6 @@
         });
         const addSizeSelect = document.getElementById('add_uniform_size'); if(addSizeSelect) addSizeSelect.innerHTML = sizeSelectHtml;
 
-        // Xây dựng lịch sử nộp tiền thông minh, hỗ trợ đa tháng (Package)
         allTransactions.forEach(t => { 
             const cleanName = t.description ? t.description.trim() : ""; 
             if((t.type === 'Học phí' || t.type === 'Học phí + Lệ phí thi') && cleanName) { 
@@ -859,8 +906,24 @@
         });
 
         allTransactions.forEach(t => {
-            const cleanName = t.description ? t.description.trim() : ""; let isUniformTx = (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục');
-            if(selMonth && t.date && !t.date.startsWith(selMonth) && t.txMonth !== selMonth && !(t.packageMonths && t.packageMonths.includes(selMonth))) return;
+            const cleanName = t.description ? t.description.trim() : ""; 
+            let isUniformTx = (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục' || t.type === 'Tặng Võ phục');
+            let isTuition = (t.type === 'Học phí' || t.type === 'Học phí + Lệ phí thi');
+            
+            if (selMonth) {
+                if (isTuition) {
+                    if (t.packageMonths && Array.isArray(t.packageMonths)) {
+                        if (!t.packageMonths.includes(selMonth)) return; 
+                    } else {
+                        if (t.txMonth !== selMonth) return;
+                    }
+                } else if (t.type === 'Lệ phí thi' || t.type === 'Chi phí kỳ thi') {
+                    if (t.txMonth !== selMonth && (t.date && !t.date.startsWith(selMonth))) return; 
+                } else {
+                    if (t.date && !t.date.startsWith(selMonth)) return;
+                }
+            }
+            
             if(!isUniformTx && selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
             if(search && !cleanName.toLowerCase().includes(search) && !(t.examTitle||"").toLowerCase().includes(search)) return;
 
@@ -874,22 +937,45 @@
                 exp_exam_total += t.amount;
                 examExpHtml += `<tr><td>${formatDate(t.date)}</td><td class="font-bold text-slate-800">${t.description}</td><td class="text-rose-600 font-bold">-${t.amount.toLocaleString()}</td><td>${btnDel}</td></tr>`;
             } else if (isUniformTx) {
-                let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục'); if(isInc) inc_uniform += t.amount; else exp_uniform += t.amount;
+                let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục'); 
+                let isGift = (t.type === 'Tặng Võ phục');
+                if(isInc) inc_uniform += t.amount; else if (!isGift) exp_uniform += t.amount;
+                
                 let sizeText = "-"; let matchSize = t.description.match(/(Số \d+|Size 1m\d*)/); if(matchSize) sizeText = matchSize[1];
                 let clickToEditTag = window.userRole === 'admin' ? `onclick="openEditInv('${t.id}', '${t.relatedInvId || ''}')"` : '';
                 let renderNameCell = window.userRole === 'admin' ? `<div class="inline-block px-1 -ml-1 rounded hover:bg-blue-50 cursor-pointer text-blue-700 font-bold" ${clickToEditTag}>${cleanName}</div>` : `<span class="font-bold text-slate-700">${cleanName}</span>`;
+                let typeBadge = isGift ? '<span class="text-[0.7rem] font-bold uppercase text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Tặng</span>' : `<span class="text-[0.7rem] font-bold uppercase ${isInc ? 'text-emerald-600' : 'text-rose-600'} bg-slate-50 px-1.5 py-0.5 rounded">${isInc ? 'Bán' : 'Nhập'}</span>`;
 
-                uniformTxHtml += `<tr><td>${formatDate(t.date)}</td><td>${renderNameCell}</td><td><span class="text-[0.7rem] font-bold uppercase ${isInc ? 'text-emerald-600' : 'text-rose-600'} bg-slate-50 px-1.5 py-0.5 rounded">${isInc ? 'Bán' : 'Nhập'}</span></td><td><span class="badge bg-blue-50 text-blue-800 border border-blue-200">${sizeText}</span></td><td class="${isInc ? 'text-emerald-600' : 'text-rose-600'} font-bold">${isInc ? '+' : '-'}${t.amount.toLocaleString()}</td><td class="action-btns">${isInc ? `<button class="btn-sm bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200" onclick="exportReceipt('${safeNameEscaped}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung', '', 'BIÊN LAI THU TIỀN')">🧾 In</button>` : ''}${btnDel}</td></tr>`;
+                uniformTxHtml += `<tr><td>${formatDate(t.date)}</td><td>${renderNameCell}</td><td>${typeBadge}</td><td><span class="badge bg-blue-50 text-blue-800 border border-blue-200">${sizeText}</span></td><td class="${isInc ? 'text-emerald-600' : (isGift ? 'text-slate-500' : 'text-rose-600')} font-bold">${isInc ? '+' : (isGift ? '' : '-')}${t.amount.toLocaleString()}</td><td class="action-btns">${(isInc || isGift) ? `<button class="btn-sm bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200" onclick="exportReceipt('${safeNameEscaped}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung', '', 'BIÊN LAI THU TIỀN')">🧾 In</button>` : ''}${btnDel}</td></tr>`;
             } else {
-                if(t.type === 'Học phí') { inc_tuition += t.amount; } else if(t.type === 'Lệ phí thi') { inc_exam += t.amount; } else if(t.type === 'Học phí + Lệ phí thi') { inc_tuition += (t.tuitionAmount || 0); inc_exam += (t.examAmount || 0); } else inc_other += t.amount;
+                let allocatedAmount = t.amount;
+                if(t.type === 'Học phí') { 
+                    allocatedAmount = t.packageMonths ? t.amount / t.packageMonths.length : t.amount;
+                    inc_tuition += allocatedAmount; 
+                } else if(t.type === 'Học phí + Lệ phí thi') { 
+                    allocatedAmount = t.packageMonths ? (t.tuitionAmount || 0) / t.packageMonths.length : (t.tuitionAmount || 0);
+                    inc_tuition += allocatedAmount; 
+                    inc_exam += (t.examAmount || 0); 
+                } else if(t.type === 'Lệ phí thi') { 
+                    inc_exam += t.amount; 
+                } else { 
+                    inc_other += t.amount; 
+                }
+
                 let studentNameBase = cleanName.split(' (')[0]; let safeStudentNameBase = studentNameBase.replace(/'/g, "\\'");
                 let badgeTypeClass = (t.type === 'Lệ phí thi' || t.type === 'Học phí + Lệ phí thi') ? 'bg-orange-50 text-orange-800 border-orange-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200';
                 let printTypeBadge = t.type === 'Học phí + Lệ phí thi' ? 'Học phí & Thi' : t.type; let safeExamTitle = t.examTitle ? t.examTitle.replace(/'/g, "\\'") : '';
-                
-                // Hiển thị nếu là gói đa tháng
                 let displayTxMonth = t.packageMonths && t.packageMonths.length > 1 ? `${t.packageMonths.length} Tháng` : (t.txMonth ? formatMonth(t.txMonth) : "-");
+                
+                let amountHTML = '';
+                if (t.packageMonths && t.packageMonths.length > 1) {
+                    let totalAllo = t.type === 'Học phí + Lệ phí thi' ? (allocatedAmount + (t.examAmount||0)) : allocatedAmount;
+                    amountHTML = `<div class="text-emerald-600 font-black text-base">+${totalAllo.toLocaleString()}</div><div class="text-[0.65rem] text-slate-500 font-bold whitespace-nowrap">Tổng: ${t.amount.toLocaleString()}</div>`;
+                } else {
+                    amountHTML = `<span class="text-emerald-600 font-black text-base">+${t.amount.toLocaleString()}</span>`;
+                }
 
-                txHtml += `<tr><td>${formatDate(t.date)}</td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td><span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">${displayTxMonth}</span></td><td class="name-link text-[0.95rem]" onclick="openProfile('${safeStudentNameBase}')">${cleanName}</td><td><span class="badge ${badgeTypeClass} border">${printTypeBadge}</span></td><td class="text-emerald-600 font-black text-base">+${t.amount.toLocaleString()}</td><td class="action-btns"><button class="btn-sm bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" onclick="exportReceipt('${safeStudentNameBase}', ${t.amount}, '${t.type}', '${t.date}', '${t.packageMonths ? t.packageMonths.join(',') : (t.txMonth||'')}', '${safeBranch}', '${safeExamTitle}', 'BIÊN LAI THU TIỀN')">🧾 In</button>${btnDel}</td></tr>`;
+                txHtml += `<tr><td>${formatDate(t.date)}</td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td><span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">${displayTxMonth}</span></td><td class="name-link text-[0.95rem]" onclick="openProfile('${safeStudentNameBase}')">${cleanName}</td><td><span class="badge ${badgeTypeClass} border">${printTypeBadge}</span></td><td>${amountHTML}</td><td class="action-btns"><button class="btn-sm bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" onclick="exportReceipt('${safeStudentNameBase}', ${t.amount}, '${t.type}', '${t.date}', '${t.packageMonths ? t.packageMonths.join(',') : (t.txMonth||'')}', '${safeBranch}', '${safeExamTitle}', 'BIÊN LAI THU TIỀN')">🧾 In</button>${btnDel}</td></tr>`;
             }
         });
 
@@ -906,7 +992,6 @@
                 let lastPaidStr = "Chưa đóng"; if(studentPayments[name] && studentPayments[name].size > 0) lastPaidStr = formatMonth(Array.from(studentPayments[name]).sort().pop());
                 activeHtml += `<tr><td class="name-link text-[0.95rem]" onclick="openProfile('${safeNameEscaped}')">${name}${p.notes ? ' <span title="'+p.notes+'">📝</span>' : ''}</td><td>${beltHTML}</td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td>${formatDate(p.dob)}</td><td><span class="badge badge-active">${lastPaidStr}</span></td><td class="font-medium text-slate-600">${safePhone}</td><td class="text-slate-500">${formatDate(p.createdAt)}</td><td><button class="btn-sm bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" onclick="openProfile('${safeNameEscaped}')">${window.userRole === 'admin' ? '✏️ Sửa' : '👁️ Xem'}</button></td></tr>`;
                 
-                // THUẬT TOÁN QUÉT NỢ LŨY KẾ
                 let unpaidMonths = [];
                 let startM = p.createdAt ? p.createdAt.substring(0, 7) : selMonth;
                 let endM = selMonth;
@@ -935,7 +1020,7 @@
                     totalDebtEst += totalDebtAmount; 
                     let unpaidMonthsStr = unpaidMonths.map(formatMonth).join(', ');
 
-                    debtHtml += `<tr><td><span class="badge bg-rose-50 text-rose-700 border border-rose-200" title="${unpaidMonthsStr}">${unpaidMonths.length} Tháng</span></td><td><span class="text-slate-500 text-[0.8rem]">${unpaidMonths.length > 1 ? 'Nợ dồn' : formatMonth(selMonth)}</span></td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td class="name-link text-[0.95rem]" onclick="openProfile('${safeNameEscaped}')">${name}</td><td class="action-btns"><button class="btn-sm bg-indigo-50 text-indigo-700 border border-indigo-200" onclick="generateMultiMonthPaymentRequest('${safeNameEscaped}', '${unpaidMonths.join(',')}', '${safeBranch}', '${totalDebtAmount}')">QR Gộp</button>${window.userRole === 'admin' ? `<button class="btn-sm bg-emerald-600 text-white shadow-sm" onclick="quickPay('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${totalDebtAmount}')">💰 Thu Nợ</button>` : ''}<button class="btn-sm bg-[#0068FF] text-white shadow-sm" onclick="copyAndOpenZalo('${safeNameEscaped}', '${selMonth}', '${safePhone}')">💬 Zalo</button>${window.userRole === 'admin' ? `<button class="btn-sm bg-slate-100 text-slate-700 border border-slate-200" onclick="skipMonth('${safeNameEscaped}', '${selMonth}')">Nghỉ</button>` : ''}</td></tr>`;
+                    debtHtml += `<tr><td><span class="badge bg-rose-50 text-rose-700 border border-rose-200" title="${unpaidMonthsStr}">${unpaidMonths.length} Tháng</span></td><td><span class="text-slate-500 text-[0.8rem]">${unpaidMonths.length > 1 ? 'Nợ dồn' : formatMonth(selMonth)}</span></td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td class="name-link text-[0.95rem]" onclick="openProfile('${safeNameEscaped}')">${name}</td><td class="action-btns"><button class="btn-sm bg-indigo-50 text-indigo-700 border border-indigo-200" onclick="generateMultiMonthPaymentRequest('${safeNameEscaped}', '${unpaidMonths.join(',')}', '${safeBranch}', '${totalDebtAmount}')">QR Gộp</button>${window.userRole === 'admin' ? `<button class="btn-sm bg-emerald-600 text-white shadow-sm" onclick="quickPay('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${totalDebtAmount}')">💰Thu</button>` : ''}<button class="btn-sm bg-[#0068FF] text-white shadow-sm" onclick="copyAndOpenZalo('${safeNameEscaped}', '${selMonth}', '${safePhone}')">💬 Zalo</button>${window.userRole === 'admin' ? `<button class="btn-sm bg-slate-100 text-slate-700 border border-slate-200" onclick="skipMonth('${safeNameEscaped}', '${selMonth}')">Nghỉ</button>` : ''}</td></tr>`;
                 }
             } else {
                 quitHtml += `<tr><td class="name-link text-[0.95rem]" onclick="openProfile('${safeNameEscaped}')">${name}</td><td>${beltHTML}</td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td>${window.userRole === 'admin' ? `<button class="btn-sm bg-emerald-50 text-emerald-700 border border-emerald-200" onclick="openProfile('${safeNameEscaped}')">🔄 Khôi phục</button>` : ''}</td></tr>`;
@@ -943,14 +1028,36 @@
         });
 
         let monthsSet = new Set();
-        allTransactions.forEach(t => { if(t.date) monthsSet.add(t.date.substring(0, 7)); }); Object.values(allProfiles).forEach(p => { if(p.createdAt) monthsSet.add(p.createdAt.substring(0, 7)); if(p.quitDate) monthsSet.add(p.quitDate.substring(0, 7)); });
+        allTransactions.forEach(t => { if(t.date) monthsSet.add(t.date.substring(0, 7)); if(t.packageMonths) t.packageMonths.forEach(pm => monthsSet.add(pm)); }); Object.values(allProfiles).forEach(p => { if(p.createdAt) monthsSet.add(p.createdAt.substring(0, 7)); if(p.quitDate) monthsSet.add(p.quitDate.substring(0, 7)); });
         let allMonths = Array.from(monthsSet).sort().reverse(); let chartLabels = []; let chartIncome = []; let chartExpense = []; let chartActive = []; let chronologicalMonths = [...allMonths].slice(0, 6).reverse(); 
 
         allMonths.forEach(m => {
             let m_new = 0, m_quit = 0, m_active_theo = 0, m_skipped = 0, m_inc = 0, m_exp = 0;
             Object.values(allProfiles).forEach(p => { const joinM = p.createdAt ? p.createdAt.substring(0, 7) : "2000-01"; const quitM = p.quitDate ? p.quitDate.substring(0, 7) : null; if (joinM === m) m_new++; if (quitM === m) m_quit++; if (joinM <= m && (!quitM || quitM >= m)) { m_active_theo++; if (p.skippedMonths && p.skippedMonths.includes(m)) m_skipped++; } });
             let m_actual = m_active_theo - m_skipped;
-            allTransactions.forEach(t => { const txM = t.date ? t.date.substring(0, 7) : null; if (txM === m) { if (t.type === 'Học phí + Lệ phí thi') m_inc += (t.tuitionAmount || 0); else if (['Học phí', 'Thu khác', 'Thu Võ phục', 'Võ phục'].includes(t.type)) m_inc += t.amount; else if (['Chi phí', 'Chi Võ phục'].includes(t.type)) m_exp += t.amount; } });
+            
+            allTransactions.forEach(t => { 
+                let isIncType = ['Thu khác', 'Thu Võ phục', 'Võ phục', 'Lệ phí thi'].includes(t.type);
+                if (t.type === 'Học phí' || t.type === 'Học phí + Lệ phí thi') {
+                    if (t.packageMonths && Array.isArray(t.packageMonths)) {
+                        let amountPerMonth = (t.type === 'Học phí + Lệ phí thi' ? (t.tuitionAmount || 0) : t.amount) / t.packageMonths.length;
+                        if (t.packageMonths.includes(m)) m_inc += amountPerMonth;
+                    } else {
+                        let monthToCount = t.txMonth || (t.date ? t.date.substring(0, 7) : null);
+                        if (monthToCount === m) m_inc += (t.type === 'Học phí + Lệ phí thi' ? (t.tuitionAmount || 0) : t.amount);
+                    }
+                    if (t.type === 'Học phí + Lệ phí thi') {
+                        let monthToCount = t.txMonth || (t.date ? t.date.substring(0, 7) : null);
+                        if (monthToCount === m) m_inc += (t.examAmount || 0);
+                    }
+                } else if (isIncType) {
+                    let txM_date = t.date ? t.date.substring(0, 7) : null;
+                    if (txM_date === m) m_inc += t.amount;
+                } else if (['Chi phí', 'Chi Võ phục', 'Chi phí kỳ thi'].includes(t.type)) {
+                    let txM_date = t.date ? t.date.substring(0, 7) : null;
+                    if (txM_date === m) m_exp += t.amount;
+                }
+            });
             
             reportHtml += `<tr><td class="font-black text-primary">${formatMonth(m)}</td><td class="text-slate-800 font-bold text-base">${m_actual}</td><td class="text-emerald-600 font-medium">+${m_new}</td><td class="text-rose-600 font-medium">-${m_quit}</td><td class="text-emerald-600 font-bold">${m_inc.toLocaleString()} ₫</td><td class="text-rose-600 font-bold">${m_exp.toLocaleString()} ₫</td><td class="${(m_inc-m_exp)<0 ? 'text-rose-600' : 'text-emerald-600'} font-black text-base bg-slate-50">${(m_inc-m_exp).toLocaleString()} ₫</td></tr>`;
             if (chronologicalMonths.includes(m)) { let index = chronologicalMonths.indexOf(m); chartLabels[index] = formatMonth(m); chartIncome[index] = m_inc; chartExpense[index] = m_exp; chartActive[index] = m_actual; }
@@ -1049,31 +1156,59 @@
     window.skipMonth = async (name, month) => { if(window.userRole !== 'viewer' && confirm(`Xác nhận miễn phí tháng ${formatMonth(month)} cho ${name}?`)) { await setDoc(doc(db, "tst_profiles", name.trim()), { skippedMonths: arrayUnion(month) }, { merge: true }); window.showToast("✅ Đã báo nghỉ!"); } };
     window.removeSkip = async (name, month) => { if(window.userRole !== 'viewer' && confirm(`Hủy báo nghỉ tháng ${formatMonth(month)} cho ${name}?`)) { await setDoc(doc(db, "tst_profiles", name.trim()), { skippedMonths: arrayRemove(month) }, { merge: true }); closeModal(); window.showToast("✅ Đã khôi phục nợ!"); } };
 
-    window.openAddModal = () => { if(window.userRole === 'viewer') return; ['add_name','add_dob','add_phone','add_notes','add_fee_default_actual','add_fee_default_display','add_fee_display','add_fee_actual','add_uniform_display','add_uniform_actual'].forEach(id => document.getElementById(id).value = ''); document.getElementById('add_uniform_size').value = ''; document.getElementById('add_belt').value = 'Đai trắng - Cấp 10'; document.getElementById('add_date').value = getLocalToday(); document.getElementById('addModal').style.display = 'flex'; };
+    window.openAddModal = () => { 
+        if(window.userRole === 'viewer') return; 
+        ['add_name','add_dob','add_phone','add_notes','add_fee_default_actual','add_fee_default_display','add_fee_display','add_fee_actual','add_uniform_display','add_uniform_actual'].forEach(id => document.getElementById(id).value = ''); 
+        document.getElementById('add_uniform_size').value = ''; document.getElementById('add_belt').value = 'Đai trắng - Cấp 10'; document.getElementById('add_package').value = '1'; document.getElementById('add_discount').checked = false; document.getElementById('add_uniform_gift').checked = false; window.toggleAddUniformGift(); document.getElementById('add_date').value = getLocalToday(); document.getElementById('addModal').style.display = 'flex'; 
+    };
+    
     window.addNewStudent = async () => {
         if(window.userRole === 'viewer') return; 
         const name = document.getElementById('add_name').value.trim(); const branch = document.getElementById('add_branch').value; const joinDate = document.getElementById('add_date').value; const fee = Number(document.getElementById('add_fee_actual').value); const uniformSize = document.getElementById('add_uniform_size').value.trim(); const uniformFee = Number(document.getElementById('add_uniform_actual').value);
-        if(!name) return alert("Cần nhập tên!"); if(allProfiles[name]) return alert("Võ sinh đã tồn tại!"); if(uniformFee > 0 && !uniformSize) return alert("Vui lòng chọn Size Võ phục!");
+        const packageCount = parseInt(document.getElementById('add_package').value) || 1; const isGift = document.getElementById('add_uniform_gift').checked;
+        
+        if(!name) return alert("Cần nhập tên!"); if(allProfiles[name]) return alert("Võ sinh đã tồn tại!"); if(!isGift && uniformFee > 0 && !uniformSize) return alert("Vui lòng chọn Size Võ phục!");
+
+        let startMonth = joinDate.substring(0, 7);
+        let monthsToRecord = [];
+        let [y, m] = startMonth.split('-').map(Number);
+        for(let i=0; i<packageCount; i++) {
+            let curM = m + i; let curY = y;
+            while(curM > 12) { curM -= 12; curY += 1; }
+            monthsToRecord.push(`${curY}-${curM.toString().padStart(2, '0')}`);
+        }
+
         await setDoc(doc(db, "tst_profiles", name), { status: 'active', branch, belt: document.getElementById('add_belt').value, dob: document.getElementById('add_dob').value, phone: document.getElementById('add_phone').value, tuitionFee: document.getElementById('add_fee_default_actual').value, notes: document.getElementById('add_notes').value.trim(), createdAt: joinDate });
-        if(fee > 0) await addDoc(colRef, { branch, type: 'Học phí', description: name, amount: fee, date: joinDate, txMonth: joinDate.substring(0, 7), packageMonths: [joinDate.substring(0, 7)], timestamp: Date.now() });
-        if(uniformSize || uniformFee > 0) { const invDoc = uniformSize ? await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }) : null; if (uniformFee > 0) await addDoc(colRef, { branch: 'Chung', type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1, relatedInvId: invDoc ? invDoc.id : null }); }
+        
+        if(fee > 0) {
+            await addDoc(colRef, { branch, type: 'Học phí', description: name, amount: fee, date: joinDate, txMonth: startMonth, packageMonths: monthsToRecord, timestamp: Date.now() });
+        }
+        
+        if(uniformSize) { 
+            const invDoc = await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }); 
+            if(isGift) {
+                await addDoc(colRef, { branch: 'Chung', type: 'Tặng Võ phục', description: `Tặng ${uniformSize} cho ${name}`, amount: 0, date: joinDate, timestamp: Date.now() + 1, relatedInvId: invDoc.id });
+            } else if (uniformFee > 0) { 
+                await addDoc(colRef, { branch: 'Chung', type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1, relatedInvId: invDoc.id }); 
+            } 
+        }
         closeAddModal(); window.showToast("✅ Đã lưu hồ sơ mới và cập nhật kho!");
     };
 
     document.getElementById('transactionForm').onsubmit = async (e) => {
         e.preventDefault(); if(window.userRole === 'viewer') return;
-        const type = document.getElementById('type').value; const name = document.getElementById('description').value.trim(); const amount = Number(document.getElementById('amountActual').value); const branch = document.getElementById('branch').value; const date = document.getElementById('date').value; const txMonth = document.getElementById('tx_month').value;
+        const type = document.getElementById('type').value; const name = document.getElementById('description').value.trim(); const amount = Number(document.getElementById('amountActual').value); const branch = document.getElementById('branch').value; const date = document.getElementById('date').value; 
+        const txMonth = date.substring(0, 7);
         const packageCount = parseInt(document.getElementById('tx_package').value) || 1;
 
         if(!name) return; let txData = { branch, type, description: name, date, timestamp: Date.now() }; 
 
-        // Xử lý tạo mảng các tháng nếu đăng ký theo gói
         let monthsToRecord = [];
         if (type === 'Học phí' || type === 'Học phí + Lệ phí thi') {
             let [y, m] = txMonth.split('-').map(Number);
             for(let i=0; i<packageCount; i++) {
                 let curM = m + i; let curY = y;
-                if(curM > 12) { curM -= 12; curY += 1; }
+                while(curM > 12) { curM -= 12; curY += 1; }
                 monthsToRecord.push(`${curY}-${curM.toString().padStart(2, '0')}`);
             }
         }
@@ -1093,7 +1228,7 @@
         await addDoc(colRef, txData);
         if(!allProfiles[name] || allProfiles[name].status === 'quit') await setDoc(doc(db, "tst_profiles", name), { status: 'active', branch, belt: (allProfiles[name] || {}).belt || 'Đai trắng - Cấp 10', createdAt: (allProfiles[name] || {}).createdAt || getLocalToday() }, { merge: true });
         
-        e.target.reset(); document.getElementById('date').value = getLocalToday(); document.getElementById('tx_month').value = getLocalToday().substring(0, 7); document.getElementById('tx_package').value = "1"; document.getElementById('tx_exam_amountActual').value = ""; window.toggleTxFormType(); window.showToast("✅ Đã lưu khoản thu!");
+        e.target.reset(); document.getElementById('date').value = getLocalToday(); document.getElementById('tx_package').value = "1"; document.getElementById('tx_discount').checked = false; document.getElementById('tx_exam_amountActual').value = ""; window.toggleTxFormType(); window.showToast("✅ Đã lưu khoản thu!");
     };
 
     document.getElementById('expenseForm').onsubmit = async (e) => { e.preventDefault(); if(window.userRole !== 'viewer') { await addDoc(colRef, { branch: document.getElementById('exp_branch').value, type: 'Chi phí', description: document.getElementById('exp_desc').value.trim(), amount: Number(document.getElementById('exp_amountActual').value), date: document.getElementById('exp_date').value, timestamp: Date.now() }); e.target.reset(); document.getElementById('exp_date').value = getLocalToday(); window.showToast("✅ Đã lưu khoản chi!"); } };
@@ -1141,7 +1276,7 @@
     const lToday = getLocalToday(); const lMonth = lToday.substring(0, 7);
     document.getElementById('filterMonth').value = lMonth; document.getElementById('filterMonth').onchange = renderApp; 
     document.getElementById('filterBranch').onchange = renderApp; document.getElementById('searchInput').oninput = renderApp; 
-    document.getElementById('date').value = lToday; document.getElementById('tx_month').value = lMonth; 
+    document.getElementById('date').value = lToday; 
     document.getElementById('inv_date').value = lToday; document.getElementById('exp_date').value = lToday;
 </script>
 </body>
