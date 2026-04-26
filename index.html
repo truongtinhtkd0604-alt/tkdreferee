@@ -179,7 +179,7 @@
             <div><span class="text-xs font-bold text-indigo-800 uppercase tracking-wide">Khoản thu khác</span> <span id="sum_other" class="block text-lg md:text-2xl font-bold text-indigo-900 mt-0.5">0 ₫</span></div>
         </div>
 
-        <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4 bg-white p-4 md:p-5 rounded-xl border border-blue-50 shadow-sm mb-6 relative z-10">
+        <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-6 gap-3 md:gap-4 bg-white p-4 md:p-5 rounded-xl border border-blue-50 shadow-sm mb-6 relative z-10">
             <select id="branch" class="bg-slate-50"><option value="CS1">CS1: Huỳnh Tấn Phát</option><option value="CS2">CS2: Sân vận động</option></select>
             <select id="type" onchange="toggleTxFormType()" class="bg-slate-50">
                 <option value="Học phí">Học phí</option>
@@ -192,14 +192,21 @@
                 <div id="autocomplete-list" class="autocomplete-items"></div>
             </div>
 
-            <input type="month" id="tx_month" title="Tháng thu học phí" required onchange="updateExamComboQuarter()" class="bg-slate-50">
+            <input type="month" id="tx_month" title="Tháng thu học phí bắt đầu" required onchange="updateExamComboQuarter()" class="bg-slate-50">
             
+            <select id="tx_package" class="bg-slate-50 font-bold text-primary" onchange="updateAmountByPackage()">
+                <option value="1">Gói 1 Tháng</option>
+                <option value="3">Gói 3 Tháng</option>
+                <option value="6">Gói 6 Tháng</option>
+                <option value="12">Gói 12 Tháng</option>
+            </select>
+
             <div class="md:col-span-1">
                 <input type="text" id="amountDisplay" placeholder="Số tiền (VNĐ)" required class="font-black text-emerald-600 bg-slate-50 text-base md:text-lg">
                 <input type="hidden" id="amountActual">
             </div>
 
-            <div id="exam_fee_container" style="display:none;" class="md:col-span-5 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 bg-orange-50 p-4 rounded-xl border border-orange-100">
+            <div id="exam_fee_container" style="display:none;" class="md:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 bg-orange-50 p-4 rounded-xl border border-orange-100">
                 <div>
                     <label class="block text-[0.7rem] font-bold text-orange-800 mb-1 uppercase">Nội dung Lệ phí thi</label>
                     <input type="text" id="tx_exam_title" readonly class="bg-orange-100/50 cursor-not-allowed font-semibold text-orange-900 border-orange-200">
@@ -212,7 +219,7 @@
             </div>
             
             <input type="date" id="date" required class="md:col-span-1 bg-slate-50">
-            <button type="submit" class="bg-primary hover:bg-blue-800 text-white font-bold rounded-xl md:col-span-4 py-3 transition shadow-sm tracking-wide">XÁC NHẬN LƯU</button>
+            <button type="submit" class="bg-primary hover:bg-blue-800 text-white font-bold rounded-xl md:col-span-5 py-3 transition shadow-sm tracking-wide">XÁC NHẬN LƯU</button>
         </form>
 
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -233,7 +240,7 @@
         </div>
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="table-wrapper">
-                <table id="tbl_debt"><thead><tr><th>Kỳ nợ</th><th>Đóng gần nhất</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác điều hướng</th></tr></thead><tbody id="debtList"></tbody></table>
+                <table id="tbl_debt"><thead><tr><th>Số tháng nợ</th><th>Kỳ chưa nộp</th><th>Cơ sở</th><th>Võ sinh</th><th>Thao tác điều hướng</th></tr></thead><tbody id="debtList"></tbody></table>
             </div>
         </div>
     </div>
@@ -601,8 +608,8 @@
     };
 
     window.toggleTxFormType = () => {
-        const type = document.getElementById('type').value; const monthInput = document.getElementById('tx_month'); const examContainer = document.getElementById('exam_fee_container'); const amtDisplay = document.getElementById('amountDisplay');
-        if (type === 'Học phí' || type === 'Học phí + Lệ phí thi') { monthInput.style.display = 'block'; monthInput.required = true; } else { monthInput.style.display = 'none'; monthInput.required = false; }
+        const type = document.getElementById('type').value; const monthInput = document.getElementById('tx_month'); const packageInput = document.getElementById('tx_package'); const examContainer = document.getElementById('exam_fee_container'); const amtDisplay = document.getElementById('amountDisplay');
+        if (type === 'Học phí' || type === 'Học phí + Lệ phí thi') { monthInput.style.display = 'block'; packageInput.style.display = 'block'; monthInput.required = true; } else { monthInput.style.display = 'none'; packageInput.style.display = 'none'; monthInput.required = false; }
         if (type === 'Học phí + Lệ phí thi') {
             examContainer.style.display = 'grid'; document.getElementById('tx_exam_title').required = true; amtDisplay.placeholder = "Số tiền Học phí";
             window.updateExamComboQuarter();
@@ -653,6 +660,17 @@
 
     window.toggleInvType = () => { document.getElementById('inv_desc').placeholder = document.getElementById('inv_type').value === 'Xuất bán' ? "Tên Võ sinh" : "Tên Đại lý / Xưởng may"; };
 
+    window.updateAmountByPackage = () => {
+        let name = document.getElementById('description').value.trim();
+        let p = allProfiles[name];
+        if(p && p.tuitionFee) {
+            let months = parseInt(document.getElementById('tx_package').value) || 1;
+            let total = parseInt(p.tuitionFee, 10) * months;
+            document.getElementById('amountActual').value = total; 
+            document.getElementById('amountDisplay').value = total.toLocaleString('vi-VN');
+        }
+    };
+
     const setupAutocomplete = (inputId, listId, isTxForm) => {
         const inp = document.getElementById(inputId); const list = document.getElementById(listId);
         inp.onfocus = function() { if(this.value) this.oninput(); };
@@ -665,7 +683,7 @@
                 div.onclick = () => {
                     inp.value = name; if(isTxForm) document.getElementById('branch').value = allProfiles[name].branch || 'CS1';
                     if(isTxForm && (document.getElementById('type').value === 'Học phí' || document.getElementById('type').value === 'Học phí + Lệ phí thi') && allProfiles[name].tuitionFee) {
-                        document.getElementById('amountActual').value = allProfiles[name].tuitionFee; document.getElementById('amountDisplay').value = parseInt(allProfiles[name].tuitionFee, 10).toLocaleString('vi-VN');
+                        window.updateAmountByPackage();
                     }
                     list.style.display = 'none';
                 }; list.appendChild(div);
@@ -675,33 +693,30 @@
     };
     setupAutocomplete('description', 'autocomplete-list', true); setupAutocomplete('inv_desc', 'inv-autocomplete-list', false);
 
-    // BẢN NÂNG CẤP PRO: CHỨC NĂNG THU TRỰC TIẾP KHÔNG CHUYỂN TAB
     window.quickPay = async (name, month, branch, defaultFee) => {
         if(window.userRole === 'viewer') return alert("Tài khoản khách không thể thu tiền!");
         
         let defaultAmountStr = defaultFee ? parseInt(defaultFee, 10).toLocaleString('vi-VN') : '0';
         let cleanName = name.replace(/\\'/g, "'");
 
-        // Hỏi người dùng xác nhận nhanh qua Prompt (Cho phép đổi lại số tiền thực tế thu)
         let inputAmount = prompt(`XÁC NHẬN THU HỌC PHÍ\nVõ sinh: ${cleanName}\nKỳ học phí: ${formatMonth(month)}\n\nNhập số tiền thu (VNĐ):`, defaultAmountStr);
-        if (inputAmount === null) return; // Nếu huỷ thao tác
+        if (inputAmount === null) return; 
         
         let amount = Number(inputAmount.replace(/\D/g, ''));
         if (amount <= 0) return alert("Số tiền không hợp lệ!");
 
         try {
-            // Ghi thẳng dữ liệu lên cơ sở dữ liệu Firebase
             await addDoc(colRef, { 
                 branch: branch || 'CS1', 
                 type: 'Học phí', 
                 description: cleanName, 
                 amount: amount, 
                 date: getLocalToday(), 
-                txMonth: month, 
+                txMonth: month,
+                packageMonths: [month],
                 timestamp: Date.now() 
             });
             
-            // Xử lý auto-active nếu võ sinh từng báo nghỉ nhưng nay nộp lại tiền học
             if(!allProfiles[cleanName] || allProfiles[cleanName].status === 'quit') {
                 await setDoc(doc(db, "tst_profiles", cleanName), { 
                     status: 'active', 
@@ -711,7 +726,6 @@
                 }, { merge: true });
             }
 
-            // Giao diện sẽ tự phản hồi qua onSnapshot Listener -> Báo Notification
             window.showToast(`✅ Đã thu thành công ${amount.toLocaleString('vi-VN')} ₫ của ${cleanName}!`);
         } catch (error) {
             console.error("Lỗi khi ghi dữ liệu thu:", error);
@@ -733,57 +747,43 @@
         exportReceipt(name.replace(/\\'/g, "'"), amount, 'Học phí', getLocalToday(), month, branch, '', 'PHIẾU BÁO HỌC PHÍ');
     };
 
-    // SỬA LỖI XUẤT EXCEL: An toàn khi quét DOM (Không gây lỗi undefined)
+    window.generateMultiMonthPaymentRequest = (name, monthsStr, branch, totalAmountStr) => {
+        let amount = Number(totalAmountStr);
+        let monthsArr = monthsStr.split(',');
+        let shortDesc = monthsArr.length > 1 ? `Hoc phi ${monthsArr.length} thang` : `Hoc phi thang ${formatMonth(monthsArr[0])}`;
+        exportReceipt(name.replace(/\\'/g, "'"), amount, 'Học phí', getLocalToday(), monthsStr, branch, shortDesc, 'PHIẾU BÁO HỌC PHÍ');
+    };
+
     function getCleanTableForExcel(tableId) {
         let tb = document.getElementById(tableId); 
         if(!tb) return document.createElement('table'); 
         let clone = tb.cloneNode(true);
-        
         let headerCells = clone.querySelectorAll('th');
         if(headerCells.length > 0) {
             let lastHeader = headerCells[headerCells.length - 1].innerText.toLowerCase();
             if(lastHeader.includes('thao tác') || lastHeader.includes('hồ sơ') || lastHeader.includes('điều hướng')) {
                 clone.querySelectorAll('tr').forEach(row => {
-                    // Xóa cột cuối cùng một cách an toàn thông qua tập hợp thẻ con
-                    if(row.children.length > 0) {
-                        row.removeChild(row.lastElementChild);
-                    }
+                    if(row.children.length > 0) row.removeChild(row.lastElementChild);
                 });
             }
         }
         return clone;
     }
 
-    // SỬA LỖI XUẤT EXCEL: Try-Catch bọc mượt mà
     window.exportToExcel = () => {
         const selMonth = document.getElementById('filterMonth').value; 
         if(!selMonth) return alert("Chọn tháng xuất báo cáo!");
-        
         try {
             let wb = XLSX.utils.book_new();
             const sheetsInfo = [
-                { id: 'tbl_tx', name: "NguonThu" },
-                { id: 'tbl_uniform_tx', name: "ThuChiVoPhuc" },
-                { id: 'tbl_inventory', name: "KhoVoPhuc" },
-                { id: 'tbl_exp', name: "ChiPhi" },
-                { id: 'tbl_exam_expense', name: "ChiPhiKyThi" },
-                { id: 'tbl_debt', name: "NoPhi" },
-                { id: 'tbl_active', name: "HocSinh_DangTap" },
-                { id: 'tbl_quit', name: "HocSinh_DaNghi" },
-                { id: 'tbl_report', name: "BaoCaoThang" }
+                { id: 'tbl_tx', name: "NguonThu" }, { id: 'tbl_uniform_tx', name: "ThuChiVoPhuc" }, { id: 'tbl_inventory', name: "KhoVoPhuc" },
+                { id: 'tbl_exp', name: "ChiPhi" }, { id: 'tbl_exam_expense', name: "ChiPhiKyThi" }, { id: 'tbl_debt', name: "NoPhi" },
+                { id: 'tbl_active', name: "HocSinh_DangTap" }, { id: 'tbl_quit', name: "HocSinh_DaNghi" }, { id: 'tbl_report', name: "BaoCaoThang" }
             ];
-            
-            sheetsInfo.forEach(info => {
-                let ws = XLSX.utils.table_to_sheet(getCleanTableForExcel(info.id));
-                XLSX.utils.book_append_sheet(wb, ws, info.name);
-            });
-            
+            sheetsInfo.forEach(info => { let ws = XLSX.utils.table_to_sheet(getCleanTableForExcel(info.id)); XLSX.utils.book_append_sheet(wb, ws, info.name); });
             XLSX.writeFile(wb, `BaoCao_CLB_Thang_${selMonth}.xlsx`); 
             window.showToast("✅ Đã tải báo cáo Excel thành công!");
-        } catch (err) {
-            console.error("Excel Export Error: ", err);
-            alert("Đã xảy ra lỗi hệ thống khi xuất file. Vui lòng làm mới trang và thử lại!");
-        }
+        } catch (err) { console.error("Excel Export Error: ", err); alert("Đã xảy ra lỗi hệ thống khi xuất file. Vui lòng làm mới trang và thử lại!"); }
     };
 
     function getBeltBadge(belt) {
@@ -845,11 +845,22 @@
         });
         const addSizeSelect = document.getElementById('add_uniform_size'); if(addSizeSelect) addSizeSelect.innerHTML = sizeSelectHtml;
 
-        allTransactions.forEach(t => { const cleanName = t.description ? t.description.trim() : ""; if((t.type === 'Học phí' || t.type === 'Học phí + Lệ phí thi') && t.txMonth && cleanName) { if(!studentPayments[cleanName]) studentPayments[cleanName] = new Set(); studentPayments[cleanName].add(t.txMonth); } });
+        // Xây dựng lịch sử nộp tiền thông minh, hỗ trợ đa tháng (Package)
+        allTransactions.forEach(t => { 
+            const cleanName = t.description ? t.description.trim() : ""; 
+            if((t.type === 'Học phí' || t.type === 'Học phí + Lệ phí thi') && cleanName) { 
+                if(!studentPayments[cleanName]) studentPayments[cleanName] = new Set(); 
+                if(t.packageMonths && Array.isArray(t.packageMonths)) {
+                    t.packageMonths.forEach(m => studentPayments[cleanName].add(m));
+                } else if(t.txMonth) {
+                    studentPayments[cleanName].add(t.txMonth); 
+                }
+            } 
+        });
 
         allTransactions.forEach(t => {
             const cleanName = t.description ? t.description.trim() : ""; let isUniformTx = (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục');
-            if(selMonth && t.date && !t.date.startsWith(selMonth) && t.txMonth !== selMonth) return;
+            if(selMonth && t.date && !t.date.startsWith(selMonth) && t.txMonth !== selMonth && !(t.packageMonths && t.packageMonths.includes(selMonth))) return;
             if(!isUniformTx && selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
             if(search && !cleanName.toLowerCase().includes(search) && !(t.examTitle||"").toLowerCase().includes(search)) return;
 
@@ -874,8 +885,11 @@
                 let studentNameBase = cleanName.split(' (')[0]; let safeStudentNameBase = studentNameBase.replace(/'/g, "\\'");
                 let badgeTypeClass = (t.type === 'Lệ phí thi' || t.type === 'Học phí + Lệ phí thi') ? 'bg-orange-50 text-orange-800 border-orange-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200';
                 let printTypeBadge = t.type === 'Học phí + Lệ phí thi' ? 'Học phí & Thi' : t.type; let safeExamTitle = t.examTitle ? t.examTitle.replace(/'/g, "\\'") : '';
+                
+                // Hiển thị nếu là gói đa tháng
+                let displayTxMonth = t.packageMonths && t.packageMonths.length > 1 ? `${t.packageMonths.length} Tháng` : (t.txMonth ? formatMonth(t.txMonth) : "-");
 
-                txHtml += `<tr><td>${formatDate(t.date)}</td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td><span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">${t.txMonth ? formatMonth(t.txMonth) : "-"}</span></td><td class="name-link text-[0.95rem]" onclick="openProfile('${safeStudentNameBase}')">${cleanName}</td><td><span class="badge ${badgeTypeClass} border">${printTypeBadge}</span></td><td class="text-emerald-600 font-black text-base">+${t.amount.toLocaleString()}</td><td class="action-btns"><button class="btn-sm bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" onclick="exportReceipt('${safeStudentNameBase}', ${t.amount}, '${t.type}', '${t.date}', '${t.txMonth||''}', '${safeBranch}', '${safeExamTitle}', 'BIÊN LAI THU TIỀN')">🧾 In</button>${btnDel}</td></tr>`;
+                txHtml += `<tr><td>${formatDate(t.date)}</td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td><span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">${displayTxMonth}</span></td><td class="name-link text-[0.95rem]" onclick="openProfile('${safeStudentNameBase}')">${cleanName}</td><td><span class="badge ${badgeTypeClass} border">${printTypeBadge}</span></td><td class="text-emerald-600 font-black text-base">+${t.amount.toLocaleString()}</td><td class="action-btns"><button class="btn-sm bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" onclick="exportReceipt('${safeStudentNameBase}', ${t.amount}, '${t.type}', '${t.date}', '${t.packageMonths ? t.packageMonths.join(',') : (t.txMonth||'')}', '${safeBranch}', '${safeExamTitle}', 'BIÊN LAI THU TIỀN')">🧾 In</button>${btnDel}</td></tr>`;
             }
         });
 
@@ -892,9 +906,36 @@
                 let lastPaidStr = "Chưa đóng"; if(studentPayments[name] && studentPayments[name].size > 0) lastPaidStr = formatMonth(Array.from(studentPayments[name]).sort().pop());
                 activeHtml += `<tr><td class="name-link text-[0.95rem]" onclick="openProfile('${safeNameEscaped}')">${name}${p.notes ? ' <span title="'+p.notes+'">📝</span>' : ''}</td><td>${beltHTML}</td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td>${formatDate(p.dob)}</td><td><span class="badge badge-active">${lastPaidStr}</span></td><td class="font-medium text-slate-600">${safePhone}</td><td class="text-slate-500">${formatDate(p.createdAt)}</td><td><button class="btn-sm bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" onclick="openProfile('${safeNameEscaped}')">${window.userRole === 'admin' ? '✏️ Sửa' : '👁️ Xem'}</button></td></tr>`;
                 
-                if(!(studentPayments[name] && studentPayments[name].has(selMonth)) && !(p.skippedMonths && p.skippedMonths.includes(selMonth)) && !((p.createdAt ? p.createdAt.substring(0, 7) : "2000-01") > selMonth)) {
-                    debtCountRender++; totalDebtEst += (Number(p.tuitionFee) || 0); 
-                    debtHtml += `<tr><td><span class="badge badge-quit shadow-sm text-[0.7rem]">${formatMonth(selMonth)}</span></td><td><span class="text-slate-500 text-[0.8rem]">${lastPaidStr}</span></td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td class="name-link text-[0.95rem]" onclick="openProfile('${safeNameEscaped}')">${name}</td><td class="action-btns"><button class="btn-sm bg-indigo-50 text-indigo-700 border border-indigo-200" onclick="generatePaymentRequest('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">QR</button>${window.userRole === 'admin' ? `<button class="btn-sm bg-emerald-600 text-white shadow-sm" onclick="quickPay('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${p.tuitionFee || ''}')">💰 Thu</button>` : ''}<button class="btn-sm bg-[#0068FF] text-white shadow-sm" onclick="copyAndOpenZalo('${safeNameEscaped}', '${selMonth}', '${safePhone}')">💬 Zalo</button>${window.userRole === 'admin' ? `<button class="btn-sm bg-slate-100 text-slate-700 border border-slate-200" onclick="skipMonth('${safeNameEscaped}', '${selMonth}')">Nghỉ</button>` : ''}</td></tr>`;
+                // THUẬT TOÁN QUÉT NỢ LŨY KẾ
+                let unpaidMonths = [];
+                let startM = p.createdAt ? p.createdAt.substring(0, 7) : selMonth;
+                let endM = selMonth;
+                
+                let currentD = new Date(startM + "-01");
+                let endD = new Date(endM + "-01");
+                let allM = [];
+                while(currentD <= endD) {
+                    let y = currentD.getFullYear();
+                    let m = (currentD.getMonth() + 1).toString().padStart(2, '0');
+                    allM.push(`${y}-${m}`);
+                    currentD.setMonth(currentD.getMonth() + 1);
+                }
+                
+                allM.forEach(m => {
+                    let isPaid = studentPayments[name] && studentPayments[name].has(m);
+                    let isSkipped = p.skippedMonths && p.skippedMonths.includes(m);
+                    if (!isPaid && !isSkipped) {
+                        unpaidMonths.push(m);
+                    }
+                });
+
+                if(unpaidMonths.length > 0 && unpaidMonths.includes(selMonth)) {
+                    debtCountRender++; 
+                    let totalDebtAmount = unpaidMonths.length * (Number(p.tuitionFee) || 0);
+                    totalDebtEst += totalDebtAmount; 
+                    let unpaidMonthsStr = unpaidMonths.map(formatMonth).join(', ');
+
+                    debtHtml += `<tr><td><span class="badge bg-rose-50 text-rose-700 border border-rose-200" title="${unpaidMonthsStr}">${unpaidMonths.length} Tháng</span></td><td><span class="text-slate-500 text-[0.8rem]">${unpaidMonths.length > 1 ? 'Nợ dồn' : formatMonth(selMonth)}</span></td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td class="name-link text-[0.95rem]" onclick="openProfile('${safeNameEscaped}')">${name}</td><td class="action-btns"><button class="btn-sm bg-indigo-50 text-indigo-700 border border-indigo-200" onclick="generateMultiMonthPaymentRequest('${safeNameEscaped}', '${unpaidMonths.join(',')}', '${safeBranch}', '${totalDebtAmount}')">QR Gộp</button>${window.userRole === 'admin' ? `<button class="btn-sm bg-emerald-600 text-white shadow-sm" onclick="quickPay('${safeNameEscaped}', '${selMonth}', '${safeBranch}', '${totalDebtAmount}')">💰 Thu Nợ</button>` : ''}<button class="btn-sm bg-[#0068FF] text-white shadow-sm" onclick="copyAndOpenZalo('${safeNameEscaped}', '${selMonth}', '${safePhone}')">💬 Zalo</button>${window.userRole === 'admin' ? `<button class="btn-sm bg-slate-100 text-slate-700 border border-slate-200" onclick="skipMonth('${safeNameEscaped}', '${selMonth}')">Nghỉ</button>` : ''}</td></tr>`;
                 }
             } else {
                 quitHtml += `<tr><td class="name-link text-[0.95rem]" onclick="openProfile('${safeNameEscaped}')">${name}</td><td>${beltHTML}</td><td><span class="badge bg-slate-100 text-slate-600 border border-slate-200">${safeBranch}</span></td><td>${formatDate(p.dob)}</td><td>${formatDate(p.quitDate)}</td><td>${window.userRole === 'admin' ? `<button class="btn-sm bg-emerald-50 text-emerald-700 border border-emerald-200" onclick="openProfile('${safeNameEscaped}')">🔄 Khôi phục</button>` : ''}</td></tr>`;
@@ -915,13 +956,11 @@
             if (chronologicalMonths.includes(m)) { let index = chronologicalMonths.indexOf(m); chartLabels[index] = formatMonth(m); chartIncome[index] = m_inc; chartExpense[index] = m_exp; chartActive[index] = m_actual; }
         });
 
-        // DOM Insert
         document.getElementById('txList').innerHTML = txHtml; document.getElementById('uniformTxList').innerHTML = uniformTxHtml; document.getElementById('expenseList').innerHTML = expHtml; document.getElementById('examExpenseList').innerHTML = examExpHtml; document.getElementById('debtList').innerHTML = debtHtml; document.getElementById('activeList').innerHTML = activeHtml; document.getElementById('quitList').innerHTML = quitHtml; document.getElementById('inventoryList').innerHTML = invListHtml; document.getElementById('reportList').innerHTML = reportHtml;
 
-        // TÁCH LỢI NHUẬN VÕ PHỤC CHO DASHBOARD
-        let tIncActive = inc_tuition + inc_other + inc_exam; // Tổng thu hoạt động
-        let tExpActive = exp + exp_exam_total;               // Tổng chi hoạt động
-        let uniformProfit = inc_uniform - exp_uniform;       // Lãi võ phục
+        let tIncActive = inc_tuition + inc_other + inc_exam; 
+        let tExpActive = exp + exp_exam_total;               
+        let uniformProfit = inc_uniform - exp_uniform;       
 
         document.getElementById('sum_tuition').innerText = inc_tuition.toLocaleString() + " ₫"; document.getElementById('sum_other').innerText = inc_other.toLocaleString() + " ₫";
         if(document.getElementById('sum_exam_tab')) document.getElementById('sum_exam_tab').innerText = inc_exam.toLocaleString() + " ₫";
@@ -929,7 +968,6 @@
         if(document.getElementById('sum_exam_profit_tab')) document.getElementById('sum_exam_profit_tab').innerText = (inc_exam - exp_exam_total).toLocaleString() + " ₫";
         document.getElementById('sum_uniform_in').innerText = inc_uniform.toLocaleString() + " ₫"; document.getElementById('sum_uniform_out').innerText = exp_uniform.toLocaleString() + " ₫"; document.getElementById('sum_uniform_profit').innerText = uniformProfit.toLocaleString() + " ₫";
         
-        // Push Dashboard Values
         document.getElementById('totalIncomeDashboard').innerText = tIncActive.toLocaleString() + " ₫"; 
         document.getElementById('totalExpenseDashboard').innerText = tExpActive.toLocaleString() + " ₫"; 
         document.getElementById('totalProfitDashboard').innerText = (tIncActive - tExpActive).toLocaleString() + " ₫"; 
@@ -1017,7 +1055,7 @@
         const name = document.getElementById('add_name').value.trim(); const branch = document.getElementById('add_branch').value; const joinDate = document.getElementById('add_date').value; const fee = Number(document.getElementById('add_fee_actual').value); const uniformSize = document.getElementById('add_uniform_size').value.trim(); const uniformFee = Number(document.getElementById('add_uniform_actual').value);
         if(!name) return alert("Cần nhập tên!"); if(allProfiles[name]) return alert("Võ sinh đã tồn tại!"); if(uniformFee > 0 && !uniformSize) return alert("Vui lòng chọn Size Võ phục!");
         await setDoc(doc(db, "tst_profiles", name), { status: 'active', branch, belt: document.getElementById('add_belt').value, dob: document.getElementById('add_dob').value, phone: document.getElementById('add_phone').value, tuitionFee: document.getElementById('add_fee_default_actual').value, notes: document.getElementById('add_notes').value.trim(), createdAt: joinDate });
-        if(fee > 0) await addDoc(colRef, { branch, type: 'Học phí', description: name, amount: fee, date: joinDate, txMonth: joinDate.substring(0, 7), timestamp: Date.now() });
+        if(fee > 0) await addDoc(colRef, { branch, type: 'Học phí', description: name, amount: fee, date: joinDate, txMonth: joinDate.substring(0, 7), packageMonths: [joinDate.substring(0, 7)], timestamp: Date.now() });
         if(uniformSize || uniformFee > 0) { const invDoc = uniformSize ? await addDoc(invRef, { size: uniformSize, type: 'Xuất bán', qty: 1, date: joinDate, timestamp: Date.now() + 2 }) : null; if (uniformFee > 0) await addDoc(colRef, { branch: 'Chung', type: 'Thu Võ phục', description: `Bán ${uniformSize} cho ${name}`, amount: uniformFee, date: joinDate, timestamp: Date.now() + 1, relatedInvId: invDoc ? invDoc.id : null }); }
         closeAddModal(); window.showToast("✅ Đã lưu hồ sơ mới và cập nhật kho!");
     };
@@ -1025,11 +1063,37 @@
     document.getElementById('transactionForm').onsubmit = async (e) => {
         e.preventDefault(); if(window.userRole === 'viewer') return;
         const type = document.getElementById('type').value; const name = document.getElementById('description').value.trim(); const amount = Number(document.getElementById('amountActual').value); const branch = document.getElementById('branch').value; const date = document.getElementById('date').value; const txMonth = document.getElementById('tx_month').value;
+        const packageCount = parseInt(document.getElementById('tx_package').value) || 1;
+
         if(!name) return; let txData = { branch, type, description: name, date, timestamp: Date.now() }; 
-        if (type === 'Học phí + Lệ phí thi') { const examAmount = Number(document.getElementById('tx_exam_amountActual').value); const examTitle = document.getElementById('tx_exam_title').value.trim(); txData.tuitionAmount = amount; txData.examAmount = examAmount; txData.examTitle = examTitle; txData.amount = amount + examAmount; txData.txMonth = txMonth; } else { txData.amount = amount; if(type === 'Học phí') txData.txMonth = txMonth; }
+
+        // Xử lý tạo mảng các tháng nếu đăng ký theo gói
+        let monthsToRecord = [];
+        if (type === 'Học phí' || type === 'Học phí + Lệ phí thi') {
+            let [y, m] = txMonth.split('-').map(Number);
+            for(let i=0; i<packageCount; i++) {
+                let curM = m + i; let curY = y;
+                if(curM > 12) { curM -= 12; curY += 1; }
+                monthsToRecord.push(`${curY}-${curM.toString().padStart(2, '0')}`);
+            }
+        }
+
+        if (type === 'Học phí + Lệ phí thi') { 
+            const examAmount = Number(document.getElementById('tx_exam_amountActual').value); const examTitle = document.getElementById('tx_exam_title').value.trim(); 
+            txData.tuitionAmount = amount; txData.examAmount = examAmount; txData.examTitle = examTitle; 
+            txData.amount = amount + examAmount; txData.txMonth = txMonth; txData.packageMonths = monthsToRecord; 
+        } else { 
+            txData.amount = amount; 
+            if(type === 'Học phí') {
+                txData.txMonth = txMonth;
+                txData.packageMonths = monthsToRecord;
+            } 
+        }
+        
         await addDoc(colRef, txData);
         if(!allProfiles[name] || allProfiles[name].status === 'quit') await setDoc(doc(db, "tst_profiles", name), { status: 'active', branch, belt: (allProfiles[name] || {}).belt || 'Đai trắng - Cấp 10', createdAt: (allProfiles[name] || {}).createdAt || getLocalToday() }, { merge: true });
-        e.target.reset(); document.getElementById('date').value = getLocalToday(); document.getElementById('tx_month').value = getLocalToday().substring(0, 7); document.getElementById('tx_exam_amountActual').value = ""; window.toggleTxFormType(); window.showToast("✅ Đã lưu khoản thu!");
+        
+        e.target.reset(); document.getElementById('date').value = getLocalToday(); document.getElementById('tx_month').value = getLocalToday().substring(0, 7); document.getElementById('tx_package').value = "1"; document.getElementById('tx_exam_amountActual').value = ""; window.toggleTxFormType(); window.showToast("✅ Đã lưu khoản thu!");
     };
 
     document.getElementById('expenseForm').onsubmit = async (e) => { e.preventDefault(); if(window.userRole !== 'viewer') { await addDoc(colRef, { branch: document.getElementById('exp_branch').value, type: 'Chi phí', description: document.getElementById('exp_desc').value.trim(), amount: Number(document.getElementById('exp_amountActual').value), date: document.getElementById('exp_date').value, timestamp: Date.now() }); e.target.reset(); document.getElementById('exp_date').value = getLocalToday(); window.showToast("✅ Đã lưu khoản chi!"); } };
@@ -1048,11 +1112,20 @@
             document.getElementById('r_branch').innerText = branch === 'CS1' ? 'Cơ sở 1 (Huỳnh Tấn Phát)' : (branch === 'CS2' ? 'Cơ sở 2 (Sân vận động)' : branch);
             
             let qrDesc = type;
-            if(type === 'Học phí + Lệ phí thi') { document.getElementById('r_type').innerText = `Học phí tháng ${formatMonth(txMonth)} + Lệ phí thi ${extraDesc}`; document.getElementById('r_month_wrap').style.display = 'none'; qrDesc = `Hoc phi va Le phi thi`; } else { document.getElementById('r_type').innerText = type; if(type === 'Học phí' && txMonth) { document.getElementById('r_month_wrap').style.display = 'block'; document.getElementById('r_month').innerText = formatMonth(txMonth); } else document.getElementById('r_month_wrap').style.display = 'none'; }
+            if(type === 'Học phí + Lệ phí thi') { document.getElementById('r_type').innerText = `Học phí tháng ${formatMonth(txMonth)} + Lệ phí thi ${extraDesc}`; document.getElementById('r_month_wrap').style.display = 'none'; qrDesc = `Hoc phi va Le phi thi`; } 
+            else { 
+                document.getElementById('r_type').innerText = type; 
+                if(type === 'Học phí' && txMonth) { 
+                    document.getElementById('r_month_wrap').style.display = 'block'; 
+                    let displayM = txMonth.includes(',') ? txMonth.split(',').map(formatMonth).join(', ') : formatMonth(txMonth);
+                    document.getElementById('r_month').innerText = displayM; 
+                } else document.getElementById('r_month_wrap').style.display = 'none'; 
+            }
             
             const qrImgEl = document.getElementById('qrCodeImg');
             if (amount > 0 && receiptTitle === 'PHIẾU BÁO HỌC PHÍ') { 
-                qrImgEl.src = generateVietQR(amount, cleanName, type === 'Học phí' && txMonth ? `Hoc Phi Thang ${formatMonth(txMonth)}` : qrDesc); document.getElementById('r_qr_wrap').style.display = 'block'; 
+                qrImgEl.src = generateVietQR(amount, cleanName, type === 'Học phí' && txMonth ? (extraDesc ? removeVietnameseTonesForQR(extraDesc) : `Hoc Phi Thang ${formatMonth(txMonth)}`) : qrDesc); 
+                document.getElementById('r_qr_wrap').style.display = 'block'; 
                 await Promise.race([new Promise((res) => { qrImgEl.onload = res; qrImgEl.onerror = res; }), new Promise((res) => setTimeout(res, 3000))]);
             } else { document.getElementById('r_qr_wrap').style.display = 'none'; }
             
