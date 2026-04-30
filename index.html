@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>Quản Lý CLB TST - Bản Pro (Tích hợp Thuế HKD 2026)</title>
+    <title>Quản Lý CLB TST - Bản Pro (Đã Fix Bugs 2026)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -548,7 +548,7 @@
     // Áp dụng định dạng tiền tệ cho tất cả Input
     formatCurrencyInput('amountDisplay', 'amountActual'); formatCurrencyInput('tx_exam_amountDisplay', 'tx_exam_amountActual'); formatCurrencyInput('exp_amountDisplay', 'exp_amountActual'); formatCurrencyInput('ee_amountDisplay', 'ee_amountActual'); formatCurrencyInput('inv_priceDisplay', 'inv_priceActual', window.calcInv); formatCurrencyInput('add_fee_display', 'add_fee_actual'); formatCurrencyInput('add_uniform_display', 'add_uniform_actual'); formatCurrencyInput('ei_amountDisplay', 'ei_amountActual'); formatCurrencyInput('exam_fee_all_display', 'exam_fee_all_actual'); formatCurrencyInput('add_fee_default_display', 'add_fee_default_actual', window.updateAddPackageAmount); formatCurrencyInput('m_fee_display', 'm_fee_actual'); 
     
-    // Hàm hỗ trợ cập nhật số tiền cho Modal Gộp Gia Đình
+    // Hàm hỗ trợ cập nhật số tiền cho Modal Gộp Gia Đình (Đã vá lỗi NaN)
     window.updateComboTotal = () => {
         let f1 = Number(document.getElementById('combo_fee1_actual').value) || 0;
         let f2 = Number(document.getElementById('combo_fee2_actual').value) || 0;
@@ -769,6 +769,7 @@
 
         let taxData = [];
 
+        // YÊU CẦU: Doanh thu tháng nào tính tháng đó (Ngày trong Excel là ngày cuối cùng của tháng Doanh thu nếu đóng khác tháng)
         allTransactions.forEach(t => {
             let reportAmount = 0;
             let reportDesc = "";
@@ -780,15 +781,54 @@
                 let allocatedTuition = (t.type === 'Học phí + Lệ phí thi' && t.tuitionAmount !== undefined) ? t.tuitionAmount : t.amount;
                 
                 if (t.packageMonths && Array.isArray(t.packageMonths)) {
-                    let validMonths = t.packageMonths.filter(m => targetMonths.includes(m));
-                    if(validMonths.length > 0) {
-                        reportAmount = (allocatedTuition / t.packageMonths.length) * validMonths.length;
-                        reportDesc = `${t.description || 'Học viên'} - Học phí các tháng: ${validMonths.map(formatMonth).join(', ')}`;
+                    t.packageMonths.forEach(pkgM => {
+                        if (targetMonths.includes(pkgM)) {
+                            let recDate = t.date;
+                            if (t.date && t.date.substring(0, 7) !== pkgM) {
+                                let [y, m] = pkgM.split('-');
+                                let lastDay = new Date(y, m, 0).getDate();
+                                recDate = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+                            }
+                            taxData.push({
+                                date: recDate,
+                                desc: `${t.description || 'Học viên'} - Học phí tháng ${formatMonth(pkgM)}`,
+                                amount: allocatedTuition / t.packageMonths.length
+                            });
+                        }
+                    });
+                    
+                    if (t.type === 'Học phí + Lệ phí thi' && t.examAmount) {
+                         if (targetMonths.includes(txM)) {
+                             let recDateExam = t.date;
+                             if (t.date && t.date.substring(0, 7) !== txM) {
+                                 let [y, m] = txM.split('-');
+                                 let lastDay = new Date(y, m, 0).getDate();
+                                 recDateExam = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+                             }
+                             taxData.push({
+                                 date: recDateExam,
+                                 desc: `${t.description || 'Học viên'} - Lệ phí thi ${t.examTitle || ''}`,
+                                 amount: t.examAmount
+                             });
+                         }
                     }
+                    return; 
                 } else {
                     if (targetMonths.includes(txM)) {
                         reportAmount = allocatedTuition;
                         reportDesc = `${t.description || 'Học viên'} - Học phí tháng ${formatMonth(txM)}`;
+                        if (t.date && t.date.substring(0, 7) !== txM) {
+                             let [y, m] = txM.split('-');
+                             let lastDay = new Date(y, m, 0).getDate();
+                             reportDate = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+                        }
+                        if (t.type === 'Học phí + Lệ phí thi' && t.examAmount) {
+                             taxData.push({
+                                 date: reportDate,
+                                 desc: `${t.description || 'Học viên'} - Lệ phí thi ${t.examTitle || ''}`,
+                                 amount: t.examAmount
+                             });
+                        }
                     }
                 }
             } 
@@ -860,10 +900,11 @@
 
         let totalRowIndex = aoa.length - 1;
 
+        // Xử lý lệch hiển thị Chữ ký Người đại diện (Thêm wrapText và căn chỉnh đều)
         aoa.push(["", "", ""]); 
         aoa.push(["", "", "Ngày      tháng      năm"]);
-        aoa.push(["", "", "NGƯỜI ĐẠI DIỆN HỘ KINH DOANH/\nCÁ NHÂN KINH DOANH"]);
-        aoa.push(["", "", "(Ký, ghi rõ họ tên, đóng dấu(nếu có))"]);
+        aoa.push(["", "", "NGƯỜI ĐẠI DIỆN HỘ KINH DOANH\nCÁ NHÂN KINH DOANH"]);
+        aoa.push(["", "", "(Ký, ghi rõ họ tên, đóng dấu (nếu có))"]);
 
         try {
             let wb = XLSX.utils.book_new();
@@ -881,8 +922,8 @@
                 { s: {r: 6, c: 0}, e: {r: 6, c: 1} }  
             ];
 
-            // Setup độ rộng cột cực chuẩn cho A4
-            ws['!cols'] = [ {wch: 12}, {wch: 55}, {wch: 18} ];
+            // Tăng độ rộng cột C (Chữ ký) để chữ không bị tràn và xếp gọn gàng ở giữa
+            ws['!cols'] = [ {wch: 12}, {wch: 45}, {wch: 32} ];
 
             const borderStyle = {
                 top: { style: "thin", color: { rgb: "000000" } },
@@ -948,7 +989,9 @@
                     
                     // Chữ ký
                     if (R > totalRowIndex + 1) {
-                        if (C === 2) ws[cellRef].s.alignment = { horizontal: "center", wrapText: true };
+                        if (C === 2) {
+                            ws[cellRef].s.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+                        }
                         if (R === totalRowIndex + 3 && C === 2) ws[cellRef].s.font.bold = true;
                         if (R === totalRowIndex + 4 && C === 2) ws[cellRef].s.font.italic = true;
                     }
@@ -1234,8 +1277,9 @@
 
         document.getElementById('txList').innerHTML = txHtml; document.getElementById('uniformTxList').innerHTML = uniformTxHtml; document.getElementById('expenseList').innerHTML = expHtml; document.getElementById('examExpenseList').innerHTML = examExpHtml; document.getElementById('debtList').innerHTML = debtHtml; document.getElementById('activeList').innerHTML = activeHtml; document.getElementById('quitList').innerHTML = quitHtml; document.getElementById('inventoryList').innerHTML = invListHtml; document.getElementById('reportList').innerHTML = reportHtml;
 
-        let tIncActive = inc_tuition + inc_other + inc_exam; 
-        let tExpActive = exp + exp_exam_total;               
+        // FIX 1: Tích hợp đầy đủ Doanh Thu/Chi Phí Kho Võ Phục vào dòng tiền Tổng
+        let tIncActive = inc_tuition + inc_other + inc_exam + inc_uniform; 
+        let tExpActive = exp + exp_exam_total + exp_uniform;               
         let uniformProfit = inc_uniform - exp_uniform;       
 
         document.getElementById('sum_tuition').innerText = inc_tuition.toLocaleString() + " ₫"; document.getElementById('sum_other').innerText = inc_other.toLocaleString() + " ₫";
@@ -1303,7 +1347,6 @@
     };
     function fallbackCopyTextToClipboard(text) { let t = document.createElement("textarea"); t.value = text; t.style.position = "fixed"; document.body.appendChild(t); t.focus(); t.select(); try { document.execCommand('copy'); window.showToast("✅ Copy thành công!"); } catch (e) { console.error('Lỗi', e); } document.body.removeChild(t); }
 
-    // NÂNG CẤP: Gán giá trị tên vào Input thay vì text tĩnh
     window.openProfile = (name) => {
         const p = allProfiles[name.trim()]; if(!p) return alert("Hồ sơ không tồn tại!");
         document.getElementById('m_name_input').value = name.trim(); 
@@ -1324,7 +1367,6 @@
         document.getElementById('btnUpdateProfile').style.display = window.userRole === 'viewer' ? 'none' : 'block'; document.getElementById('btnDeleteProfile').style.display = window.userRole === 'viewer' ? 'none' : 'block'; document.getElementById('profileModal').style.display = 'flex';
     };
 
-    // NÂNG CẤP: Xử lý Đổi tên bằng Batch Write đồng bộ dữ liệu giao dịch
     window.updateProfile = async () => {
         if(window.userRole === 'viewer') return; 
         const oldName = document.getElementById('m_old_name').value.trim();
@@ -1343,17 +1385,14 @@
                 if (allProfiles[newName]) return alert("Tên võ sinh đã tồn tại, vui lòng thêm chữ lót hoặc hậu tố số nếu trùng tên!");
                 if (!confirm(`Bạn có chắc muốn đổi tên từ "${oldName}" thành "${newName}"?\nHệ thống sẽ tự động cập nhật tên mới trên tất cả hóa đơn và dữ liệu cũ.`)) return;
                 
-                // Kế thừa dữ liệu tạo ban đầu
                 updateData.createdAt = (allProfiles[oldName] || {}).createdAt || getLocalToday();
                 if (allProfiles[oldName].skippedMonths) updateData.skippedMonths = allProfiles[oldName].skippedMonths;
 
                 const batch = writeBatch(db);
-                // 1. Tạo Document mới
                 batch.set(doc(db, "tst_profiles", newName), updateData);
-                // 2. Xóa Document cũ
                 batch.delete(doc(db, "tst_profiles", oldName));
                 
-                // 3. Quét & Update tên mới trên bảng Transactions
+                // FIX 2: Cập nhật hàm thay thế tên quét cả Transactions bán đồ võ phục
                 allTransactions.forEach(t => {
                     let needsUpdate = false;
                     let updatedDesc = t.description;
@@ -1362,6 +1401,9 @@
                         updatedDesc = newName;
                         needsUpdate = true;
                     } else if (t.description && t.description.startsWith(oldName + " (Thi lên")) {
+                        updatedDesc = t.description.replace(oldName, newName);
+                        needsUpdate = true;
+                    } else if (t.description && t.description.includes(oldName)) { // Đã bổ sung bộ lọc fix lỗi mồ côi võ phục
                         updatedDesc = t.description.replace(oldName, newName);
                         needsUpdate = true;
                     }
@@ -1384,7 +1426,6 @@
         }
     };
 
-    // NÂNG CẤP: Dùng oldName khi xóa để tránh lỗi DOM nếu admin đang gõ tên khác
     window.deleteProfile = async () => { 
         const targetName = document.getElementById('m_old_name').value.trim();
         if(window.userRole !== 'viewer' && confirm(`⚠️ Xóa vĩnh viễn hồ sơ "${targetName}"? Lịch sử đóng tiền sẽ vẫn còn lưu nhưng sẽ bị mồ côi.`)) { 
