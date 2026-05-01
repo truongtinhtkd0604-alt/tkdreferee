@@ -741,7 +741,7 @@
     }
 
     // NÂNG CẤP XUẤT EXCEL CHUẨN MẪU S1a-HKD MỚI NHẤT (In đẹp trên A4, nhóm & cộng dồn)
-    window.executeTaxExport = () => {
+     window.executeTaxExport = () => {
         const year = document.getElementById('taxYear').value;
         const type = document.getElementById('taxPeriodType').value;
         const val = document.getElementById('taxPeriodValue').value;
@@ -769,7 +769,7 @@
 
         let taxData = [];
 
-        // YÊU CẦU: Doanh thu tháng nào tính tháng đó (Ngày trong Excel là ngày cuối cùng của tháng Doanh thu nếu đóng khác tháng)
+        // LỌC DỮ LIỆU: Chỉ lấy Học phí (bao gồm gói gộp) và Võ phục
         allTransactions.forEach(t => {
             let reportAmount = 0;
             let reportDesc = "";
@@ -778,6 +778,7 @@
             let txM = t.txMonth || (t.date ? t.date.substring(0, 7) : null);
 
             if (t.type === 'Học phí' || t.type === 'Học phí + Lệ phí thi') {
+                // Tách lấy riêng phần tiền Học phí, loại bỏ Lệ phí thi
                 let allocatedTuition = (t.type === 'Học phí + Lệ phí thi' && t.tuitionAmount !== undefined) ? t.tuitionAmount : t.amount;
                 
                 if (t.packageMonths && Array.isArray(t.packageMonths)) {
@@ -796,22 +797,7 @@
                             });
                         }
                     });
-                    
-                    if (t.type === 'Học phí + Lệ phí thi' && t.examAmount) {
-                         if (targetMonths.includes(txM)) {
-                             let recDateExam = t.date;
-                             if (t.date && t.date.substring(0, 7) !== txM) {
-                                 let [y, m] = txM.split('-');
-                                 let lastDay = new Date(y, m, 0).getDate();
-                                 recDateExam = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
-                             }
-                             taxData.push({
-                                 date: recDateExam,
-                                 desc: `${t.description || 'Học viên'} - Lệ phí thi ${t.examTitle || ''}`,
-                                 amount: t.examAmount
-                             });
-                         }
-                    }
+                    // Đã loại bỏ phần push(examAmount) ở đây
                     return; 
                 } else {
                     if (targetMonths.includes(txM)) {
@@ -822,17 +808,12 @@
                              let lastDay = new Date(y, m, 0).getDate();
                              reportDate = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
                         }
-                        if (t.type === 'Học phí + Lệ phí thi' && t.examAmount) {
-                             taxData.push({
-                                 date: reportDate,
-                                 desc: `${t.description || 'Học viên'} - Lệ phí thi ${t.examTitle || ''}`,
-                                 amount: t.examAmount
-                             });
-                        }
+                        // Đã loại bỏ phần push(examAmount) ở đây
                     }
                 }
             } 
-            else if (['Thu Võ phục', 'Võ phục', 'Lệ phí thi', 'Thu khác'].includes(t.type)) {
+            // CHỈ LẤY VÕ PHỤC (Loại bỏ "Lệ phí thi" và "Thu khác" khỏi Sổ Thuế)
+            else if (['Thu Võ phục', 'Võ phục'].includes(t.type)) {
                 let txDateMonth = t.date ? t.date.substring(0, 7) : null; 
                 if (targetMonths.includes(txDateMonth)) {
                     reportAmount = t.amount;
@@ -862,11 +843,11 @@
         
         let aoa = [
             ["HỘ, CÁ NHÂN KINH DOANH: CLB TAEKWONDO TST", "", "Mẫu số S1a-HKD"],
-            ["Địa chỉ: Phường Quy Nhơn, Bình Định", "", "(Kèm theo Thông tư số 152/2025/TT-BTC\nngày 31 tháng 12 năm 2025 của Bộ trưởng\nBộ Tài chính)"],
+            ["Địa chỉ: Phường Quy Nhơn, Gia Lai", "", "(Kèm theo Thông tư số 152/2025/TT-BTC\nngày 31 tháng 12 năm 2025 của Bộ trưởng\nBộ Tài chính)"],
             ["Mã số thuế: ..............................", "", ""],
             ["", "", ""],
             ["SỔ CHI TIẾT DOANH THU BÁN HÀNG HÓA, DỊCH VỤ", "", ""],
-            ["Địa điểm kinh doanh: ..............................", "", ""],
+            ["Địa điểm kinh doanh: 66 Huỳnh Tấn Phát", "", ""],
             [`Kỳ kê khai: ${periodText}`, "", ""],
             ["", "", "Đơn vị tính: VNĐ"],
             ["Ngày tháng", "Nội dung giao dịch", "Số tiền"],
@@ -900,7 +881,7 @@
 
         let totalRowIndex = aoa.length - 1;
 
-        // Xử lý lệch hiển thị Chữ ký Người đại diện (Thêm wrapText và căn chỉnh đều)
+        // Xử lý hiển thị Chữ ký
         aoa.push(["", "", ""]); 
         aoa.push(["", "", "Ngày      tháng      năm"]);
         aoa.push(["", "", "NGƯỜI ĐẠI DIỆN HỘ KINH DOANH\nCÁ NHÂN KINH DOANH"]);
@@ -910,7 +891,6 @@
             let wb = XLSX.utils.book_new();
             let ws = XLSX.utils.aoa_to_sheet(aoa);
 
-            // Cấu hình Cố định trang vừa khổ A4 (Page Setup)
             ws['!pageSetup'] = { paperSize: 9, orientation: 'portrait', fitToWidth: 1, fitToHeight: 0, margins: { left: 0.5, right: 0.5, top: 0.5, bottom: 0.5 } };
 
             ws['!merges'] = [
@@ -922,7 +902,6 @@
                 { s: {r: 6, c: 0}, e: {r: 6, c: 1} }  
             ];
 
-            // Tăng độ rộng cột C (Chữ ký) để chữ không bị tràn và xếp gọn gàng ở giữa
             ws['!cols'] = [ {wch: 12}, {wch: 45}, {wch: 32} ];
 
             const borderStyle = {
@@ -954,32 +933,18 @@
                     }
                     
                     if ([1, 2, 5, 6].includes(R) && C === 0) { ws[cellRef].s.font.bold = true; } 
-                    
-                    if (R === 4 && C === 0) { 
-                        ws[cellRef].s.font.bold = true; 
-                        ws[cellRef].s.font.sz = 14; 
-                        ws[cellRef].s.alignment = { horizontal: "center", vertical: "center" }; 
-                    }
-                    
-                    if (R === 7 && C === 2) { 
-                        ws[cellRef].s.font.italic = true; 
-                        ws[cellRef].s.alignment = { horizontal: "right" }; 
-                    }
+                    if (R === 4 && C === 0) { ws[cellRef].s.font.bold = true; ws[cellRef].s.font.sz = 14; ws[cellRef].s.alignment = { horizontal: "center", vertical: "center" }; }
+                    if (R === 7 && C === 2) { ws[cellRef].s.font.italic = true; ws[cellRef].s.alignment = { horizontal: "right" }; }
                     
                     if (R >= 8 && R <= totalRowIndex) {
                         ws[cellRef].s.border = borderStyle;
                         
-                        if (R === 8) { 
-                            ws[cellRef].s.font.bold = true; 
-                            ws[cellRef].s.alignment = { horizontal: "center", vertical: "center" };
-                        } else if (R === 9) { 
-                            ws[cellRef].s.font.italic = true;
-                            ws[cellRef].s.alignment = { horizontal: "center", vertical: "center" };
-                        } else if (isSubtotalRow || isGrandTotalRow) { 
+                        if (R === 8) { ws[cellRef].s.font.bold = true; ws[cellRef].s.alignment = { horizontal: "center", vertical: "center" }; } 
+                        else if (R === 9) { ws[cellRef].s.font.italic = true; ws[cellRef].s.alignment = { horizontal: "center", vertical: "center" }; } 
+                        else if (isSubtotalRow || isGrandTotalRow) { 
                             ws[cellRef].s.font.bold = true;
                             ws[cellRef].s.fill = { fgColor: { rgb: "F8FAFC" } }; 
-                            if (C === 1) ws[cellRef].s.alignment = { horizontal: "right", vertical: "center" };
-                            if (C === 2) ws[cellRef].s.alignment = { horizontal: "right", vertical: "center" };
+                            if (C === 1 || C === 2) ws[cellRef].s.alignment = { horizontal: "right", vertical: "center" };
                         } else { 
                             if (C === 0) ws[cellRef].s.alignment = { horizontal: "center", vertical: "top" };
                             if (C === 1) ws[cellRef].s.alignment = { horizontal: "left", vertical: "top", wrapText: true };
@@ -987,11 +952,8 @@
                         }
                     }
                     
-                    // Chữ ký
                     if (R > totalRowIndex + 1) {
-                        if (C === 2) {
-                            ws[cellRef].s.alignment = { horizontal: "center", vertical: "center", wrapText: true };
-                        }
+                        if (C === 2) { ws[cellRef].s.alignment = { horizontal: "center", vertical: "center", wrapText: true }; }
                         if (R === totalRowIndex + 3 && C === 2) ws[cellRef].s.font.bold = true;
                         if (R === totalRowIndex + 4 && C === 2) ws[cellRef].s.font.italic = true;
                     }
@@ -1089,10 +1051,13 @@
         await batch.commit(); window.showToast(`✅ Đã thăng đai thành công cho ${selected.length} võ sinh!`); document.getElementById('checkAllExam').checked = false; renderExamList(); 
     };
 
-    function renderApp() {
+   function renderApp() {
         const selMonth = document.getElementById('filterMonth').value; const selBranch = document.getElementById('filterBranch').value; const search = document.getElementById('searchInput').value.toLowerCase().trim();
         let txHtml = '', uniformTxHtml = '', expHtml = '', examExpHtml = '', debtHtml = '', activeHtml = '', quitHtml = '', invListHtml = '', reportHtml = '';
         let inc_tuition = 0, inc_exam = 0, inc_other = 0, inc_uniform = 0, exp_uniform = 0, exp = 0, exp_exam_total = 0, totalDebtEst = 0; let studentPayments = {};
+        
+        // Biến theo dõi Tổng Lũy Kế cho riêng Tab Kho Đồ
+        let all_time_inc_uniform = 0, all_time_exp_uniform = 0;
         
         let inventoryStats = { "Size 1m": { nhap: 0, xuat: 0 }, "Size 1m1": { nhap: 0, xuat: 0 }, "Size 1m2": { nhap: 0, xuat: 0 }, "Size 1m3": { nhap: 0, xuat: 0 }, "Size 1m4": { nhap: 0, xuat: 0 }, "Size 1m5": { nhap: 0, xuat: 0 }, "Size 1m6": { nhap: 0, xuat: 0 }, "Size 1m7": { nhap: 0, xuat: 0 }, "Size 1m8": { nhap: 0, xuat: 0 } };
         allInventory.forEach(inv => { if(!inv.size) return; if(!inventoryStats[inv.size]) inventoryStats[inv.size] = { nhap: 0, xuat: 0 }; inv.type === 'Nhập kho' ? inventoryStats[inv.size].nhap += inv.qty : inventoryStats[inv.size].xuat += inv.qty; });
@@ -1122,25 +1087,59 @@
             let isUniformTx = (t.type === 'Thu Võ phục' || t.type === 'Chi Võ phục' || t.type === 'Võ phục' || t.type === 'Tặng Võ phục');
             let isTuition = (t.type === 'Học phí' || t.type === 'Học phí + Lệ phí thi');
             
+            // Xử lý cờ lọc Tháng
+            let isMonthMatch = true;
             if (selMonth) {
                 if (isTuition) {
                     if (t.packageMonths && Array.isArray(t.packageMonths)) {
-                        if (!t.packageMonths.includes(selMonth)) return; 
+                        if (!t.packageMonths.includes(selMonth)) isMonthMatch = false; 
                     } else {
-                        if (t.txMonth !== selMonth) return;
+                        if (t.txMonth !== selMonth) isMonthMatch = false;
                     }
                 } else if (t.type === 'Lệ phí thi' || t.type === 'Chi phí kỳ thi') {
-                    if (t.txMonth !== selMonth && (t.date && !t.date.startsWith(selMonth))) return; 
+                    if (t.txMonth !== selMonth && (t.date && !t.date.startsWith(selMonth))) isMonthMatch = false; 
                 } else {
-                    if (t.date && !t.date.startsWith(selMonth)) return;
+                    if (t.date && !t.date.startsWith(selMonth)) isMonthMatch = false;
                 }
             }
             
-            if(!isUniformTx && selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') return;
-            if(search && !cleanName.toLowerCase().includes(search) && !(t.examTitle||"").toLowerCase().includes(search)) return;
+            let isBranchMatch = true;
+            if (selBranch !== 'all' && t.branch !== selBranch && t.branch !== 'Chung') isBranchMatch = false;
+            let isSearchMatch = true;
+            if (search && !cleanName.toLowerCase().includes(search) && !(t.examTitle||"").toLowerCase().includes(search)) isSearchMatch = false;
 
             let safeBranch = t.branch || "CS1"; let safeNameEscaped = cleanName.replace(/'/g, "\\'");
             const btnDel = window.userRole === 'admin' ? `<button class="btn-sm bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white ml-1" onclick="deleteTx('${t.id}', '${t.relatedInvId || ''}')">🗑</button>` : '';
+
+            // --- XỬ LÝ RIÊNG GIAO DỊCH VÕ PHỤC ---
+            if (isUniformTx) {
+                let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục'); 
+                let isGift = (t.type === 'Tặng Võ phục');
+                
+                // 1. Tính toán Lũy kế All-Time (Bỏ qua isMonthMatch)
+                if (isInc) all_time_inc_uniform += t.amount; 
+                else if (!isGift) all_time_exp_uniform += t.amount;
+
+                // 2. Tính toán Theo Tháng cho Dashboard 
+                if (isMonthMatch) {
+                    if (isInc) inc_uniform += t.amount; 
+                    else if (!isGift) exp_uniform += t.amount;
+                }
+
+                // Render Table Kho Đồ (Bỏ qua isMonthMatch, nhưng giữ isSearchMatch)
+                if (isSearchMatch) {
+                    let sizeText = "-"; let matchSize = t.description.match(/(Số \d+|Size 1m\d*)/); if(matchSize) sizeText = matchSize[1];
+                    let clickToEditTag = window.userRole === 'admin' ? `onclick="openEditInv('${t.id}', '${t.relatedInvId || ''}')"` : '';
+                    let renderNameCell = window.userRole === 'admin' ? `<div class="inline-block px-1 -ml-1 rounded hover:bg-blue-50 cursor-pointer text-blue-700 font-bold" ${clickToEditTag}>${cleanName}</div>` : `<span class="font-bold text-slate-700">${cleanName}</span>`;
+                    let typeBadge = isGift ? '<span class="text-[0.7rem] font-bold uppercase text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Tặng</span>' : `<span class="text-[0.7rem] font-bold uppercase ${isInc ? 'text-emerald-600' : 'text-rose-600'} bg-slate-50 px-1.5 py-0.5 rounded">${isInc ? 'Bán' : 'Nhập'}</span>`;
+
+                    uniformTxHtml += `<tr><td>${formatDate(t.date)}</td><td>${renderNameCell}</td><td>${typeBadge}</td><td><span class="badge bg-blue-50 text-blue-800 border border-blue-200">${sizeText}</span></td><td class="${isInc ? 'text-emerald-600' : (isGift ? 'text-slate-500' : 'text-rose-600')} font-bold">${isInc ? '+' : (isGift ? '' : '-')}${t.amount.toLocaleString()}</td><td class="action-btns">${(isInc || isGift) ? `<button class="btn-sm bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200" onclick="exportReceipt('${safeNameEscaped}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung', '', 'BIÊN LAI THU TIỀN')">🧾 In</button>` : ''}${btnDel}</td></tr>`;
+                }
+                return; // Kết thúc xử lý dòng này, không đi xuống dưới nữa
+            }
+
+            // --- XỬ LÝ CÁC GIAO DỊCH CÒN LẠI (Bắt buộc theo Tháng) ---
+            if (!isMonthMatch || !isBranchMatch || !isSearchMatch) return;
 
             if(t.type === 'Chi phí') {
                 exp += t.amount; 
@@ -1148,17 +1147,6 @@
             } else if (t.type === 'Chi phí kỳ thi') {
                 exp_exam_total += t.amount;
                 examExpHtml += `<tr><td>${formatDate(t.date)}</td><td class="font-bold text-slate-800">${t.description}</td><td class="text-rose-600 font-bold">-${t.amount.toLocaleString()}</td><td>${btnDel}</td></tr>`;
-            } else if (isUniformTx) {
-                let isInc = (t.type === 'Thu Võ phục' || t.type === 'Võ phục'); 
-                let isGift = (t.type === 'Tặng Võ phục');
-                if(isInc) inc_uniform += t.amount; else if (!isGift) exp_uniform += t.amount;
-                
-                let sizeText = "-"; let matchSize = t.description.match(/(Số \d+|Size 1m\d*)/); if(matchSize) sizeText = matchSize[1];
-                let clickToEditTag = window.userRole === 'admin' ? `onclick="openEditInv('${t.id}', '${t.relatedInvId || ''}')"` : '';
-                let renderNameCell = window.userRole === 'admin' ? `<div class="inline-block px-1 -ml-1 rounded hover:bg-blue-50 cursor-pointer text-blue-700 font-bold" ${clickToEditTag}>${cleanName}</div>` : `<span class="font-bold text-slate-700">${cleanName}</span>`;
-                let typeBadge = isGift ? '<span class="text-[0.7rem] font-bold uppercase text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Tặng</span>' : `<span class="text-[0.7rem] font-bold uppercase ${isInc ? 'text-emerald-600' : 'text-rose-600'} bg-slate-50 px-1.5 py-0.5 rounded">${isInc ? 'Bán' : 'Nhập'}</span>`;
-
-                uniformTxHtml += `<tr><td>${formatDate(t.date)}</td><td>${renderNameCell}</td><td>${typeBadge}</td><td><span class="badge bg-blue-50 text-blue-800 border border-blue-200">${sizeText}</span></td><td class="${isInc ? 'text-emerald-600' : (isGift ? 'text-slate-500' : 'text-rose-600')} font-bold">${isInc ? '+' : (isGift ? '' : '-')}${t.amount.toLocaleString()}</td><td class="action-btns">${(isInc || isGift) ? `<button class="btn-sm bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200" onclick="exportReceipt('${safeNameEscaped}', ${t.amount}, 'Võ phục', '${t.date}', '', 'Chung', '', 'BIÊN LAI THU TIỀN')">🧾 In</button>` : ''}${btnDel}</td></tr>`;
             } else {
                 let allocatedAmount = t.amount;
                 if(t.type === 'Học phí') { 
@@ -1277,7 +1265,13 @@
 
         document.getElementById('txList').innerHTML = txHtml; document.getElementById('uniformTxList').innerHTML = uniformTxHtml; document.getElementById('expenseList').innerHTML = expHtml; document.getElementById('examExpenseList').innerHTML = examExpHtml; document.getElementById('debtList').innerHTML = debtHtml; document.getElementById('activeList').innerHTML = activeHtml; document.getElementById('quitList').innerHTML = quitHtml; document.getElementById('inventoryList').innerHTML = invListHtml; document.getElementById('reportList').innerHTML = reportHtml;
 
-        // FIX 1: Tích hợp đầy đủ Doanh Thu/Chi Phí Kho Võ Phục vào dòng tiền Tổng
+        // CẬP NHẬT TAB KHO ĐỒ (SỬ DỤNG DỮ LIỆU ALL-TIME)
+        let all_time_uniformProfit = all_time_inc_uniform - all_time_exp_uniform;
+        document.getElementById('sum_uniform_in').innerText = all_time_inc_uniform.toLocaleString() + " ₫"; 
+        document.getElementById('sum_uniform_out').innerText = all_time_exp_uniform.toLocaleString() + " ₫"; 
+        document.getElementById('sum_uniform_profit').innerText = all_time_uniformProfit.toLocaleString() + " ₫";
+
+        // CẬP NHẬT TAB DASHBOARD (SỬ DỤNG DỮ LIỆU THEO THÁNG)
         let tIncActive = inc_tuition + inc_other + inc_exam + inc_uniform; 
         let tExpActive = exp + exp_exam_total + exp_uniform;               
         let uniformProfit = inc_uniform - exp_uniform;       
@@ -1286,7 +1280,6 @@
         if(document.getElementById('sum_exam_tab')) document.getElementById('sum_exam_tab').innerText = inc_exam.toLocaleString() + " ₫";
         if(document.getElementById('sum_exam_expense_tab')) document.getElementById('sum_exam_expense_tab').innerText = exp_exam_total.toLocaleString() + " ₫";
         if(document.getElementById('sum_exam_profit_tab')) document.getElementById('sum_exam_profit_tab').innerText = (inc_exam - exp_exam_total).toLocaleString() + " ₫";
-        document.getElementById('sum_uniform_in').innerText = inc_uniform.toLocaleString() + " ₫"; document.getElementById('sum_uniform_out').innerText = exp_uniform.toLocaleString() + " ₫"; document.getElementById('sum_uniform_profit').innerText = uniformProfit.toLocaleString() + " ₫";
         
         document.getElementById('totalIncomeDashboard').innerText = tIncActive.toLocaleString() + " ₫"; 
         document.getElementById('totalExpenseDashboard').innerText = tExpActive.toLocaleString() + " ₫"; 
